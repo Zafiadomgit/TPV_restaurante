@@ -250,6 +250,18 @@ body {
   cursor: not-allowed;
 }
 
+.hint-enviar {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: #c0392b;
+  text-align: center;
+}
+
+.mesa-input input.campo-requerido {
+  border-color: #c0392b;
+  box-shadow: 0 0 0 1px #c0392b;
+}
+
 .empty {
   color: #888;
   font-style: italic;

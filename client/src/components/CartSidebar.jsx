@@ -14,6 +14,9 @@ export default function CartSidebar({
   onEnviar,
   enviando,
 }) {
+  const faltaMesa = !mesa.trim();
+  const faltaItems = items.length === 0;
+
   return (
     <aside className="cart">
       <h3>Pedido</h3>
@@ -23,6 +26,7 @@ export default function CartSidebar({
           type="text"
           placeholder="Nº mesa"
           value={mesa}
+          className={faltaMesa && !faltaItems ? "campo-requerido" : ""}
           onChange={(e) => setMesa(e.target.value)}
         />
       </label>
@@ -83,11 +87,17 @@ export default function CartSidebar({
 
       <button
         className="btn-enviar"
-        disabled={items.length === 0 || !mesa.trim() || enviando}
+        disabled={faltaItems || faltaMesa || enviando}
         onClick={onEnviar}
       >
         {enviando ? "Enviando..." : "Enviar comanda a cocina"}
       </button>
+
+      {!enviando && (faltaItems || faltaMesa) && (
+        <p className="hint-enviar">
+          {faltaItems ? "Añade al menos un producto para poder enviar" : "Indica el número de mesa para poder enviar"}
+        </p>
+      )}
     </aside>
   );
 }
