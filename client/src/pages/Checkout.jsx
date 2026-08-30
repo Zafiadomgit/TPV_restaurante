@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api.js";
-import { socket } from "../socket.js";
 
 const ESTADOS_LABEL = {
   pendiente: "Recibido por cocina",
@@ -11,6 +10,8 @@ const ESTADOS_LABEL = {
   cancelado: "Cancelado",
 };
 
+const POLL_MS = 3000;
+
 export default function Checkout() {
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
@@ -18,18 +19,24 @@ export default function Checkout() {
   const [pagando, setPagando] = useState(false);
 
   useEffect(() => {
-    api
-      .getOrder(orderId)
-      .then(setOrder)
-      .catch(() => setError("No se encontró el pedido"));
-  }, [orderId]);
+    let activo = true;
 
-  useEffect(() => {
-    const onActualizado = (updated) => {
-      if (updated.id === orderId) setOrder(updated);
+    const cargar = () =>
+      api
+        .getOrder(orderId)
+        .then((data) => {
+          if (activo) setOrder(data);
+        })
+        .catch(() => {
+          if (activo) setError("No se encontró el pedido");
+        });
+
+    cargar();
+    const interval = setInterval(cargar, POLL_MS);
+    return () => {
+      activo = false;
+      clearInterval(interval);
     };
-    socket.on("pedido:actualizado", onActualizado);
-    return () => socket.off("pedido:actualizado", onActualizado);
   }, [orderId]);
 
   const pagar = async (metodoPago) => {

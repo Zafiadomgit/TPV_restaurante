@@ -1,38 +1,43 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "../api.js";
-import { socket } from "../socket.js";
 import OrderTicket from "../components/OrderTicket.jsx";
 
 const ACTIVOS = ["pendiente", "en_preparacion", "listo"];
+const POLL_MS = 3000;
 
 export default function Kitchen() {
   const [orders, setOrders] = useState([]);
+  const enVuelo = useRef(false);
 
   useEffect(() => {
-    api.getOrders().then((data) => setOrders(data.filter((o) => ACTIVOS.includes(o.estado))));
-  }, []);
+    const cargar = async () => {
+      if (enVuelo.current) return;
+      enVuelo.current = true;
+      try {
+        const data = await api.getOrders();
+        setOrders(data.filter((o) => ACTIVOS.includes(o.estado)));
+      } catch {
+        // se reintenta en el siguiente ciclo
+      } finally {
+        enVuelo.current = false;
+      }
+    };
 
-  useEffect(() => {
-    const upsert = (order) => {
-      setOrders((prev) => {
-        const sinOrden = prev.filter((o) => o.id !== order.id);
-        if (!ACTIVOS.includes(order.estado)) return sinOrden;
-        return [...sinOrden, order];
-      });
-    };
-    socket.on("pedido:nuevo", upsert);
-    socket.on("pedido:actualizado", upsert);
-    return () => {
-      socket.off("pedido:nuevo", upsert);
-      socket.off("pedido:actualizado", upsert);
-    };
+    cargar();
+    const interval = setInterval(cargar, POLL_MS);
+    return () => clearInterval(interval);
   }, []);
 
   const avanzarEstado = async (id, estado) => {
+    setOrders((prev) =>
+      ACTIVOS.includes(estado)
+        ? prev.map((o) => (o.id === id ? { ...o, estado } : o))
+        : prev.filter((o) => o.id !== id)
+    );
     try {
       await api.updateEstado(id, estado);
     } catch {
-      // el evento de socket revertirá el estado visible si falla
+      // el siguiente ciclo de polling corrige el estado si algo falló
     }
   };
 
