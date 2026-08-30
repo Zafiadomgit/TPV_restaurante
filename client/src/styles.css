@@ -422,3 +422,58 @@ body {
   font-weight: 600;
   cursor: pointer;
 }
+
+/* ---- Historial ---- */
+.badge-estado {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15rem 0.6rem;
+  border-radius: 20px;
+  margin-bottom: 0.5rem;
+  background: #eee;
+  color: #444;
+}
+
+.badge-pendiente {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+.badge-en_preparacion {
+  background: #fdf2e3;
+  color: #b9770e;
+}
+
+.badge-listo {
+  background: #e8f8ee;
+  color: #1f9d55;
+}
+
+.badge-entregado {
+  background: #eaf1fb;
+  color: #2b6cb0;
+}
+
+.badge-cancelado {
+  background: #eee;
+  color: #666;
+}
+
+.historial-ticket.estado-entregado {
+  border-left-color: #2b6cb0;
+}
+
+.historial-ticket.estado-cancelado {
+  border-left-color: #999;
+  opacity: 0.85;
+}
+
+.historial-total {
+  font-weight: bold;
+  margin: 0.4rem 0 0 0;
+}
+
+.btn-revertir {
+  background: #b9770e;
+}
