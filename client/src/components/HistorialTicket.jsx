@@ -1,3 +1,5 @@
+import { formatTicket } from "../format.js";
+
 const ESTADOS_LABEL = {
   pendiente: "Recibido",
   en_preparacion: "En preparación",
@@ -22,7 +24,10 @@ export default function HistorialTicket({ order, onRevertir }) {
   return (
     <div className={`ticket-cocina historial-ticket estado-${order.estado}`}>
       <div className="ticket-header">
-        <h3>Mesa {order.mesa}</h3>
+        <div className="ticket-header-titulo">
+          <h3>{formatTicket(order.ticketNumero)}</h3>
+          <span className="ticket-mesa">Mesa {order.mesa}</span>
+        </div>
         <span className="hora">
           {new Date(order.creadoEn).toLocaleString([], {
             day: "2-digit",

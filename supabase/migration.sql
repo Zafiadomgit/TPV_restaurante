@@ -42,3 +42,8 @@ alter table orders add column if not exists turno_caja_id uuid references turnos
 alter table orders add column if not exists pagado_en timestamptz;
 
 create index if not exists orders_turno_caja_idx on orders (turno_caja_id);
+
+-- Número de ticket legible y secuencial para mostrar en comanda/cocina/caja
+-- en vez del uuid (ej. "#A-118"). serial asigna un entero autoincremental
+-- también a las filas ya existentes.
+alter table orders add column if not exists ticket_numero serial unique;

@@ -1,3 +1,5 @@
+import { formatTicket } from "../format.js";
+
 const SIGUIENTE_ESTADO = {
   pendiente: "en_preparacion",
   en_preparacion: "listo",
@@ -16,7 +18,10 @@ export default function OrderTicket({ order, onAvanzar }) {
   return (
     <div className={`ticket-cocina estado-${order.estado}`}>
       <div className="ticket-header">
-        <h3>Mesa {order.mesa}</h3>
+        <div className="ticket-header-titulo">
+          <h3>{formatTicket(order.ticketNumero)}</h3>
+          <span className="ticket-mesa">Mesa {order.mesa}</span>
+        </div>
         <span className="hora">
           {new Date(order.creadoEn).toLocaleTimeString([], {
             hour: "2-digit",

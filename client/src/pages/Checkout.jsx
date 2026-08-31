@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api.js";
+import { formatTicket } from "../format.js";
 
 const ESTADOS_LABEL = {
   pendiente: "Recibido por cocina",
@@ -62,7 +63,10 @@ export default function Checkout() {
       </p>
 
       <div className="ticket">
-        <h3>Mesa {order.mesa}</h3>
+        <div className="ticket-header-titulo">
+          <h3>{formatTicket(order.ticketNumero)}</h3>
+          <span className="ticket-mesa">Mesa {order.mesa}</span>
+        </div>
         <ul>
           {order.items.map((item) => (
             <li key={item.productId}>

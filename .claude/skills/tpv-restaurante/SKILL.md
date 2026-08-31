@@ -17,13 +17,21 @@ La app tiene un lenguaje visual consistente en `client/src/styles.css`.
 Cualquier pantalla nueva (caja, admin de menú, lo que sea) debe sentirse del
 mismo sistema, no como un añadido aparte:
 
-- **Paleta**: fondo general `#f2f3f5`; barra superior oscura `#1f2933`; azul
-  de acción `#4f9dfa`; verde de éxito/confirmación `#1f9d55`; rojo de alerta
-  o estado pendiente `#c0392b` / `#e74c3c`; naranja de "en proceso"
-  `#f0ad4e` / `#b9770e`; azul de "entregado/cerrado" `#2b6cb0`. No inventes
-  colores nuevos para estados — reutiliza estos según el significado (rojo =
-  requiere atención, naranja = en curso, verde = completado con éxito, azul
-  = completado/histórico).
+- **Marca**: "TPV Kebab House". Paleta: fondo general `#f2f3f5`; barra
+  superior oscura `#1f2933`; **naranja de marca/acción `#d1622f`** (botones
+  primarios, categoría activa, "Añadir"); verde de éxito/confirmación
+  `#1f9d55`; rojo de alerta o estado pendiente `#c0392b` / `#e74c3c`;
+  naranja de "en proceso" `#f0ad4e` / `#b9770e`; azul de "entregado/cerrado"
+  `#2b6cb0`. No inventes colores nuevos para estados — reutiliza estos según
+  el significado (rojo = requiere atención, naranja = en curso, verde =
+  completado con éxito, azul = completado/histórico). El acento de marca
+  (`#d1622f`) es distinto del naranja de estado "en proceso" — no los
+  confundas aunque ambos sean naranjas.
+- **Tipografía**: `Barlow` (cuerpo de texto) y `Barlow Condensed` 700
+  (títulos, precios grandes, nombre del ticket) cargadas desde Google Fonts
+  en `client/index.html`. Los títulos (`h1–h4`), `.brand` y los totales usan
+  `Barlow Condensed` — sigue esa regla para texto nuevo de gran tamaño en
+  vez de dejar la fuente por defecto del body.
 - **Tarjetas**: fondo blanco, `border-radius: 10px`, sombra suave
   (`0 1px 3px rgba(0,0,0,0.08)`). Es el contenedor por defecto para
   cualquier bloque de contenido (producto, ticket, turno de caja).
@@ -71,17 +79,15 @@ menor. Dilo explícitamente antes de implementarlo, no asumas que ya hay
 algo a medio construir.
 
 ### Pedidos y su numeración
-La tabla `orders` usa `id uuid` como clave primaria. **No hay ningún número
-de pedido corto y legible** (tipo "Pedido #42") que mostrar en cocina o en
-el ticket — hoy solo se identifica por mesa. Si se pide numeración de
-pedidos:
-- No reutilices el uuid recortado como "número" — no es secuencial ni
-  legible para un camarero gritando un número en cocina.
-- Añade una columna propia (ej. `numero_diario` o similar) generada por
-  turno/día en el backend, no en el cliente, para evitar duplicados por
-  condiciones de carrera entre pedidos simultáneos.
-- Decide con el usuario si el número reinicia cada día/turno o es
-  incremental global — no lo asumas en silencio.
+La tabla `orders` usa `id uuid` como clave primaria, pero además tiene
+`ticket_numero` (columna `serial`, autoincremental, generada por Postgres —
+sin condiciones de carrera). Se muestra como `#A-<numero>` mediante
+`formatTicket()`, que existe **duplicado a propósito** en dos sitios porque
+no comparten bundle: `client/api/_lib/orders.js` (backend) y
+`client/src/format.js` (frontend). Si tocas el formato del ticket, cambia
+los dos. Es un contador global (no reinicia por día/turno) — si se pide que
+reinicie a diario, es un cambio de diseño real (necesitaría su propia
+secuencia o cálculo), no un ajuste trivial.
 
 ### Flujo de un pedido
 1. `Order.jsx` (`/`): elige mesa, añade productos, `calcularTotales()` en

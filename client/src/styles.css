@@ -4,9 +4,22 @@
 
 body {
   margin: 0;
-  font-family: "Segoe UI", system-ui, sans-serif;
+  font-family: "Barlow", "Segoe UI", system-ui, sans-serif;
   background: #f2f3f5;
   color: #222;
+}
+
+h1,
+h2,
+h3,
+h4,
+.brand,
+.total-final,
+.historial-total,
+.ticket-header-titulo h3 {
+  font-family: "Barlow Condensed", "Segoe UI", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
 .app {
@@ -38,7 +51,7 @@ body {
 
 .topbar nav a.active {
   color: white;
-  border-bottom: 2px solid #4f9dfa;
+  border-bottom: 2px solid #d1622f;
 }
 
 .content {
@@ -111,7 +124,7 @@ body {
 
 .btn-add {
   margin-top: 0.7rem;
-  background: #4f9dfa;
+  background: #d1622f;
   color: white;
   border: none;
   padding: 0.5rem;
@@ -323,7 +336,7 @@ body {
   padding: 0.8rem;
   border: none;
   border-radius: 8px;
-  background: #4f9dfa;
+  background: #d1622f;
   color: white;
   font-weight: bold;
   cursor: pointer;
@@ -378,6 +391,24 @@ body {
 
 .ticket-header h3 {
   margin: 0;
+}
+
+.ticket-header-titulo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.ticket-header-titulo h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #1f2933;
+}
+
+.ticket-mesa {
+  font-size: 0.8rem;
+  color: #888;
+  font-weight: 500;
 }
 
 .hora {

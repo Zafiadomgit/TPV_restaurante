@@ -18,6 +18,7 @@ export function calcularTotales(items) {
 export function mapRow(row) {
   return {
     id: row.id,
+    ticketNumero: row.ticket_numero,
     mesa: row.mesa,
     items: row.items,
     notasGenerales: row.notas_generales || "",
@@ -32,4 +33,9 @@ export function mapRow(row) {
     pagadoEn: row.pagado_en || null,
     turnoCajaId: row.turno_caja_id || null,
   };
+}
+
+// Ticket legible para mostrar en cocina/caja/checkout en vez del uuid, ej. "#A-118".
+export function formatTicket(ticketNumero) {
+  return `#A-${ticketNumero}`;
 }

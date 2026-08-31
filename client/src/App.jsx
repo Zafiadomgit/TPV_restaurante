@@ -9,7 +9,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <div className="brand">🍽️ TPV Restaurante</div>
+        <div className="brand">🥙 TPV Kebab House</div>
         <nav>
           <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
             Pedidos
