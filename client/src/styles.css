@@ -257,6 +257,15 @@ h4,
   border-radius: 20px;
 }
 
+.badge-stock-bajo {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #b9770e;
+  background: #fdf2e3;
+  padding: 0.15rem 0.5rem;
+  border-radius: 20px;
+}
+
 .btn-add {
   margin-top: 0.7rem;
   background: #d1622f;
@@ -875,6 +884,23 @@ h4,
   background: #fdf2e3;
 }
 
+.caja-boton-producto em {
+  font-size: 0.7rem;
+  font-style: normal;
+  color: #b9770e;
+}
+
+.caja-boton-producto.agotado {
+  background: #f2f0ee;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.caja-boton-agotado-label {
+  font-size: 0.8rem;
+  color: #c0392b;
+}
+
 .caja-ticket-panel {
   width: 380px;
   flex: none;
@@ -1250,4 +1276,137 @@ h4,
   font-weight: 700;
   font-size: 1rem;
   cursor: pointer;
+}
+
+/* ---- Inventario ---- */
+.inventario-kpis {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+}
+
+.inventario-kpi {
+  flex: 1;
+  min-width: 160px;
+  background: white;
+  border-radius: 10px;
+  padding: 0.9rem 1.1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.inventario-kpi span {
+  font-size: 0.8rem;
+  color: rgba(31, 41, 51, 0.55);
+}
+
+.inventario-kpi strong {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 1.8rem;
+  color: #1f2933;
+}
+
+.inventario-kpi.kpi-bajo strong {
+  color: #b9770e;
+}
+
+.inventario-kpi.kpi-agotado strong {
+  color: #c0392b;
+}
+
+.inventario-tabla {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
+}
+
+.inventario-fila {
+  display: grid;
+  grid-template-columns: 2.2fr 1fr 1fr 1fr 1fr 0.7fr;
+  gap: 0.8rem;
+  align-items: center;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid rgba(31, 41, 51, 0.07);
+}
+
+.inventario-cabecera {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(31, 41, 51, 0.55);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #f8f8f9;
+}
+
+.inventario-nombre {
+  font-weight: 600;
+}
+
+.inventario-stock-input {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.inventario-stock-input input {
+  width: 70px;
+  padding: 0.35rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.inventario-unidad {
+  font-size: 0.8rem;
+  color: rgba(31, 41, 51, 0.5);
+}
+
+.badge-inventario {
+  justify-self: start;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+}
+
+.badge-inventario-ok {
+  background: #e8f8ee;
+  color: #1f9d55;
+}
+
+.badge-inventario-bajo {
+  background: #fdf2e3;
+  color: #b9770e;
+}
+
+.badge-inventario-agotado {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+.toggle-kiosco {
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(31, 41, 51, 0.2);
+  padding: 3px;
+  display: flex;
+  justify-content: flex-start;
+  cursor: pointer;
+}
+
+.toggle-kiosco.on {
+  background: #1f9d55;
+  justify-content: flex-end;
+}
+
+.toggle-knob {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
 }

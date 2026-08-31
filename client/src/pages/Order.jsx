@@ -205,7 +205,8 @@ export default function Order() {
         <div className="menu-grid">
           {menu
             .find((cat) => cat.categoria === categoriaActiva)
-            ?.productos.map((producto) => (
+            ?.productos.filter((producto) => producto.disponible !== false)
+            .map((producto) => (
               <MenuItemCard key={producto.id} producto={producto} onAdd={onAddProducto} />
             ))}
         </div>

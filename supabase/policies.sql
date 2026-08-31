@@ -31,3 +31,23 @@ create policy "turnos_caja_anon_insert" on turnos_caja
 drop policy if exists "turnos_caja_anon_update" on turnos_caja;
 create policy "turnos_caja_anon_update" on turnos_caja
   for update to anon using (true) with check (true);
+
+-- Políticas RLS para "inventario". A diferencia de orders/turnos_caja, aquí
+-- sí se permite borrar (es un catálogo vivo, no un histórico).
+alter table inventario enable row level security;
+
+drop policy if exists "inventario_anon_select" on inventario;
+create policy "inventario_anon_select" on inventario
+  for select to anon using (true);
+
+drop policy if exists "inventario_anon_insert" on inventario;
+create policy "inventario_anon_insert" on inventario
+  for insert to anon with check (true);
+
+drop policy if exists "inventario_anon_update" on inventario;
+create policy "inventario_anon_update" on inventario
+  for update to anon using (true) with check (true);
+
+drop policy if exists "inventario_anon_delete" on inventario;
+create policy "inventario_anon_delete" on inventario
+  for delete to anon using (true);

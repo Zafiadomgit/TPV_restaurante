@@ -7,6 +7,7 @@ export default function MenuItemCard({ producto, onAdd }) {
         <div className="menu-card-precio-row">
           <span className="price">{producto.precio.toFixed(2)} €</span>
           {producto.modificadores && <span className="badge-personalizable">Personalizable</span>}
+          {producto.avisoStock && <span className="badge-stock-bajo">{producto.avisoStock}</span>}
         </div>
       </div>
       <button className="btn-add" onClick={() => onAdd(producto)}>

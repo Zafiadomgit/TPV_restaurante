@@ -1,6 +1,7 @@
 import { supabase } from "../_lib/supabaseClient.js";
 import { findProduct } from "../_lib/menu.js";
 import { calcularTotales, mapRow } from "../_lib/orders.js";
+import { mapRow as mapInventarioRow, estadoStock } from "../_lib/inventario.js";
 
 export default async function handler(req, res) {
   if (req.method === "GET") {
@@ -23,6 +24,24 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "El pedido debe tener al menos un producto" });
     }
 
+    // Comprueba disponibilidad real antes de crear el pedido: un cliente
+    // con el kiosco abierto desde antes de que se agote un ingrediente (o
+    // uno que se salte la UI) no puede colar un producto sin stock.
+    const clavesNecesarias = [
+      ...new Set(
+        items.map((item) => findProduct(item.productId)?.ingredienteClave).filter(Boolean)
+      ),
+    ];
+    let inventarioPorClave = new Map();
+    if (clavesNecesarias.length > 0) {
+      const { data: filasInventario, error: errorInventario } = await supabase
+        .from("inventario")
+        .select("*")
+        .in("clave", clavesNecesarias);
+      if (errorInventario) return res.status(500).json({ error: errorInventario.message });
+      inventarioPorClave = new Map(filasInventario.map(mapInventarioRow).map((i) => [i.clave, i]));
+    }
+
     const itemsResueltos = [];
     for (const item of items) {
       const producto = findProduct(item.productId);
@@ -32,6 +51,13 @@ export default async function handler(req, res) {
       const cantidad = Number(item.cantidad) || 1;
       if (cantidad <= 0) {
         return res.status(400).json({ error: `Cantidad inválida para ${producto.nombre}` });
+      }
+
+      if (producto.ingredienteClave) {
+        const ingrediente = inventarioPorClave.get(producto.ingredienteClave);
+        if (ingrediente && (!ingrediente.visibleEnKiosco || estadoStock(ingrediente) === "agotado")) {
+          return res.status(409).json({ error: `${producto.nombre} no está disponible ahora mismo` });
+        }
       }
 
       // El precio de las modificaciones (ej. salsa extra) se recalcula

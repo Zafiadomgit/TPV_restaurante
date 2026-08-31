@@ -76,17 +76,45 @@ mismo sistema, no como un añadido aparte:
   su política — sin RLS la app no podrá leer/escribir esa tabla.
 
 ### El menú
-El menú está **hardcodeado** en `client/api/_lib/menu.js` como un array de
-categorías con productos (`id`, `nombre`, `precio`, `descripcion`) — ahora
-con productos de kebab (Kebabs, Dürüm, Menús, Acompañamientos, Bebidas,
-Postres) acorde a la marca. Es la única fuente de verdad del menú: lo usan
-tanto `Order.jsx` (toma de pedido) como el panel de venta rápida de
-`Caja.jsx` (botones de venta directa en mostrador). No existe ningún panel
-para editarlo desde la UI — si el usuario pide "gestión de menú" o "añadir
-productos desde la app", es una funcionalidad nueva de verdad
-(probablemente moverlo a una tabla de Supabase), no un ajuste menor. Dilo
-explícitamente antes de implementarlo, no asumas que ya hay algo a medio
-construir.
+El menú sigue **hardcodeado** en `client/api/_lib/menu.js` (categoría →
+productos) — no existe panel para editar nombres/precios/categorías desde
+la UI. Si se pide eso, es una funcionalidad nueva de verdad (mover a una
+tabla de Supabase), dilo explícitamente antes de implementarlo. Lo que SÍ
+existe es el vínculo con inventario (ver siguiente sección): un producto
+puede referenciar un ingrediente y su disponibilidad ya no es estática.
+
+### Inventario y disponibilidad real
+Tabla `inventario` (`clave` texto estable, no el uuid — ver comentario en
+`migration.sql`). Un producto de `menu.js` puede tener
+`ingredienteClave` apuntando a esa `clave` (ej. `kebab-ternera` →
+`ternera-kebab`); no todos los productos la tienen (acompañamientos
+simples, algunos kebabs, no están linkados — no asumas que todos deben
+estarlo, solo tiene sentido para lo que de verdad depende de un stock
+concreto).
+
+- `GET /api/menu` (`client/api/menu.js`) cruza `menu.js` con `inventario`
+  en cada petición y anota `disponible` (false si agotado o si el admin
+  apagó "en kiosco") y `avisoStock` ("Quedan N uds") si está por debajo del
+  umbral pero no agotado. El kiosco (`Order.jsx`) **oculta** los productos
+  con `disponible === false`; la venta rápida de caja (`Caja.jsx`) los
+  **muestra deshabilitados** con un badge "Agotado" en vez de ocultarlos
+  (el cajero necesita verlos para explicarle al cliente qué falta).
+- `POST /api/orders` vuelve a comprobar el inventario en el momento de
+  crear el pedido (no solo confía en lo que el kiosco mostraba) y rechaza
+  con 409 un producto agotado — igual que con el precio de los
+  modificadores, nunca te fíes de lo que ya decidió el cliente en pantalla.
+- `/inventario` (`Inventario.jsx`): KPIs (activos/bajo/agotados), tabla con
+  stock editable (input que guarda al perder el foco) y un toggle "en
+  kiosco" por fila. Los endpoints están en `client/api/inventario/` +
+  `client/api/_lib/inventario.js` (`estadoStock()` → `ok`/`bajo`/`agotado`,
+  compártelo en vez de reimplementar el cálculo del umbral en otro sitio).
+- **No existe** un constructor visual de menús tipo arrastrar-y-soltar
+  (drag-and-drop de ingredientes a "slots" de un combo, como en el mockup
+  de referencia) — se decidió deliberadamente no construirlo porque el
+  valor real (que el menú reaccione al stock) ya lo cubre el vínculo
+  `ingredienteClave` de arriba, sin la complejidad de un editor visual de
+  combos. Si el usuario lo pide explícitamente, es una pieza nueva, no
+  algo que ya esté a medio hacer.
 
 ### Venta rápida en caja
 `Caja.jsx` no es solo apertura/cierre de turno: cuando hay un turno abierto
@@ -189,8 +217,13 @@ Antes de decir que una función del TPV está lista, verifica manualmente
     pedidos cobrados en efectivo durante ese turno, y la diferencia se
     muestra claramente, no se oculta ni se redondea en silencio.
 - **Si la feature toca el menú**: los precios siguen siendo números con 2
-  decimales consistentes con `calcularTotales()`; un producto sin stock o
-  desactivado no debe poder añadirse al carrito.
+  decimales consistentes con `calcularTotales()`.
+- **Si la feature toca inventario/disponibilidad**: un producto agotado
+  (o con "en kiosco" apagado) desaparece del kiosco, aparece deshabilitado
+  en caja, y — esto es lo que de verdad importa, no solo la UI — el POST a
+  `/api/orders` lo rechaza aunque se le mande igualmente el `productId`
+  directamente (prueba esto último con una petición cruda, no solo
+  clicando en la pantalla).
 - **Si la feature toca modificadores/personalización**: el precio final se
   verifica en el backend, no solo en el modal — prueba mandando
   directamente al POST `/api/orders` una opción inventada o un precio

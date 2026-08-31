@@ -22,8 +22,8 @@ export const menu = [
   {
     categoria: "Kebabs",
     productos: [
-      { id: "kebab-ternera", nombre: "Kebab de ternera", precio: 6.5, descripcion: "Pan de pita, ternera, ensalada y salsa a elegir", modificadores: [SALSAS] },
-      { id: "kebab-pollo", nombre: "Kebab de pollo", precio: 6.2, descripcion: "Pollo marinado, cebolla morada, yogur", modificadores: [SALSAS] },
+      { id: "kebab-ternera", nombre: "Kebab de ternera", precio: 6.5, descripcion: "Pan de pita, ternera, ensalada y salsa a elegir", modificadores: [SALSAS], ingredienteClave: "ternera-kebab" },
+      { id: "kebab-pollo", nombre: "Kebab de pollo", precio: 6.2, descripcion: "Pollo marinado, cebolla morada, yogur", modificadores: [SALSAS], ingredienteClave: "pollo-kebab" },
       { id: "kebab-picante", nombre: "Kebab picante", precio: 6.8, descripcion: "Con salsa harissa de la casa", modificadores: [SALSAS] },
       { id: "plato-kebab", nombre: "Plato kebab", precio: 9.5, descripcion: "Con arroz, ensalada y pan" },
     ],
@@ -31,8 +31,8 @@ export const menu = [
   {
     categoria: "Dürüm",
     productos: [
-      { id: "durum-mixto", nombre: "Dürüm mixto", precio: 7.0, descripcion: "Tortilla de trigo, ternera y pollo", modificadores: [SALSAS] },
-      { id: "durum-falafel", nombre: "Dürüm falafel", precio: 6.8, descripcion: "Falafel casero, hummus, tahina", modificadores: [SALSAS] },
+      { id: "durum-mixto", nombre: "Dürüm mixto", precio: 7.0, descripcion: "Tortilla de trigo, ternera y pollo", modificadores: [SALSAS], ingredienteClave: "tortilla-durum" },
+      { id: "durum-falafel", nombre: "Dürüm falafel", precio: 6.8, descripcion: "Falafel casero, hummus, tahina", modificadores: [SALSAS], ingredienteClave: "falafel" },
     ],
   },
   {
@@ -46,7 +46,7 @@ export const menu = [
   {
     categoria: "Acompañamientos",
     productos: [
-      { id: "patatas", nombre: "Patatas", precio: 2.5, descripcion: "" },
+      { id: "patatas", nombre: "Patatas", precio: 2.5, descripcion: "", ingredienteClave: "patatas-congeladas" },
       { id: "patatas-queso", nombre: "Patatas con queso", precio: 3.5, descripcion: "" },
       { id: "ensalada", nombre: "Ensalada", precio: 4.0, descripcion: "" },
       { id: "hummus", nombre: "Hummus", precio: 3.2, descripcion: "Con pan de pita" },
@@ -55,15 +55,15 @@ export const menu = [
   {
     categoria: "Bebidas",
     productos: [
-      { id: "coca-cola", nombre: "Coca-Cola", precio: 1.8, descripcion: "Lata 330ml" },
-      { id: "ayran", nombre: "Ayran", precio: 1.5, descripcion: "Bebida de yogur turca" },
+      { id: "coca-cola", nombre: "Coca-Cola", precio: 1.8, descripcion: "Lata 330ml", ingredienteClave: "coca-cola-lata" },
+      { id: "ayran", nombre: "Ayran", precio: 1.5, descripcion: "Bebida de yogur turca", ingredienteClave: "ayran" },
       { id: "agua", nombre: "Agua", precio: 1.2, descripcion: "500ml" },
     ],
   },
   {
     categoria: "Postres",
     productos: [
-      { id: "baklava", nombre: "Baklava", precio: 2.5, descripcion: "" },
+      { id: "baklava", nombre: "Baklava", precio: 2.5, descripcion: "", ingredienteClave: "baklava" },
     ],
   },
 ];
