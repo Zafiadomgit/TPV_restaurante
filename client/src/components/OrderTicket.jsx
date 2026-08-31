@@ -37,7 +37,7 @@ export default function OrderTicket({ order, onAvanzar }) {
           {formatTranscurrido(order.creadoEn)}
         </span>
       </div>
-      <div className="kds-ticket-origen">Mesa {order.mesa}</div>
+      <div className="kds-ticket-origen">{order.mesa}</div>
       <ul>
         {order.items.map((item) => (
           <li key={item.productId}>

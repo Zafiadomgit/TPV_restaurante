@@ -26,7 +26,7 @@ export default function HistorialTicket({ order, onRevertir }) {
       <div className="ticket-header">
         <div className="ticket-header-titulo">
           <h3>{formatTicket(order.ticketNumero)}</h3>
-          <span className="ticket-mesa">Mesa {order.mesa}</span>
+          <span className="ticket-origen">{order.mesa}</span>
         </div>
         <span className="hora">
           {new Date(order.creadoEn).toLocaleString([], {

@@ -23,7 +23,6 @@ export default function Order() {
   const [tipoServicio, setTipoServicio] = useState(null);
   const [menu, setMenu] = useState([]);
   const [categoriaActiva, setCategoriaActiva] = useState("");
-  const [mesa, setMesa] = useState("");
   const [items, setItems] = useState([]);
   const [notasGenerales, setNotasGenerales] = useState("");
   const [enviando, setEnviando] = useState(false);
@@ -44,14 +43,17 @@ export default function Order() {
 
   const elegirTipoServicio = (tipo) => {
     setTipoServicio(tipo);
-    setMesa(tipo === "llevar" ? "Para llevar" : "");
+    setPaso("categorias");
+  };
+
+  const elegirCategoria = (categoria) => {
+    setCategoriaActiva(categoria);
     setPaso("menu");
   };
 
   const cancelarPedido = () => {
     setItems([]);
     setNotasGenerales("");
-    setMesa("");
     setTipoServicio(null);
     setPaso("inicio");
   };
@@ -122,7 +124,7 @@ export default function Order() {
     setEnviando(true);
     try {
       const order = await api.createOrder({
-        mesa,
+        mesa: TIPO_SERVICIO_LABEL[tipoServicio],
         notasGenerales,
         items: items.map((i) => ({
           productId: i.productId,
@@ -168,6 +170,39 @@ export default function Order() {
     );
   }
 
+  if (paso === "categorias") {
+    return (
+      <div className="kiosk-categorias-page">
+        <div className="kiosk-menu-header">
+          <span>
+            Tu pedido · <strong>{TIPO_SERVICIO_LABEL[tipoServicio]}</strong>
+          </span>
+          <button className="kiosk-cancelar" onClick={cancelarPedido}>
+            Cancelar pedido
+          </button>
+        </div>
+
+        {error && <p className="error">{error}</p>}
+
+        <h2 className="kiosk-categorias-titulo">¿Qué te apetece?</h2>
+        <div className="kiosk-categorias-grid">
+          {menu.map((cat) => (
+            <button key={cat.categoria} className="kiosk-categoria-tile" onClick={() => elegirCategoria(cat.categoria)}>
+              <span className="kiosk-categoria-nombre">{cat.categoria}</span>
+              <span className="kiosk-categoria-cantidad">{cat.productos.length} productos</span>
+            </button>
+          ))}
+        </div>
+
+        {items.length > 0 && (
+          <button className="kiosk-ver-carrito" onClick={() => setPaso("menu")}>
+            Ver carrito ({items.reduce((acc, i) => acc + i.cantidad, 0)}) · {total.toFixed(2)} €
+          </button>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="order-page">
       {productoPersonalizando && (
@@ -183,9 +218,14 @@ export default function Order() {
           <span>
             Tu pedido · <strong>{TIPO_SERVICIO_LABEL[tipoServicio]}</strong>
           </span>
-          <button className="kiosk-cancelar" onClick={cancelarPedido}>
-            Cancelar pedido
-          </button>
+          <div className="kiosk-menu-header-acciones">
+            <button className="kiosk-ver-categorias" onClick={() => setPaso("categorias")}>
+              ◀ Categorías
+            </button>
+            <button className="kiosk-cancelar" onClick={cancelarPedido}>
+              Cancelar pedido
+            </button>
+          </div>
         </div>
 
         <div className="categorias">
@@ -213,9 +253,6 @@ export default function Order() {
       </div>
 
       <CartSidebar
-        mesa={mesa}
-        setMesa={setMesa}
-        mostrarMesa={tipoServicio === "aqui"}
         items={items}
         onIncrease={increase}
         onDecrease={decrease}

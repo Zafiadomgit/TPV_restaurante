@@ -1,7 +1,4 @@
 export default function CartSidebar({
-  mesa,
-  setMesa,
-  mostrarMesa = true,
   items,
   onIncrease,
   onDecrease,
@@ -15,24 +12,11 @@ export default function CartSidebar({
   onEnviar,
   enviando,
 }) {
-  const faltaMesa = mostrarMesa && !mesa.trim();
   const faltaItems = items.length === 0;
 
   return (
     <aside className="cart">
       <h3>Pedido</h3>
-      {mostrarMesa && (
-        <label className="mesa-input">
-          Mesa
-          <input
-            type="text"
-            placeholder="Nº mesa"
-            value={mesa}
-            className={faltaMesa && !faltaItems ? "campo-requerido" : ""}
-            onChange={(e) => setMesa(e.target.value)}
-          />
-        </label>
-      )}
 
       {items.length === 0 ? (
         <p className="empty">Añade productos del menú</p>
@@ -91,18 +75,12 @@ export default function CartSidebar({
         </div>
       </div>
 
-      <button
-        className="btn-enviar"
-        disabled={faltaItems || faltaMesa || enviando}
-        onClick={onEnviar}
-      >
+      <button className="btn-enviar" disabled={faltaItems || enviando} onClick={onEnviar}>
         {enviando ? "Enviando..." : "Enviar comanda a cocina"}
       </button>
 
-      {!enviando && (faltaItems || faltaMesa) && (
-        <p className="hint-enviar">
-          {faltaItems ? "Añade al menos un producto para poder enviar" : "Indica el número de mesa para poder enviar"}
-        </p>
+      {!enviando && faltaItems && (
+        <p className="hint-enviar">Añade al menos un producto para poder enviar</p>
       )}
     </aside>
   );

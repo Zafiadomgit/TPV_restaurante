@@ -65,7 +65,7 @@ export default function Checkout() {
       <div className="ticket">
         <div className="ticket-header-titulo">
           <h3>{formatTicket(order.ticketNumero)}</h3>
-          <span className="ticket-mesa">Mesa {order.mesa}</span>
+          <span className="ticket-origen">{order.mesa}</span>
         </div>
         <ul>
           {order.items.map((item) => (

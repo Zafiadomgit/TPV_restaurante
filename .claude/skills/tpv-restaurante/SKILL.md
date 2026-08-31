@@ -175,16 +175,32 @@ global (no reinicia por día/turno) — si se pide que reinicie a diario, es
 un cambio de diseño real, no un ajuste trivial.
 
 ### Flujo de un pedido (kiosco de autoservicio)
-1. `Order.jsx` (`/`) empieza en un paso `inicio` (pantalla de bienvenida a
-   pantalla completa, tema oscuro) donde se elige "Comer aquí" o "Para
-   llevar" (`tipoServicio`). "Para llevar" fija `mesa = "Para llevar"` y
-   oculta el input de mesa (`mostrarMesa` en `CartSidebar`); "Comer aquí"
-   sigue pidiendo número de mesa.
-2. Paso `menu`: categorías + grid + carrito lateral, con una cabecera que
-   muestra el tipo de servicio y "Cancelar pedido" (resetea todo y vuelve a
-   `inicio`). `calcularTotales()` (en `client/src/totales.js`, misma
-   fórmula que el backend) computa subtotal/IVA/total en vivo. IVA fijo
-   al 10%.
+0. **No hay número de mesa.** Se decidió deliberadamente: el pedido se
+   identifica solo por su `ticket_numero` (`#A-<n>`, ver más abajo). La
+   columna `orders.mesa` sigue existiendo en la base de datos (para no
+   forzar una migración), pero ya no es un campo que rellene el cliente —
+   la rellena la propia app con una etiqueta de origen fija según el
+   contexto: `"Comer aquí"` / `"Para llevar"` desde el kiosco
+   (`TIPO_SERVICIO_LABEL[tipoServicio]` en `Order.jsx`), o `"Mostrador"`
+   desde la venta rápida de caja. Si tocas cualquier pantalla que muestre
+   `order.mesa` (`OrderTicket.jsx`, `HistorialTicket.jsx`,
+   `Checkout.jsx` — clase CSS `.ticket-origen`), no le antepongas la
+   palabra "Mesa": ya no es un número de mesa, es solo una etiqueta de
+   contexto. No añadas de vuelta un input de mesa a `CartSidebar.jsx` ni a
+   `Caja.jsx` salvo que el dueño lo pida explícitamente.
+1. `Order.jsx` (`/`) tiene tres pasos: `inicio` (bienvenida a pantalla
+   completa, tema oscuro, elegir "Comer aquí" o "Para llevar" →
+   `tipoServicio`) → `categorias` (grid de tarjetas grandes, una por
+   categoría del menú, con el nº de productos; tocar una lleva a `menu`
+   con esa categoría activa) → `menu` (grid de productos + carrito
+   lateral, con las píldoras de categoría de siempre para cambiar rápido
+   sin volver a la pantalla de categorías, más un enlace "◀ Categorías"
+   que sí vuelve a ella sin vaciar el carrito). "Cancelar pedido" es lo
+   único que resetea todo y vuelve a `inicio`. Si añades un paso nuevo al
+   flujo, sigue este mismo patrón de máquina de estados por `paso`, no
+   metas la lógica de otro paso dentro de un mismo `return`.
+2. `calcularTotales()` (en `client/src/totales.js`, misma fórmula que el
+   backend) computa subtotal/IVA/total en vivo. IVA fijo al 10%.
 3. Un producto con `modificadores` (kebab/dürüm/lahmacum/plato, ver sección
    "El menú") NO se añade directo: abre el modal `Personalizar.jsx`. Los
    ítems del carrito usan
@@ -239,8 +255,6 @@ pantallas nuevas con estado compartido.
 Antes de decir que una función del TPV está lista, verifica manualmente
 (o con test si el proyecto llega a tenerlos):
 
-- **Mesa vacía**: el botón de enviar pedido está deshabilitado y/o muestra
-  aviso si no hay mesa (ver `.campo-requerido` / `.hint-enviar`).
 - **Doble envío**: hacer doble click rápido en "enviar pedido" o "cobrar"
   no debe crear dos filas/dos comandas — el botón debe deshabilitarse tras
   el primer click hasta tener respuesta del servidor.

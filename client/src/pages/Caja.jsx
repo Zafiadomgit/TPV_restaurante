@@ -25,7 +25,6 @@ export default function Caja() {
   const enVuelo = useRef(false);
 
   const [categoriaActiva, setCategoriaActiva] = useState("");
-  const [mesa, setMesa] = useState("Mostrador");
   const [items, setItems] = useState([]);
   const [cobrando, setCobrando] = useState(false);
   const [dividirEntre, setDividirEntre] = useState("");
@@ -143,12 +142,11 @@ export default function Caja() {
     setError("");
     setCobrando(true);
     try {
-      const nuevoPedido = await api.createOrder({ mesa: mesa.trim() || "Mostrador", items, notasGenerales: "" });
+      const nuevoPedido = await api.createOrder({ mesa: "Mostrador", items, notasGenerales: "" });
       const pagado = await api.pagarOrder(nuevoPedido.id, metodoPago);
       setUltimaVenta(pagado);
       setItems([]);
       setDividirEntre("");
-      setMesa("Mostrador");
     } catch (e) {
       setError(e.message);
     } finally {
@@ -205,13 +203,6 @@ export default function Caja() {
           </div>
 
           <aside className="caja-ticket-panel">
-            <div className="caja-ticket-mesa">
-              <label>
-                Mesa / referencia
-                <input type="text" value={mesa} onChange={(e) => setMesa(e.target.value)} placeholder="Mostrador" />
-              </label>
-            </div>
-
             {ultimaVenta && (
               <p className="caja-venta-ok">
                 Cobrado {formatTicket(ultimaVenta.ticketNumero)} · {ultimaVenta.total.toFixed(2)} €
