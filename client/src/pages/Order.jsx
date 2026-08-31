@@ -148,8 +148,8 @@ export default function Order() {
       <div className="kiosk-inicio">
         <div className="kiosk-inicio-centro">
           <div className="kiosk-logo">
-            <div className="kiosk-logo-circulo">KB</div>
-            <h1>KEBAB HOUSE</h1>
+            <div className="kiosk-logo-circulo">CA</div>
+            <h1>CALIFORNIA</h1>
             <p>Toca para empezar tu pedido</p>
           </div>
           <div className="kiosk-opciones">

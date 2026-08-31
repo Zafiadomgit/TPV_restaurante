@@ -30,7 +30,9 @@ La app tiene un lenguaje visual consistente en `client/src/styles.css`.
 Cualquier pantalla nueva debe sentirse del mismo sistema, no como un añadido
 aparte:
 
-- **Marca**: "TPV Kebab House". Paleta: fondo general `#f2f3f5`; barra
+- **Marca**: "TPV California" (negocio real: California — Kebab,
+  Hamburguesería, Pizzería, Medina de Pomar / Villarcayo). Paleta: fondo
+  general `#f2f3f5`; barra
   superior oscura `#1f2933`; **naranja de marca/acción `#d1622f`** (botones
   primarios, categoría activa, "Añadir"); verde de éxito/confirmación
   `#1f9d55`; rojo de alerta o estado pendiente `#c0392b` / `#e74c3c`;
@@ -101,6 +103,30 @@ tabla de Supabase), dilo explícitamente antes de implementarlo. Lo que SÍ
 existe es el vínculo con inventario: un producto puede referenciar un
 ingrediente y su disponibilidad ya no es estática (ver abajo).
 
+Es la carta real del negocio (~119 productos, 11 categorías: Kebab, Dürüm,
+Lahmacum, Platos combinados, Especialidades, Patatas y snacks, Salsas,
+Bebidas, Ensaladas, Pizzas, Haz tu menú). Dos patrones a mantener si se
+edita:
+- **Kebab/Dürüm/Lahmacum y Pizzas son "matrices de precio"**: la misma
+  proteína o sabor tiene un precio distinto por formato/tamaño (ej. Ternera
+  4,50€ en kebab / 6€ en dürüm / 6,50€ en lahmacum; cada pizza en
+  pequeña/mediana/familiar). Se resuelven como **productos independientes**
+  (uno por combinación), no como un único producto con selector de tamaño
+  — el modelo de datos actual es "un producto = un precio". Si se añade un
+  sabor o proteína nueva, créalo así (una entrada por variante), no intentes
+  meter tamaños dentro de un mismo producto sin cambiar el modelo primero.
+- **Modificadores de personalización** (`QUITAR_INGREDIENTES` +
+  `EXTRAS_KEBAB` en `menu.js`): se aplican a Kebab, Dürüm, Lahmacum, Platos
+  combinados, y a sus versiones "menú" en la categoría "Haz tu menú" — no a
+  Especialidades, Patatas, Pizzas, etc. (el dueño solo pidió esto para la
+  familia kebab). "Quitar ingredientes" (Sin tomate/cebolla/repollo y
+  zanahoria/lechuga) son opciones sin coste; "Extras" (Solo carne/Extra
+  salsa/Extra queso) cuestan +1€ cada una. Repollo y zanahoria van
+  **combinados en una sola opción** a propósito — en cocina es un único
+  ingrediente premezclado, no dos. Ambos pasos son de selección múltiple
+  sin límite (`maxSeleccion` omitido a propósito) — no le pongas un tope
+  salvo que el dueño lo pida.
+
 ### Inventario y disponibilidad real
 Tabla `inventario` (`clave` texto estable, no el uuid — ver comentario en
 `migration.sql`). Un producto de `menu.js` puede tener `ingredienteClave`
@@ -159,8 +185,9 @@ un cambio de diseño real, no un ajuste trivial.
    `inicio`). `calcularTotales()` (en `client/src/totales.js`, misma
    fórmula que el backend) computa subtotal/IVA/total en vivo. IVA fijo
    al 10%.
-3. Un producto con `modificadores` (ej. salsas de un kebab) NO se añade
-   directo: abre el modal `Personalizar.jsx`. Los ítems del carrito usan
+3. Un producto con `modificadores` (kebab/dürüm/lahmacum/plato, ver sección
+   "El menú") NO se añade directo: abre el modal `Personalizar.jsx`. Los
+   ítems del carrito usan
    `lineId` (no `productId`) como clave de operación porque el mismo
    producto puede aparecer en varias líneas con personalizaciones
    distintas — no vuelvas a usar `productId` como key en

@@ -51,7 +51,7 @@ export default function Kitchen() {
   return (
     <div className="kds-page">
       <div className="kds-header">
-        <span className="kds-titulo">COCINA · KEBAB HOUSE</span>
+        <span className="kds-titulo">COCINA · CALIFORNIA</span>
         <span className="kds-contador">{ordenadas.length} comandas activas</span>
       </div>
       <div className="kds-columnas">

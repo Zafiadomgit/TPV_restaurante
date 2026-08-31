@@ -83,9 +83,9 @@ export default function Personalizar({ producto, onConfirmar, onCancelar }) {
                       onClick={() => toggleOpcion(paso, opcion.id)}
                     >
                       <span>{opcion.nombre}</span>
-                      <span className="personalizar-opcion-nota">
-                        {opcion.precioExtra > 0 ? `+${opcion.precioExtra.toFixed(2)} €` : "Incluida"}
-                      </span>
+                      {opcion.precioExtra > 0 && (
+                        <span className="personalizar-opcion-nota">+{opcion.precioExtra.toFixed(2)} €</span>
+                      )}
                       <span className={`personalizar-marca ${elegida ? "elegida" : ""}`}>
                         {elegida ? "✓" : "+"}
                       </span>
