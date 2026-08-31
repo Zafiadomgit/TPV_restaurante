@@ -1,6 +1,6 @@
 ---
 name: tpv-restaurante
-description: Guía de diseño visual, convenciones de código y checklist de revisión para trabajar en este TPV de restaurante (React + Vite + funciones serverless de Vercel + Supabase). Úsala SIEMPRE que se toque cualquier pantalla o funcionalidad del TPV — toma de pedido, menú, carrito, comanda de cocina (KDS), checkout/cobro, historial, numeración de pedidos, inventario, panel del dueño, pantalla de recogida, o especialmente apertura/cierre de caja — aunque el usuario no mencione la palabra "skill". Dispara también con peticiones como "añade una pantalla de caja", "quiero editar el menú desde la interfaz", "que la comanda muestre un número de pedido", "arqueo de caja", "nueva pantalla de cocina", "panel de ventas", o cualquier cambio en client/src o client/api de este repo.
+description: Guía de diseño visual, convenciones de código y checklist de revisión para trabajar en este TPV de restaurante (React + Vite + funciones serverless de Vercel + Supabase). Úsala SIEMPRE que se toque cualquier pantalla o funcionalidad del TPV — toma de pedido, menú, gestión de carta/productos, carrito, comanda de cocina (KDS), checkout/cobro, historial, numeración de pedidos, panel del dueño, pantalla de recogida, o especialmente apertura/cierre de caja — aunque el usuario no mencione la palabra "skill". Dispara también con peticiones como "añade una pantalla de caja", "quiero editar el menú desde la interfaz", "añadir/quitar un producto de la carta", "que la comanda muestre un número de pedido", "arqueo de caja", "nueva pantalla de cocina", "panel de ventas", o cualquier cambio en client/src o client/api de este repo. NO tiene inventario/gestión de stock (se retiró a propósito) — no lo reintroduzcas sin que el dueño lo pida explícitamente.
 ---
 
 # TPV Restaurante — guía del proyecto
@@ -9,7 +9,8 @@ Este repo es un TPV real en producción (React + Vite en `client/`, funciones
 serverless de Vercel en `client/api/`, Postgres vía Supabase). Antes de tocar
 cualquier pantalla o flujo, lee este documento: te da el contexto que ya
 existe para que lo nuevo encaje visualmente y funcionalmente, y no repita
-trabajo que ya está hecho (caja, inventario, numeración de pedidos, panel).
+trabajo que ya está hecho (caja, gestión de menú, numeración de pedidos,
+panel).
 
 ## 0. Mapa de pantallas
 
@@ -20,7 +21,7 @@ trabajo que ya está hecho (caja, inventario, numeración de pedidos, panel).
 | `/cocina` | `Kitchen.jsx` | KDS, 3 columnas por estado |
 | `/historial` | `Historial.jsx` | Pedidos cerrados, filtrable por estado |
 | `/caja` | `Caja.jsx` | Turno de caja (apertura/cierre/arqueo) + venta rápida en mostrador |
-| `/inventario` | `Inventario.jsx` | Stock por ingrediente, vinculado al menú |
+| `/carta` | `GestionMenu.jsx` | Editar el menú: categorías y productos (crear/editar/borrar) |
 | `/panel` | `Panel.jsx` | KPIs del día, ventas por hora, más vendidos |
 | `/recogida` | `Recogida.jsx` | Tablero de pedidos preparando/listo (pantalla pública) |
 
@@ -61,8 +62,8 @@ aparte:
   `.card-caja` — no mezcles ambos sistemas. La pantalla de inicio del
   kiosco (`.kiosk-inicio`) también es oscura, pero es un caso aparte
   (bienvenida a pantalla completa), no un tablero de datos.
-- **Badges** redondeados (`.badge-estado`/`.badge-inventario` + modificador)
-  para mostrar el estado como texto corto dentro de una tarjeta o fila.
+- **Badges** redondeados (`.badge-estado` + modificador) para mostrar el
+  estado como texto corto dentro de una tarjeta o fila.
 - **Botones grandes y táctiles**: esto lo va a usar un camarero de pie,
   tocando una pantalla o tablet, muchas veces con prisa. Botones de acción
   principal ocupan el ancho disponible (`width: 100%`), padding generoso
@@ -86,76 +87,78 @@ aparte:
   fórmula en un lado, cámbiala en el otro.
 - `client/api/`: backend serverless (una función = un endpoint). La lógica
   de negocio compartida vive en `client/api/_lib/` (`menu.js`, `orders.js`,
-  `caja.js`, `inventario.js`, `informes.js`, `supabaseClient.js`), no
-  directamente en los handlers — sigue ese mismo patrón para lógica nueva.
+  `caja.js`, `informes.js`, `supabaseClient.js`), no directamente en los
+  handlers — sigue ese mismo patrón para lógica nueva.
 - Cambios de esquema de datos van en `supabase/migration.sql` (tablas) y
   `supabase/policies.sql` (RLS). Si añades una tabla nueva, añade también
   su política — sin RLS la app no podrá leer/escribir esa tabla. `orders` y
-  `turnos_caja` no permiten borrar (son histórico); `inventario` sí (es un
-  catálogo vivo) — sigue esa misma distinción para tablas nuevas en vez de
-  copiar una política sin pensar si aplica.
+  `turnos_caja` no permiten borrar (son histórico); `menu_categorias` y
+  `menu_productos` sí (son un catálogo vivo) — sigue esa misma distinción
+  para tablas nuevas en vez de copiar una política sin pensar si aplica.
+- **No hay inventario/gestión de stock en este proyecto, a propósito.**
+  Existió (tabla `inventario`, pantalla `/inventario`, vínculo
+  `ingredienteClave` en el menú) pero se retiró por completo: el negocio
+  gestiona el stock en otra plataforma. Si algo parece pedir "disponible
+  según stock", no lo confundas con lo que ahora es simplemente
+  `activo`/inactivo en `menu_productos` (visible u oculto en el kiosco,
+  sin relación con cantidades) — y no reintroduzcas inventario salvo que
+  el dueño lo pida explícitamente otra vez.
 
-### El menú
-El menú sigue **hardcodeado** en `client/api/_lib/menu.js` (categoría →
-productos) — no existe panel para editar nombres/precios/categorías desde
-la UI. Si se pide eso, es una funcionalidad nueva de verdad (mover a una
-tabla de Supabase), dilo explícitamente antes de implementarlo. Lo que SÍ
-existe es el vínculo con inventario: un producto puede referenciar un
-ingrediente y su disponibilidad ya no es estática (ver abajo).
+### El menú — editable desde `/carta`
+El menú **ya no es estático**: vive en Supabase (`menu_categorias`,
+`menu_productos`) y se edita desde `/carta` (`GestionMenu.jsx`). Es la
+carta real del negocio (~119 productos de partida, 11 categorías: Kebab,
+Dürüm, Lahmacum, Platos combinados, Especialidades, Patatas y snacks,
+Salsas, Bebidas, Ensaladas, Pizzas, Haz tu menú).
 
-Es la carta real del negocio (~119 productos, 11 categorías: Kebab, Dürüm,
-Lahmacum, Platos combinados, Especialidades, Patatas y snacks, Salsas,
-Bebidas, Ensaladas, Pizzas, Haz tu menú). Dos patrones a mantener si se
-edita:
+- `client/api/_lib/menu.js` expone dos funciones **async** (consultan
+  Supabase, ya no hay un array estático que importar):
+  `getMenu()` — el menú agrupado por categoría para el kiosco/caja, solo
+  productos `activo = true`, omite categorías que se queden vacías; y
+  `findProducts(ids)` — busca varios productos de golpe por id (usado por
+  `POST /api/orders` para no hacer una consulta por línea de pedido). Si
+  necesitas el menú en un sitio nuevo, usa una de estas dos — no vuelvas a
+  escribir una consulta a `menu_productos` desde cero.
+- `menu_productos.id` es texto (mismo slug que ya usaban los productos,
+  ej. `kebab-ternera`), no un uuid — así no se rompe la relación con los
+  `productId` ya guardados en pedidos históricos. Un producto nuevo genera
+  su id haciendo slug del nombre (ver `slugify()` en
+  `client/api/menu-productos/index.js`, duplicado en
+  `EditarProducto.jsx` por el mismo motivo de siempre).
+- Borrar o editar un producto **nunca** altera pedidos ya hechos:
+  `orders.items` guarda una copia congelada (nombre/precio/modificadores)
+  en el momento del pedido, no una referencia viva al producto.
 - **Kebab/Dürüm/Lahmacum y Pizzas son "matrices de precio"**: la misma
   proteína o sabor tiene un precio distinto por formato/tamaño (ej. Ternera
   4,50€ en kebab / 6€ en dürüm / 6,50€ en lahmacum; cada pizza en
-  pequeña/mediana/familiar). Se resuelven como **productos independientes**
-  (uno por combinación), no como un único producto con selector de tamaño
-  — el modelo de datos actual es "un producto = un precio". Si se añade un
-  sabor o proteína nueva, créalo así (una entrada por variante), no intentes
-  meter tamaños dentro de un mismo producto sin cambiar el modelo primero.
-- **Modificadores de personalización** (`QUITAR_INGREDIENTES` +
-  `EXTRAS_KEBAB` en `menu.js`): se aplican a Kebab, Dürüm, Lahmacum, Platos
-  combinados, y a sus versiones "menú" en la categoría "Haz tu menú" — no a
-  Especialidades, Patatas, Pizzas, etc. (el dueño solo pidió esto para la
-  familia kebab). "Quitar ingredientes" (Sin tomate/cebolla/repollo y
-  zanahoria/lechuga) son opciones sin coste; "Extras" (Solo carne/Extra
-  salsa/Extra queso) cuestan +1€ cada una. Repollo y zanahoria van
-  **combinados en una sola opción** a propósito — en cocina es un único
-  ingrediente premezclado, no dos. Ambos pasos son de selección múltiple
-  sin límite (`maxSeleccion` omitido a propósito) — no le pongas un tope
-  salvo que el dueño lo pida.
-
-### Inventario y disponibilidad real
-Tabla `inventario` (`clave` texto estable, no el uuid — ver comentario en
-`migration.sql`). Un producto de `menu.js` puede tener `ingredienteClave`
-apuntando a esa `clave` (ej. `kebab-ternera` → `ternera-kebab`); no todos
-los productos la tienen — solo tiene sentido para lo que de verdad depende
-de un stock concreto.
-
-- `GET /api/menu` (`client/api/menu.js`) cruza `menu.js` con `inventario`
-  en cada petición y anota `disponible` (false si agotado o si el admin
-  apagó "en kiosco") y `avisoStock` ("Quedan N uds") si está por debajo del
-  umbral pero no agotado. El kiosco (`Order.jsx`) **oculta** los productos
-  con `disponible === false`; la venta rápida de caja (`Caja.jsx`) los
-  **muestra deshabilitados** con un badge "Agotado" (el cajero necesita
-  verlos para explicarle al cliente qué falta).
-- `POST /api/orders` vuelve a comprobar el inventario al crear el pedido
-  (no solo confía en lo que el kiosco mostraba) y rechaza con 409 un
-  producto agotado — igual que con el precio de los modificadores, nunca
-  te fíes de lo que ya decidió el cliente en pantalla.
-- `/inventario` (`Inventario.jsx`): KPIs (activos/bajo/agotados), tabla con
-  stock editable (input que guarda al perder el foco) y un toggle "en
-  kiosco" por fila. `estadoStock()` en `_lib/inventario.js` calcula
-  `ok`/`bajo`/`agotado` — compártelo en vez de reimplementar el umbral en
-  otro sitio (el frontend también lo duplica en `Inventario.jsx` por el
-  mismo motivo que `format.js`).
-- **No existe** un constructor visual de menús tipo arrastrar-y-soltar
-  (armar combos desde inventario en una UI de slots, como en el mockup de
-  referencia) — decisión deliberada: el valor real (que el menú reaccione
-  al stock) ya lo cubre `ingredienteClave`, sin la complejidad de un editor
-  de combos. Si se pide explícitamente, es una pieza nueva.
+  pequeña/mediana/familiar). Son **filas independientes** en
+  `menu_productos` (una por combinación) — el modelo sigue siendo "un
+  producto = un precio". Si se añade un sabor o proteína nueva, créalo así
+  desde `/carta` (una fila por variante), no le añadas un selector de
+  tamaño a un único producto sin cambiar el modelo primero.
+- **Modificadores de personalización** (`modificadores` jsonb por fila de
+  `menu_productos`, mismo shape de siempre: pasos con `titulo`/`tipo`/
+  `opciones`, cada opción con `nombre`/`precioExtra`/`porDefecto`). Ya no
+  hay una constante compartida en código (`QUITAR_INGREDIENTES`/
+  `EXTRAS_KEBAB` como existían antes) — cada producto tiene su propia
+  copia editable independientemente desde `/carta`. Para no reescribir a
+  mano los mismos pasos en 20 productos de la familia kebab, el editor
+  (`EditarProducto.jsx`) tiene un desplegable "Copiar de otro producto..."
+  que clona (no enlaza) los modificadores de otro producto — si tocas ese
+  editor, mantén esa distinción: es una copia puntual, no una plantilla
+  viva que se sincroniza sola.
+- Los datos de partida (Kebab/Dürüm/Lahmacum/Platos combinados/"Haz tu
+  menú" de kebab y plato) siguen incluyendo los pasos "Quitar ingredientes"
+  (Sin tomate/cebolla/repollo y zanahoria/lechuga, sin coste — repollo y
+  zanahoria van combinados en una sola opción porque en cocina es un único
+  ingrediente premezclado) y "Extras" (Solo carne/Extra salsa/Extra queso,
+  +1€ cada una), sin límite de selección (`maxSeleccion` omitido a
+  propósito).
+- **No hay** un constructor visual de menús tipo arrastrar-y-soltar (armar
+  combos desde ingredientes sueltos en una UI de slots) — se decidió no
+  construirlo; `/carta` es un CRUD de categorías/productos, no un editor de
+  combos con reglas de slots. Si se pide explícitamente, es una pieza
+  nueva.
 
 ### Venta rápida en caja
 `Caja.jsx` no es solo apertura/cierre de turno: con un turno abierto
@@ -209,8 +212,9 @@ un cambio de diseño real, no un ajuste trivial.
    distintas — no vuelvas a usar `productId` como key en
    `CartSidebar.jsx`/`Order.jsx`.
 4. **El precio de los modificadores se recalcula siempre en el backend**
-   (`client/api/orders/index.js`, POST) a partir de `menu.js` — el cliente
-   solo manda qué opciones eligió (`item.modificadores: {pasoId:
+   (`client/api/orders/index.js`, POST) a partir de lo que devuelve
+   `findProducts()` — el cliente solo manda qué opciones eligió
+   (`item.modificadores: {pasoId:
    [opcionId, ...]}`), nunca un precio. El texto de las opciones elegidas
    se guarda en `item.modificadoresTexto` y se muestra junto a
    `item.notas` en cocina/checkout/historial/recogida.
@@ -274,12 +278,13 @@ Antes de decir que una función del TPV está lista, verifica manualmente
     pedidos cobrados en efectivo durante ese turno, y la diferencia se
     muestra claramente, no se oculta ni se redondea en silencio.
 - **Si la feature toca el menú**: los precios siguen siendo números con 2
-  decimales consistentes con `calcularTotales()`.
-- **Si la feature toca inventario/disponibilidad**: un producto agotado
-  (o con "en kiosco" apagado) desaparece del kiosco, aparece deshabilitado
-  en caja, y — esto es lo que de verdad importa, no solo la UI — el POST a
-  `/api/orders` lo rechaza aunque se le mande igualmente el `productId`
-  directamente (prueba esto con una petición cruda, no solo clicando).
+  decimales consistentes con `calcularTotales()`; un producto marcado
+  inactivo desde `/carta` desaparece del kiosco (`getMenu()` ya lo filtra)
+  y — esto es lo que de verdad importa, no solo la UI — el POST a
+  `/api/orders` lo rechaza igual aunque se le mande el `productId`
+  directamente (`findProducts()` también filtra por `activo`; pruébalo con
+  una petición cruda, no solo clicando). Borrar/editar un producto no debe
+  tocar pedidos ya existentes (son una copia congelada, no una referencia).
 - **Si la feature toca modificadores/personalización**: el precio final se
   verifica en el backend, no solo en el modal — prueba mandando
   directamente al POST `/api/orders` una opción inventada o un precio

@@ -4,9 +4,9 @@ import Checkout from "./pages/Checkout.jsx";
 import Kitchen from "./pages/Kitchen.jsx";
 import Historial from "./pages/Historial.jsx";
 import Caja from "./pages/Caja.jsx";
-import Inventario from "./pages/Inventario.jsx";
 import Panel from "./pages/Panel.jsx";
 import Recogida from "./pages/Recogida.jsx";
+import GestionMenu from "./pages/GestionMenu.jsx";
 
 export default function App() {
   return (
@@ -26,8 +26,8 @@ export default function App() {
           <NavLink to="/caja" className={({ isActive }) => (isActive ? "active" : "")}>
             Caja
           </NavLink>
-          <NavLink to="/inventario" className={({ isActive }) => (isActive ? "active" : "")}>
-            Inventario
+          <NavLink to="/carta" className={({ isActive }) => (isActive ? "active" : "")}>
+            Carta
           </NavLink>
           <NavLink to="/panel" className={({ isActive }) => (isActive ? "active" : "")}>
             Panel
@@ -44,7 +44,7 @@ export default function App() {
           <Route path="/cocina" element={<Kitchen />} />
           <Route path="/historial" element={<Historial />} />
           <Route path="/caja" element={<Caja />} />
-          <Route path="/inventario" element={<Inventario />} />
+          <Route path="/carta" element={<GestionMenu />} />
           <Route path="/panel" element={<Panel />} />
           <Route path="/recogida" element={<Recogida />} />
         </Routes>

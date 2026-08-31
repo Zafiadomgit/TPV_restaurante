@@ -178,27 +178,12 @@ export default function Caja() {
             <div className="caja-botones-grid">
               {menu
                 .find((cat) => cat.categoria === categoriaActiva)
-                ?.productos.map((producto) => {
-                  const agotado = producto.disponible === false;
-                  return (
-                    <button
-                      key={producto.id}
-                      className={`caja-boton-producto ${agotado ? "agotado" : ""}`}
-                      disabled={agotado}
-                      onClick={() => addItem(producto)}
-                    >
-                      <span>{producto.nombre}</span>
-                      {agotado ? (
-                        <strong className="caja-boton-agotado-label">Agotado</strong>
-                      ) : (
-                        <>
-                          <strong>{producto.precio.toFixed(2)} €</strong>
-                          {producto.avisoStock && <em>{producto.avisoStock}</em>}
-                        </>
-                      )}
-                    </button>
-                  );
-                })}
+                ?.productos.map((producto) => (
+                  <button key={producto.id} className="caja-boton-producto" onClick={() => addItem(producto)}>
+                    <span>{producto.nombre}</span>
+                    <strong>{producto.precio.toFixed(2)} €</strong>
+                  </button>
+                ))}
             </div>
           </div>
 

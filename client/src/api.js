@@ -36,8 +36,17 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify({ efectivoFinalDeclarado }),
     }),
-  getInventario: () => request("/inventario"),
-  actualizarInventario: (id, cambios) =>
-    request(`/inventario/${id}`, { method: "PATCH", body: JSON.stringify(cambios) }),
   getResumen: () => request("/informes"),
+  getCategorias: () => request("/menu-categorias"),
+  crearCategoria: (nombre) =>
+    request("/menu-categorias", { method: "POST", body: JSON.stringify({ nombre }) }),
+  actualizarCategoria: (id, cambios) =>
+    request(`/menu-categorias/${id}`, { method: "PATCH", body: JSON.stringify(cambios) }),
+  eliminarCategoria: (id) => request(`/menu-categorias/${id}`, { method: "DELETE" }),
+  getProductosAdmin: () => request("/menu-productos"),
+  crearProducto: (producto) =>
+    request("/menu-productos", { method: "POST", body: JSON.stringify(producto) }),
+  actualizarProducto: (id, cambios) =>
+    request(`/menu-productos/${id}`, { method: "PATCH", body: JSON.stringify(cambios) }),
+  eliminarProducto: (id) => request(`/menu-productos/${id}`, { method: "DELETE" }),
 };

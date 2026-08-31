@@ -51,3 +51,41 @@ create policy "inventario_anon_update" on inventario
 drop policy if exists "inventario_anon_delete" on inventario;
 create policy "inventario_anon_delete" on inventario
   for delete to anon using (true);
+
+-- Políticas RLS para el menú editable. Igual que inventario: es un
+-- catálogo vivo (no un histórico), así que se permite borrar.
+alter table menu_categorias enable row level security;
+
+drop policy if exists "menu_categorias_anon_select" on menu_categorias;
+create policy "menu_categorias_anon_select" on menu_categorias
+  for select to anon using (true);
+
+drop policy if exists "menu_categorias_anon_insert" on menu_categorias;
+create policy "menu_categorias_anon_insert" on menu_categorias
+  for insert to anon with check (true);
+
+drop policy if exists "menu_categorias_anon_update" on menu_categorias;
+create policy "menu_categorias_anon_update" on menu_categorias
+  for update to anon using (true) with check (true);
+
+drop policy if exists "menu_categorias_anon_delete" on menu_categorias;
+create policy "menu_categorias_anon_delete" on menu_categorias
+  for delete to anon using (true);
+
+alter table menu_productos enable row level security;
+
+drop policy if exists "menu_productos_anon_select" on menu_productos;
+create policy "menu_productos_anon_select" on menu_productos
+  for select to anon using (true);
+
+drop policy if exists "menu_productos_anon_insert" on menu_productos;
+create policy "menu_productos_anon_insert" on menu_productos
+  for insert to anon with check (true);
+
+drop policy if exists "menu_productos_anon_update" on menu_productos;
+create policy "menu_productos_anon_update" on menu_productos
+  for update to anon using (true) with check (true);
+
+drop policy if exists "menu_productos_anon_delete" on menu_productos;
+create policy "menu_productos_anon_delete" on menu_productos
+  for delete to anon using (true);
