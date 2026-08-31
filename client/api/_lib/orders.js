@@ -29,5 +29,7 @@ export function mapRow(row) {
     total: Number(row.total),
     creadoEn: row.creado_en,
     actualizadoEn: row.actualizado_en,
+    pagadoEn: row.pagado_en || null,
+    turnoCajaId: row.turno_caja_id || null,
   };
 }

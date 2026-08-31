@@ -28,4 +28,12 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify({ metodoPago }),
     }),
+  getTurnos: (estado) => request(`/caja${estado ? `?estado=${estado}` : ""}`),
+  abrirTurno: (efectivoInicial) =>
+    request("/caja", { method: "POST", body: JSON.stringify({ efectivoInicial }) }),
+  cerrarTurno: (id, efectivoFinalDeclarado) =>
+    request(`/caja/${id}/cerrar`, {
+      method: "PATCH",
+      body: JSON.stringify({ efectivoFinalDeclarado }),
+    }),
 };

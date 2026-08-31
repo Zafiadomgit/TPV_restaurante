@@ -477,3 +477,138 @@ body {
 .btn-revertir {
   background: #b9770e;
 }
+
+/* ---- Caja ---- */
+.caja-page {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.card-caja {
+  background: white;
+  border-radius: 10px;
+  padding: 1.2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-left: 6px solid #999;
+  margin-bottom: 1rem;
+}
+
+.card-caja h3 {
+  margin: 0.3rem 0 0.4rem 0;
+}
+
+.card-caja.estado-abierto {
+  border-left-color: #1f9d55;
+}
+
+.card-caja.estado-cerrado {
+  border-left-color: #2b6cb0;
+}
+
+.badge-abierto-caja {
+  background: #e8f8ee;
+  color: #1f9d55;
+}
+
+.badge-cerrado-caja {
+  background: #eaf1fb;
+  color: #2b6cb0;
+}
+
+.caja-hint {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0 0 1rem 0;
+}
+
+.caja-detalle {
+  color: #444;
+  font-size: 0.9rem;
+  margin: 0 0 0.8rem 0;
+}
+
+.caja-input {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.caja-input input {
+  padding: 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-top: 0.3rem;
+  font-size: 1rem;
+}
+
+.caja-input input.campo-requerido {
+  border-color: #c0392b;
+  box-shadow: 0 0 0 1px #c0392b;
+}
+
+.btn-abrir-turno {
+  width: 100%;
+  background: #1f9d55;
+  color: white;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.btn-abrir-turno:disabled {
+  background: #a5d6b7;
+  cursor: not-allowed;
+}
+
+.btn-cerrar-turno {
+  width: 100%;
+  background: #c0392b;
+  color: white;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.btn-cerrar-turno:disabled {
+  background: #e6a29b;
+  cursor: not-allowed;
+}
+
+.caja-historial-titulo {
+  margin-top: 2rem;
+}
+
+.historial-turno.diferencia-ok {
+  border-left-color: #1f9d55;
+}
+
+.historial-turno.diferencia-alerta {
+  border-left-color: #c0392b;
+}
+
+.caja-cierre-resumen {
+  margin-top: 0.6rem;
+  border-top: 1px solid #eee;
+  padding-top: 0.5rem;
+}
+
+.caja-cierre-resumen > div {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.15rem 0;
+  font-size: 0.85rem;
+}
+
+.caja-diferencia {
+  font-weight: bold;
+  border-top: 1px dashed #ccc;
+  margin-top: 0.3rem;
+  padding-top: 0.4rem !important;
+}
