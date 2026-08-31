@@ -13,9 +13,22 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Estado inválido" });
   }
 
+  const cambios = { estado, actualizado_en: new Date().toISOString() };
+
+  // listo_en se fija una sola vez, la primera vez que el pedido llega a
+  // "listo" — sirve para medir el tiempo real de cocina en el panel del
+  // dueño. Si más tarde se revierte y se vuelve a marcar "listo" desde el
+  // historial, no se pisa el dato original.
+  if (estado === "listo") {
+    const { data: actual } = await supabase.from("orders").select("listo_en").eq("id", id).maybeSingle();
+    if (actual && !actual.listo_en) {
+      cambios.listo_en = new Date().toISOString();
+    }
+  }
+
   const { data, error } = await supabase
     .from("orders")
-    .update({ estado, actualizado_en: new Date().toISOString() })
+    .update(cambios)
     .eq("id", id)
     .select()
     .maybeSingle();

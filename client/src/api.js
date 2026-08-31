@@ -39,4 +39,5 @@ export const api = {
   getInventario: () => request("/inventario"),
   actualizarInventario: (id, cambios) =>
     request(`/inventario/${id}`, { method: "PATCH", body: JSON.stringify(cambios) }),
+  getResumen: () => request("/informes"),
 };

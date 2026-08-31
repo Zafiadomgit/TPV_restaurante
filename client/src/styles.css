@@ -1410,3 +1410,198 @@ h4,
   border-radius: 50%;
   background: white;
 }
+
+/* ---- Panel del dueño ---- */
+.panel-kpis {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+}
+
+.panel-kpi {
+  flex: 1;
+  min-width: 160px;
+  background: white;
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.panel-kpi span {
+  font-size: 0.8rem;
+  color: rgba(31, 41, 51, 0.55);
+}
+
+.panel-kpi strong {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 2rem;
+  color: #1f2933;
+}
+
+.panel-graficos {
+  display: flex;
+  gap: 1rem;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.panel-card {
+  flex: 1;
+  min-width: 320px;
+  background: white;
+  border-radius: 12px;
+  padding: 1.1rem 1.3rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-card-titulo {
+  font-weight: 600;
+  color: #1f2933;
+  margin-bottom: 1rem;
+}
+
+.panel-barras {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  min-height: 160px;
+}
+
+.panel-barra-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  height: 100%;
+}
+
+.panel-barra {
+  width: 100%;
+  background: #1f2933;
+  border-radius: 4px 4px 0 0;
+}
+
+.panel-barra-label {
+  font-size: 0.7rem;
+  color: rgba(31, 41, 51, 0.5);
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.panel-top-fila {
+  margin-bottom: 0.7rem;
+}
+
+.panel-top-cabecera {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.panel-top-cabecera span:last-child {
+  color: rgba(31, 41, 51, 0.5);
+}
+
+.panel-top-barra-fondo {
+  height: 8px;
+  border-radius: 4px;
+  background: #f2f3f5;
+  overflow: hidden;
+}
+
+.panel-top-barra {
+  height: 100%;
+  background: #d1622f;
+  border-radius: 4px;
+}
+
+/* ---- Pantalla de recogida ---- */
+.recogida-page {
+  margin: -1.5rem;
+  min-height: calc(100vh - 56px);
+  background: #12181d;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.recogida-header {
+  height: 70px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.8rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 1.6rem;
+  letter-spacing: 0.06em;
+}
+
+.recogida-reloj {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.recogida-columnas {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.recogida-columna {
+  background: #12181d;
+  padding: 1.6rem;
+}
+
+.recogida-titulo {
+  font-weight: 600;
+  font-size: 1.3rem;
+  letter-spacing: 0.04em;
+}
+
+.titulo-preparando {
+  color: #f0ad4e;
+}
+
+.titulo-listo {
+  color: #7fe0a8;
+}
+
+.recogida-tickets {
+  margin-top: 1.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.recogida-ticket {
+  padding: 0.7rem 1.4rem;
+  border-radius: 12px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 2.4rem;
+}
+
+.ticket-preparando {
+  background: rgba(240, 173, 78, 0.14);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.ticket-listo {
+  background: #1f9d55;
+  color: #fff;
+}

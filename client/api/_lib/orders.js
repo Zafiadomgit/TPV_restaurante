@@ -32,6 +32,7 @@ export function mapRow(row) {
     actualizadoEn: row.actualizado_en,
     pagadoEn: row.pagado_en || null,
     turnoCajaId: row.turno_caja_id || null,
+    listoEn: row.listo_en || null,
   };
 }
 

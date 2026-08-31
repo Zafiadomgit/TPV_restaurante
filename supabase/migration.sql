@@ -83,3 +83,9 @@ values
   ('ayran', 'Ayran', 'Bebida', 24, 'uds', 10),
   ('baklava', 'Baklava', 'Postre', 0, 'uds', 6)
 on conflict (clave) do nothing;
+
+-- Momento en que un pedido llegó a estado "listo" por primera vez (para
+-- calcular el tiempo medio de cocina en el panel del dueño). No se
+-- sobreescribe en reentradas a "listo" tras un "revertir" desde el
+-- historial — ver client/api/orders/[id]/estado.js.
+alter table orders add column if not exists listo_en timestamptz;
