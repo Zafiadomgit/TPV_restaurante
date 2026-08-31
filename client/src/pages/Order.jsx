@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api.js";
+import { calcularTotales } from "../totales.js";
 import MenuItemCard from "../components/MenuItemCard.jsx";
 import CartSidebar from "../components/CartSidebar.jsx";
 
@@ -67,12 +68,7 @@ export default function Order() {
       prev.map((i) => (i.productId === productId ? { ...i, notas } : i))
     );
 
-  const subtotal = useMemo(
-    () => items.reduce((acc, i) => acc + i.precio * i.cantidad, 0),
-    [items]
-  );
-  const iva = subtotal * 0.1;
-  const total = subtotal + iva;
+  const { subtotal, iva, total } = useMemo(() => calcularTotales(items), [items]);
 
   const enviarComanda = async () => {
     setError("");

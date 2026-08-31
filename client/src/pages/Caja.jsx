@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../api.js";
+import { calcularTotales } from "../totales.js";
+import { formatTicket } from "../format.js";
 
 const POLL_MS = 3000;
 
@@ -13,6 +15,7 @@ function formatFecha(iso) {
 
 export default function Caja() {
   const [turnos, setTurnos] = useState([]);
+  const [menu, setMenu] = useState([]);
   const [cargado, setCargado] = useState(false);
   const [error, setError] = useState("");
   const [efectivoInicial, setEfectivoInicial] = useState("");
@@ -20,6 +23,23 @@ export default function Caja() {
   const [abriendo, setAbriendo] = useState(false);
   const [cerrando, setCerrando] = useState(false);
   const enVuelo = useRef(false);
+
+  const [categoriaActiva, setCategoriaActiva] = useState("");
+  const [mesa, setMesa] = useState("Mostrador");
+  const [items, setItems] = useState([]);
+  const [cobrando, setCobrando] = useState(false);
+  const [dividirEntre, setDividirEntre] = useState("");
+  const [ultimaVenta, setUltimaVenta] = useState(null);
+
+  useEffect(() => {
+    api
+      .getMenu()
+      .then((data) => {
+        setMenu(data);
+        if (data.length > 0) setCategoriaActiva(data[0].categoria);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const cargar = async () => {
@@ -91,6 +111,51 @@ export default function Caja() {
     }
   };
 
+  const addItem = (producto) => {
+    setUltimaVenta(null);
+    setItems((prev) => {
+      const existente = prev.find((i) => i.productId === producto.id);
+      if (existente) {
+        return prev.map((i) =>
+          i.productId === producto.id ? { ...i, cantidad: i.cantidad + 1 } : i
+        );
+      }
+      return [...prev, { productId: producto.id, nombre: producto.nombre, precio: producto.precio, cantidad: 1 }];
+    });
+  };
+
+  const increase = (productId) =>
+    setItems((prev) => prev.map((i) => (i.productId === productId ? { ...i, cantidad: i.cantidad + 1 } : i)));
+
+  const decrease = (productId) =>
+    setItems((prev) =>
+      prev.map((i) => (i.productId === productId ? { ...i, cantidad: i.cantidad - 1 } : i)).filter((i) => i.cantidad > 0)
+    );
+
+  const remove = (productId) => setItems((prev) => prev.filter((i) => i.productId !== productId));
+
+  const { subtotal, iva, total } = useMemo(() => calcularTotales(items), [items]);
+
+  const personas = Number(dividirEntre);
+  const porPersona = personas > 1 ? Number((total / personas).toFixed(2)) : null;
+
+  const cobrar = async (metodoPago) => {
+    setError("");
+    setCobrando(true);
+    try {
+      const nuevoPedido = await api.createOrder({ mesa: mesa.trim() || "Mostrador", items, notasGenerales: "" });
+      const pagado = await api.pagarOrder(nuevoPedido.id, metodoPago);
+      setUltimaVenta(pagado);
+      setItems([]);
+      setDividirEntre("");
+      setMesa("Mostrador");
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setCobrando(false);
+    }
+  };
+
   if (!cargado) return <p className="loading">Cargando caja...</p>;
 
   return (
@@ -98,8 +163,115 @@ export default function Caja() {
       <h2>Caja</h2>
       {error && <p className="error">{error}</p>}
 
-      {!turnoAbierto ? (
-        <div className="card-caja estado-cerrado">
+      {turnoAbierto ? (
+        <div className="caja-pos-layout">
+          <div className="caja-productos">
+            <div className="categorias">
+              {menu.map((cat) => (
+                <button
+                  key={cat.categoria}
+                  className={categoriaActiva === cat.categoria ? "active" : ""}
+                  onClick={() => setCategoriaActiva(cat.categoria)}
+                >
+                  {cat.categoria}
+                </button>
+              ))}
+            </div>
+            <div className="caja-botones-grid">
+              {menu
+                .find((cat) => cat.categoria === categoriaActiva)
+                ?.productos.map((producto) => (
+                  <button key={producto.id} className="caja-boton-producto" onClick={() => addItem(producto)}>
+                    <span>{producto.nombre}</span>
+                    <strong>{producto.precio.toFixed(2)} €</strong>
+                  </button>
+                ))}
+            </div>
+          </div>
+
+          <aside className="caja-ticket-panel">
+            <div className="caja-ticket-mesa">
+              <label>
+                Mesa / referencia
+                <input type="text" value={mesa} onChange={(e) => setMesa(e.target.value)} placeholder="Mostrador" />
+              </label>
+            </div>
+
+            {ultimaVenta && (
+              <p className="caja-venta-ok">
+                Cobrado {formatTicket(ultimaVenta.ticketNumero)} · {ultimaVenta.total.toFixed(2)} €
+              </p>
+            )}
+
+            {items.length === 0 ? (
+              <p className="empty">Toca un producto para añadirlo</p>
+            ) : (
+              <ul className="cart-items">
+                {items.map((item) => (
+                  <li key={item.productId} className="cart-item">
+                    <div className="cart-item-row">
+                      <span className="cart-item-name">{item.nombre}</span>
+                      <button className="btn-remove" onClick={() => remove(item.productId)}>
+                        ✕
+                      </button>
+                    </div>
+                    <div className="cart-item-row">
+                      <div className="qty-controls">
+                        <button onClick={() => decrease(item.productId)}>-</button>
+                        <span>{item.cantidad}</span>
+                        <button onClick={() => increase(item.productId)}>+</button>
+                      </div>
+                      <span>{(item.precio * item.cantidad).toFixed(2)} €</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <div className="totales">
+              <div>
+                <span>Subtotal</span>
+                <span>{subtotal.toFixed(2)} €</span>
+              </div>
+              <div>
+                <span>IVA (10%)</span>
+                <span>{iva.toFixed(2)} €</span>
+              </div>
+              <div className="total-final">
+                <span>Total</span>
+                <span>{total.toFixed(2)} €</span>
+              </div>
+            </div>
+
+            <div className="caja-dividir">
+              <label>
+                Dividir cuenta entre
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder="Nº personas"
+                  value={dividirEntre}
+                  onChange={(e) => setDividirEntre(e.target.value)}
+                />
+              </label>
+              {porPersona !== null && (
+                <span className="caja-por-persona">{porPersona.toFixed(2)} € cada uno</span>
+              )}
+            </div>
+
+            <div className="caja-pago-botones">
+              <button disabled={items.length === 0 || cobrando} onClick={() => cobrar("efectivo")}>
+                {cobrando ? "Cobrando..." : "Efectivo"}
+              </button>
+              <button disabled={items.length === 0 || cobrando} onClick={() => cobrar("tarjeta")}>
+                {cobrando ? "Cobrando..." : "Tarjeta"}
+              </button>
+            </div>
+          </aside>
+        </div>
+      ) : (
+        <div className="card-caja card-caja-form estado-cerrado">
           <span className="badge-estado badge-cerrado-caja">Sin turno abierto</span>
           <h3>Abrir turno</h3>
           <p className="caja-hint">
@@ -124,20 +296,16 @@ export default function Caja() {
             </button>
           </form>
         </div>
-      ) : (
-        <div className="card-caja estado-abierto">
+      )}
+
+      {turnoAbierto && (
+        <div className="card-caja card-caja-form estado-abierto caja-cerrar-turno">
           <span className="badge-estado badge-abierto-caja">Turno abierto</span>
-          <h3>Turno en curso</h3>
           <p className="caja-detalle">
             Abierto hoy a las {formatHora(turnoAbierto.abiertoEn)} · Efectivo inicial:{" "}
             <strong>{turnoAbierto.efectivoInicial.toFixed(2)} €</strong>
           </p>
-          <p className="caja-hint">
-            Los pedidos se siguen cobrando con normalidad desde /pago. Al cerrar turno se compara
-            el efectivo contado contra el efectivo inicial más lo cobrado en efectivo durante el
-            turno.
-          </p>
-          <form onSubmit={cerrarTurno}>
+          <form onSubmit={cerrarTurno} className="caja-cerrar-form">
             <label className="caja-input">
               Efectivo final contado (€)
               <input

@@ -1,38 +1,49 @@
 export const menu = [
   {
-    categoria: "Entrantes",
+    categoria: "Kebabs",
     productos: [
-      { id: "ent-01", nombre: "Patatas bravas", precio: 5.5, descripcion: "Con salsa brava casera" },
-      { id: "ent-02", nombre: "Croquetas de jamón (6u)", precio: 7.0, descripcion: "Caseras, cremosas" },
-      { id: "ent-03", nombre: "Ensalada mixta", precio: 6.5, descripcion: "Lechuga, tomate, cebolla, maíz" },
-      { id: "ent-04", nombre: "Pan con tomate", precio: 3.0, descripcion: "" },
+      { id: "kebab-ternera", nombre: "Kebab de ternera", precio: 6.5, descripcion: "Pan de pita, ternera, ensalada y salsa a elegir" },
+      { id: "kebab-pollo", nombre: "Kebab de pollo", precio: 6.2, descripcion: "Pollo marinado, cebolla morada, yogur" },
+      { id: "kebab-picante", nombre: "Kebab picante", precio: 6.8, descripcion: "Con salsa harissa de la casa" },
+      { id: "plato-kebab", nombre: "Plato kebab", precio: 9.5, descripcion: "Con arroz, ensalada y pan" },
     ],
   },
   {
-    categoria: "Principales",
+    categoria: "Dürüm",
     productos: [
-      { id: "pri-01", nombre: "Hamburguesa TPV", precio: 11.5, descripcion: "Ternera, queso, bacon, patatas" },
-      { id: "pri-02", nombre: "Paella (ración)", precio: 12.0, descripcion: "Mixta, mínimo 1 pax" },
-      { id: "pri-03", nombre: "Entrecot a la plancha", precio: 15.5, descripcion: "Con guarnición" },
-      { id: "pri-04", nombre: "Pasta carbonara", precio: 9.5, descripcion: "" },
-      { id: "pri-05", nombre: "Pizza margarita", precio: 8.5, descripcion: "" },
+      { id: "durum-mixto", nombre: "Dürüm mixto", precio: 7.0, descripcion: "Tortilla de trigo, ternera y pollo" },
+      { id: "durum-falafel", nombre: "Dürüm falafel", precio: 6.8, descripcion: "Falafel casero, hummus, tahina" },
+    ],
+  },
+  {
+    categoria: "Menús",
+    productos: [
+      { id: "menu-kebab", nombre: "Menú kebab", precio: 9.9, descripcion: "Kebab de ternera o pollo + patatas + bebida" },
+      { id: "menu-durum", nombre: "Menú dürüm", precio: 10.4, descripcion: "Dürüm a elegir + patatas + bebida" },
+      { id: "menu-infantil", nombre: "Menú infantil", precio: 6.9, descripcion: "Mini kebab + patatas + bebida pequeña" },
+    ],
+  },
+  {
+    categoria: "Acompañamientos",
+    productos: [
+      { id: "patatas", nombre: "Patatas", precio: 2.5, descripcion: "" },
+      { id: "patatas-queso", nombre: "Patatas con queso", precio: 3.5, descripcion: "" },
+      { id: "ensalada", nombre: "Ensalada", precio: 4.0, descripcion: "" },
+      { id: "hummus", nombre: "Hummus", precio: 3.2, descripcion: "Con pan de pita" },
     ],
   },
   {
     categoria: "Bebidas",
     productos: [
-      { id: "beb-01", nombre: "Agua 500ml", precio: 1.8, descripcion: "" },
-      { id: "beb-02", nombre: "Refresco", precio: 2.5, descripcion: "Coca-Cola, Fanta, Sprite" },
-      { id: "beb-03", nombre: "Cerveza", precio: 2.8, descripcion: "" },
-      { id: "beb-04", nombre: "Copa de vino", precio: 3.5, descripcion: "" },
+      { id: "coca-cola", nombre: "Coca-Cola", precio: 1.8, descripcion: "Lata 330ml" },
+      { id: "ayran", nombre: "Ayran", precio: 1.5, descripcion: "Bebida de yogur turca" },
+      { id: "agua", nombre: "Agua", precio: 1.2, descripcion: "500ml" },
     ],
   },
   {
     categoria: "Postres",
     productos: [
-      { id: "pos-01", nombre: "Tarta de queso", precio: 4.5, descripcion: "" },
-      { id: "pos-02", nombre: "Helado (2 bolas)", precio: 3.5, descripcion: "" },
-      { id: "pos-03", nombre: "Flan casero", precio: 3.8, descripcion: "" },
+      { id: "baklava", nombre: "Baklava", precio: 2.5, descripcion: "" },
     ],
   },
 ];

@@ -35,11 +35,17 @@ mismo sistema, no como un añadido aparte:
 - **Tarjetas**: fondo blanco, `border-radius: 10px`, sombra suave
   (`0 1px 3px rgba(0,0,0,0.08)`). Es el contenedor por defecto para
   cualquier bloque de contenido (producto, ticket, turno de caja).
-- **Indicador de estado por borde izquierdo**: los tickets de cocina e
-  historial usan un `border-left` de color según el estado
-  (`.estado-pendiente`, `.estado-en_preparacion`, `.estado-listo`, etc. en
-  `styles.css`). Sigue este patrón para cualquier entidad nueva con estados
-  (ej. un turno de caja abierto/cerrado).
+- **Indicador de estado por borde izquierdo**: el historial y la caja usan
+  un `border-left` de color según el estado (`.estado-pendiente`,
+  `.estado-en_preparacion`, `.estado-listo`, `.estado-abierto`, etc. en
+  `styles.css`). Sigue este patrón para cualquier entidad nueva con
+  estados sobre fondo claro.
+- **Excepción — Cocina (KDS)**: `/cocina` es la única pantalla con tema
+  oscuro (`#12181d`), pensada para visibilidad en cocina. Usa sus propias
+  clases `.kds-*` (columnas por estado con cabecera de color sólido, no
+  border-left) definidas aparte de `.ticket-cocina`/`.card-caja` — no
+  mezcles ambos sistemas ni reutilices `.ticket-cocina` fuera de
+  `HistorialTicket.jsx` (que sigue en tema claro).
 - **Badges** redondeados (`.badge-estado` + modificador) para mostrar el
   estado como texto corto dentro de una tarjeta.
 - **Botones grandes y táctiles**: esto lo va a usar un camarero de pie,
@@ -70,13 +76,28 @@ mismo sistema, no como un añadido aparte:
   su política — sin RLS la app no podrá leer/escribir esa tabla.
 
 ### El menú
-Hoy el menú está **hardcodeado** en `client/api/_lib/menu.js` como un array
-de categorías con productos (`id`, `nombre`, `precio`, `descripcion`). No
-existe ningún panel para editarlo desde la UI — si el usuario pide "gestión
-de menú" o "añadir productos desde la app", es una funcionalidad nueva de
-verdad (probablemente moverlo a una tabla de Supabase), no un ajuste
-menor. Dilo explícitamente antes de implementarlo, no asumas que ya hay
-algo a medio construir.
+El menú está **hardcodeado** en `client/api/_lib/menu.js` como un array de
+categorías con productos (`id`, `nombre`, `precio`, `descripcion`) — ahora
+con productos de kebab (Kebabs, Dürüm, Menús, Acompañamientos, Bebidas,
+Postres) acorde a la marca. Es la única fuente de verdad del menú: lo usan
+tanto `Order.jsx` (toma de pedido) como el panel de venta rápida de
+`Caja.jsx` (botones de venta directa en mostrador). No existe ningún panel
+para editarlo desde la UI — si el usuario pide "gestión de menú" o "añadir
+productos desde la app", es una funcionalidad nueva de verdad
+(probablemente moverlo a una tabla de Supabase), no un ajuste menor. Dilo
+explícitamente antes de implementarlo, no asumas que ya hay algo a medio
+construir.
+
+### Venta rápida en caja
+`Caja.jsx` no es solo apertura/cierre de turno: cuando hay un turno abierto
+muestra un panel de venta directa (botones grandes por categoría del menú
++ ticket con el carrito) para cobrar en mostrador sin pasar por la pantalla
+de toma de pedido. Al cobrar hace `createOrder()` seguido de `pagarOrder()`
+en el mismo flujo — reutiliza los mismos endpoints que el resto de la app,
+no crees un camino de cobro paralelo. La división de cuenta
+(`caja-dividir`) es solo informativa (total ÷ N personas), no reparte el
+pago en transacciones separadas — no lo conviertas en algo más complejo sin
+que el usuario lo pida explícitamente.
 
 ### Pedidos y su numeración
 La tabla `orders` usa `id uuid` como clave primaria, pero además tiene

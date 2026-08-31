@@ -454,6 +454,171 @@ h4,
   cursor: pointer;
 }
 
+/* ---- Cocina (KDS) ---- */
+.kds-page {
+  margin: -1.5rem;
+  padding: 1.2rem 1.4rem;
+  background: #12181d;
+  color: #fff;
+  min-height: calc(100vh - 120px);
+}
+
+.kds-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  margin-bottom: 1.2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.kds-titulo {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  letter-spacing: 0.06em;
+}
+
+.kds-contador {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.95rem;
+}
+
+.kds-columnas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.kds-columna {
+  background: #12181d;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.kds-columna-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem 1rem;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  color: #fff;
+}
+
+.kds-columna-header.accent-rojo {
+  background: #c0392b;
+}
+
+.kds-columna-header.accent-naranja {
+  background: #f0ad4e;
+}
+
+.kds-columna-header.accent-verde {
+  background: #1f9d55;
+}
+
+.kds-columna-body {
+  padding: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.kds-empty {
+  color: rgba(255, 255, 255, 0.35);
+  font-style: italic;
+  padding: 0.6rem 0.2rem;
+}
+
+.kds-ticket {
+  background: #1b2329;
+  border-radius: 10px;
+  padding: 0.9rem;
+  border-left: 5px solid rgba(255, 255, 255, 0.25);
+}
+
+.kds-ticket-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+
+.kds-ticket-id {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 1.4rem;
+}
+
+.kds-ticket-tiempo {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.kds-ticket-tiempo.urgente {
+  color: #f5a3a3;
+}
+
+.kds-ticket-origen {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 0.5rem;
+}
+
+.kds-ticket ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.4rem 0;
+}
+
+.kds-ticket li {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.2rem 0;
+}
+
+.kds-cantidad {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  color: #f0ad4e;
+  min-width: 1.3rem;
+}
+
+.kds-item-texto {
+  display: flex;
+  flex-direction: column;
+}
+
+.kds-nota {
+  font-size: 0.8rem;
+  color: #f5a3a3;
+}
+
+.kds-nota-general {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.65);
+  font-style: italic;
+  margin: 0 0 0.6rem 0;
+}
+
+.kds-btn-avanzar {
+  width: 100%;
+  padding: 0.7rem;
+  border: none;
+  border-radius: 8px;
+  background: #d1622f;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
 /* ---- Historial ---- */
 .badge-estado {
   display: inline-block;
@@ -510,9 +675,154 @@ h4,
 }
 
 /* ---- Caja ---- */
-.caja-page {
+.card-caja-form {
   max-width: 560px;
-  margin: 0 auto;
+}
+
+.caja-cerrar-turno {
+  margin-top: 1rem;
+}
+
+.caja-pos-layout {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.caja-productos {
+  flex: 1;
+  min-width: 0;
+}
+
+.caja-botones-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.6rem;
+}
+
+.caja-boton-producto {
+  height: 84px;
+  border: none;
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0.7rem 0.8rem;
+  cursor: pointer;
+  color: #1f2933;
+  text-align: left;
+  font-family: inherit;
+}
+
+.caja-boton-producto span {
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+
+.caja-boton-producto strong {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 1.2rem;
+  opacity: 0.85;
+}
+
+.caja-boton-producto:active {
+  background: #fdf2e3;
+}
+
+.caja-ticket-panel {
+  width: 380px;
+  flex: none;
+  background: white;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 1rem;
+}
+
+.caja-ticket-mesa {
+  margin-bottom: 0.8rem;
+}
+
+.caja-ticket-mesa label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+  gap: 0.3rem;
+}
+
+.caja-ticket-mesa input {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.caja-venta-ok {
+  background: #e8f8ee;
+  color: #1f9d55;
+  font-weight: 600;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin: 0 0 0.8rem 0;
+}
+
+.caja-dividir {
+  margin-top: 0.8rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.caja-dividir label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8rem;
+  color: #666;
+  gap: 0.3rem;
+  flex: 1;
+}
+
+.caja-dividir input {
+  padding: 0.4rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.caja-por-persona {
+  font-weight: 600;
+  color: #1f2933;
+  white-space: nowrap;
+  padding-bottom: 0.5rem;
+}
+
+.caja-pago-botones {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.caja-pago-botones button {
+  flex: 1;
+  height: 56px;
+  border: none;
+  border-radius: 10px;
+  background: #1f9d55;
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.caja-pago-botones button:disabled {
+  background: #a5d6b7;
+  cursor: not-allowed;
 }
 
 .card-caja {
