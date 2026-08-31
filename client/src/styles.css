@@ -59,6 +59,124 @@ h4,
   padding: 1.5rem;
 }
 
+/* ---- Kiosco: pantalla de inicio ---- */
+.kiosk-inicio {
+  margin: -1.5rem;
+  min-height: calc(100vh - 56px);
+  background: #1f2933;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.kiosk-inicio-centro {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+  padding: 2.5rem;
+}
+
+.kiosk-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.kiosk-logo-circulo {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: #d1622f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 1.8rem;
+}
+
+.kiosk-logo h1 {
+  margin: 0.6rem 0 0 0;
+  font-size: 2.4rem;
+}
+
+.kiosk-logo p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1rem;
+}
+
+.kiosk-opciones {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.kiosk-opcion {
+  width: 260px;
+  height: 220px;
+  border: none;
+  border-radius: 16px;
+  background: #fff;
+  color: #1f2933;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  cursor: pointer;
+}
+
+.kiosk-opcion-primaria {
+  background: #d1622f;
+  color: #fff;
+}
+
+.kiosk-opcion-titulo {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.kiosk-opcion-sub {
+  font-size: 0.95rem;
+  opacity: 0.7;
+}
+
+.kiosk-footer {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ---- Kiosco: cabecera del paso de menú ---- */
+.kiosk-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  color: #444;
+}
+
+.kiosk-cancelar {
+  border: none;
+  background: none;
+  color: #c0392b;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+}
+
 /* ---- Pedido / Menú ---- */
 .order-page {
   display: flex;
@@ -120,6 +238,23 @@ h4,
 .menu-card .price {
   font-weight: bold;
   color: #1f2933;
+}
+
+.menu-card-precio-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.badge-personalizable {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #d1622f;
+  background: #fdf0e8;
+  padding: 0.15rem 0.5rem;
+  border-radius: 20px;
 }
 
 .btn-add {
@@ -202,6 +337,12 @@ h4,
   background: white;
   border-radius: 4px;
   cursor: pointer;
+}
+
+.cart-item-mods {
+  margin: 0.15rem 0 0.3rem 0;
+  font-size: 0.8rem;
+  color: #d1622f;
 }
 
 .nota-input {
@@ -952,4 +1093,161 @@ h4,
   border-top: 1px dashed #ccc;
   margin-top: 0.3rem;
   padding-top: 0.4rem !important;
+}
+
+/* ---- Personalizar producto (modal) ---- */
+.personalizar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 24, 29, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 1.5rem;
+}
+
+.personalizar-modal {
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  background: #f2f3f5;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+.personalizar-header {
+  background: #fff;
+  padding: 1.2rem 1.4rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(31, 41, 51, 0.1);
+}
+
+.personalizar-header h3 {
+  margin: 0 0 0.2rem 0;
+  font-size: 1.4rem;
+}
+
+.personalizar-header p {
+  margin: 0;
+  color: rgba(31, 41, 51, 0.55);
+  font-size: 0.9rem;
+}
+
+.personalizar-cerrar {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border: none;
+  border-radius: 8px;
+  background: #f2f3f5;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: #1f2933;
+}
+
+.personalizar-body {
+  padding: 1.2rem 1.4rem;
+  overflow-y: auto;
+}
+
+.personalizar-paso {
+  margin-bottom: 1.2rem;
+}
+
+.personalizar-paso-titulo {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+  font-weight: 600;
+}
+
+.personalizar-paso-nota {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: rgba(31, 41, 51, 0.5);
+}
+
+.personalizar-opciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.6rem;
+}
+
+.personalizar-opcion {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem;
+  border-radius: 10px;
+  background: #fff;
+  border: 2px solid rgba(31, 41, 51, 0.12);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  color: #1f2933;
+}
+
+.personalizar-opcion.elegida {
+  border-color: #d1622f;
+}
+
+.personalizar-opcion span:first-child {
+  flex: 1;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.personalizar-opcion-nota {
+  font-size: 0.75rem;
+  color: rgba(31, 41, 51, 0.5);
+}
+
+.personalizar-marca {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 50%;
+  background: #f2f3f5;
+  color: rgba(31, 41, 51, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.personalizar-marca.elegida {
+  background: #d1622f;
+  color: #fff;
+}
+
+.personalizar-footer {
+  background: #fff;
+  padding: 1rem 1.4rem;
+  border-top: 1px solid rgba(31, 41, 51, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.personalizar-confirmar {
+  flex: 1;
+  height: 52px;
+  border: none;
+  border-radius: 10px;
+  background: #1f9d55;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
 }

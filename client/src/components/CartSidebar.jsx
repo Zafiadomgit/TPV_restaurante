@@ -1,6 +1,7 @@
 export default function CartSidebar({
   mesa,
   setMesa,
+  mostrarMesa = true,
   items,
   onIncrease,
   onDecrease,
@@ -14,40 +15,45 @@ export default function CartSidebar({
   onEnviar,
   enviando,
 }) {
-  const faltaMesa = !mesa.trim();
+  const faltaMesa = mostrarMesa && !mesa.trim();
   const faltaItems = items.length === 0;
 
   return (
     <aside className="cart">
       <h3>Pedido</h3>
-      <label className="mesa-input">
-        Mesa
-        <input
-          type="text"
-          placeholder="Nº mesa"
-          value={mesa}
-          className={faltaMesa && !faltaItems ? "campo-requerido" : ""}
-          onChange={(e) => setMesa(e.target.value)}
-        />
-      </label>
+      {mostrarMesa && (
+        <label className="mesa-input">
+          Mesa
+          <input
+            type="text"
+            placeholder="Nº mesa"
+            value={mesa}
+            className={faltaMesa && !faltaItems ? "campo-requerido" : ""}
+            onChange={(e) => setMesa(e.target.value)}
+          />
+        </label>
+      )}
 
       {items.length === 0 ? (
         <p className="empty">Añade productos del menú</p>
       ) : (
         <ul className="cart-items">
           {items.map((item) => (
-            <li key={item.productId} className="cart-item">
+            <li key={item.lineId} className="cart-item">
               <div className="cart-item-row">
                 <span className="cart-item-name">{item.nombre}</span>
-                <button className="btn-remove" onClick={() => onRemove(item.productId)}>
+                <button className="btn-remove" onClick={() => onRemove(item.lineId)}>
                   ✕
                 </button>
               </div>
+              {item.modificadoresTexto && (
+                <p className="cart-item-mods">{item.modificadoresTexto}</p>
+              )}
               <div className="cart-item-row">
                 <div className="qty-controls">
-                  <button onClick={() => onDecrease(item.productId)}>-</button>
+                  <button onClick={() => onDecrease(item.lineId)}>-</button>
                   <span>{item.cantidad}</span>
-                  <button onClick={() => onIncrease(item.productId)}>+</button>
+                  <button onClick={() => onIncrease(item.lineId)}>+</button>
                 </div>
                 <span>{(item.precio * item.cantidad).toFixed(2)} €</span>
               </div>
@@ -56,7 +62,7 @@ export default function CartSidebar({
                 className="nota-input"
                 placeholder="Notas (ej. sin cebolla)"
                 value={item.notas}
-                onChange={(e) => onNotaChange(item.productId, e.target.value)}
+                onChange={(e) => onNotaChange(item.lineId, e.target.value)}
               />
             </li>
           ))}

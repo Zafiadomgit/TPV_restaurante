@@ -72,7 +72,9 @@ export default function Checkout() {
             <li key={item.productId}>
               <span>
                 {item.cantidad}x {item.nombre}
-                {item.notas && <em> ({item.notas})</em>}
+                {(item.modificadoresTexto || item.notas) && (
+                  <em> ({[item.modificadoresTexto, item.notas].filter(Boolean).join(" · ")})</em>
+                )}
               </span>
               <span>{(item.precio * item.cantidad).toFixed(2)} €</span>
             </li>

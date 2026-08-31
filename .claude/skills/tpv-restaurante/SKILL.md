@@ -110,11 +110,30 @@ los dos. Es un contador global (no reinicia por día/turno) — si se pide que
 reinicie a diario, es un cambio de diseño real (necesitaría su propia
 secuencia o cálculo), no un ajuste trivial.
 
-### Flujo de un pedido
-1. `Order.jsx` (`/`): elige mesa, añade productos, `calcularTotales()` en
-   `_lib/orders.js` computa subtotal/IVA/total en vivo. IVA fijo al 10%
-   (`IVA_RATE`). Al enviar, se crea la fila en `orders` con estado
-   `pendiente`.
+### Flujo de un pedido (kiosco de autoservicio)
+0. `Order.jsx` (`/`) empieza en un paso `inicio` (pantalla de bienvenida a
+   pantalla completa, tema oscuro) donde se elige "Comer aquí" o "Para
+   llevar" (`tipoServicio`). "Para llevar" fija `mesa = "Para llevar"` y
+   oculta el input de mesa en el carrito (`mostrarMesa` en
+   `CartSidebar`); "Comer aquí" sigue pidiendo número de mesa como antes.
+1. Paso `menu`: igual que antes (categorías + grid + carrito lateral), más
+   una cabecera con el tipo de servicio elegido y "Cancelar pedido" (resetea
+   todo y vuelve a `inicio`). `calcularTotales()` (ahora en
+   `client/src/totales.js`, misma fórmula que el backend) computa
+   subtotal/IVA/total en vivo. IVA fijo al 10%.
+2. Un producto con `modificadores` en el menú (ej. salsas de un kebab) NO
+   se añade directo: abre el modal `Personalizar.jsx` con los pasos de
+   personalización. Los ítems del carrito usan `lineId` (no `productId`)
+   como clave de operación porque el mismo producto puede aparecer en
+   varias líneas con personalizaciones distintas — si tocas
+   `CartSidebar.jsx`/`Order.jsx`, no vuelvas a usar `productId` como key.
+3. **El precio de los modificadores se recalcula siempre en el backend**
+   (`client/api/orders/index.js`, POST) a partir de la definición del
+   producto en `menu.js` — el cliente solo manda qué opciones eligió
+   (`item.modificadores: {pasoId: [opcionId, ...]}`), nunca un precio.
+   Nunca cambies esto para "confiar" en un precio que mande el cliente.
+   El texto de las opciones elegidas se guarda en `item.modificadoresTexto`
+   y se muestra junto a `item.notas` en cocina/checkout/historial.
 2. `Kitchen.jsx` (`/cocina`): lista pedidos activos, permite avanzar el
    estado. Estados válidos y su único orden de avance: `pendiente` →
    `en_preparacion` → `listo` → `entregado`; `cancelado` es un estado
@@ -172,5 +191,11 @@ Antes de decir que una función del TPV está lista, verifica manualmente
 - **Si la feature toca el menú**: los precios siguen siendo números con 2
   decimales consistentes con `calcularTotales()`; un producto sin stock o
   desactivado no debe poder añadirse al carrito.
+- **Si la feature toca modificadores/personalización**: el precio final se
+  verifica en el backend, no solo en el modal — prueba mandando
+  directamente al POST `/api/orders` una opción inventada o un precio
+  manipulado y confirma que se ignora (se recalcula desde `menu.js`). El
+  tope `maxSeleccion` de un paso no se puede superar aunque el cliente
+  mande más opciones de las permitidas.
 - **Consistencia visual**: la pantalla nueva usa la paleta y los patrones
   de la sección 1, no colores o componentes ad-hoc.

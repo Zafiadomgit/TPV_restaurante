@@ -33,12 +33,33 @@ export default async function handler(req, res) {
       if (cantidad <= 0) {
         return res.status(400).json({ error: `Cantidad inválida para ${producto.nombre}` });
       }
+
+      // El precio de las modificaciones (ej. salsa extra) se recalcula
+      // siempre aquí a partir de la definición del menú — nunca se confía
+      // en el precio ni el recargo que mande el cliente.
+      let extra = 0;
+      const nombresSeleccionados = [];
+      for (const paso of producto.modificadores || []) {
+        const seleccionCliente = Array.isArray(item.modificadores?.[paso.id])
+          ? item.modificadores[paso.id]
+          : [];
+        const seleccionValida = seleccionCliente
+          .filter((optId) => paso.opciones.some((o) => o.id === optId))
+          .slice(0, paso.maxSeleccion ?? seleccionCliente.length);
+        for (const optId of seleccionValida) {
+          const opcion = paso.opciones.find((o) => o.id === optId);
+          extra += opcion.precioExtra;
+          nombresSeleccionados.push(opcion.nombre);
+        }
+      }
+
       itemsResueltos.push({
         productId: producto.id,
         nombre: producto.nombre,
-        precio: producto.precio,
+        precio: Number((producto.precio + extra).toFixed(2)),
         cantidad,
         notas: item.notas || "",
+        modificadoresTexto: nombresSeleccionados.join(", "),
       });
     }
 

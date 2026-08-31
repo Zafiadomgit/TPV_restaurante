@@ -4,10 +4,13 @@ export default function MenuItemCard({ producto, onAdd }) {
       <div className="menu-card-info">
         <h4>{producto.nombre}</h4>
         {producto.descripcion && <p>{producto.descripcion}</p>}
-        <span className="price">{producto.precio.toFixed(2)} €</span>
+        <div className="menu-card-precio-row">
+          <span className="price">{producto.precio.toFixed(2)} €</span>
+          {producto.modificadores && <span className="badge-personalizable">Personalizable</span>}
+        </div>
       </div>
       <button className="btn-add" onClick={() => onAdd(producto)}>
-        Añadir
+        {producto.modificadores ? "Personalizar" : "Añadir"}
       </button>
     </div>
   );

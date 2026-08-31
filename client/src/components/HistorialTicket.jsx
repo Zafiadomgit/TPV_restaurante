@@ -44,7 +44,11 @@ export default function HistorialTicket({ order, onRevertir }) {
         {order.items.map((item) => (
           <li key={item.productId}>
             <span className="cantidad">{item.cantidad}x</span> {item.nombre}
-            {item.notas && <div className="nota">↳ {item.notas}</div>}
+            {(item.modificadoresTexto || item.notas) && (
+              <div className="nota">
+                ↳ {[item.modificadoresTexto, item.notas].filter(Boolean).join(" · ")}
+              </div>
+            )}
           </li>
         ))}
       </ul>

@@ -1,18 +1,38 @@
+// Paso de personalización compartido por los kebabs y dürüm: el cliente
+// elige hasta 2 salsas incluidas, o salsas extra con recargo. maxSeleccion
+// se valida también en el backend (client/api/orders/index.js) — nunca se
+// confía en el precio que mande el cliente.
+const SALSAS = {
+  id: "salsas",
+  titulo: "Salsas",
+  tipo: "multiple",
+  maxSeleccion: 2,
+  nota: "máx. 2 incluidas",
+  opciones: [
+    { id: "yogur-ajo", nombre: "Yogur y ajo", precioExtra: 0, porDefecto: true },
+    { id: "picante-harissa", nombre: "Picante harissa", precioExtra: 0, porDefecto: true },
+    { id: "barbacoa", nombre: "Barbacoa", precioExtra: 0, porDefecto: false },
+    { id: "coctel", nombre: "Cóctel", precioExtra: 0, porDefecto: false },
+    { id: "tahina", nombre: "Tahina", precioExtra: 0.5, porDefecto: false },
+    { id: "sin-salsa", nombre: "Sin salsa", precioExtra: 0, porDefecto: false },
+  ],
+};
+
 export const menu = [
   {
     categoria: "Kebabs",
     productos: [
-      { id: "kebab-ternera", nombre: "Kebab de ternera", precio: 6.5, descripcion: "Pan de pita, ternera, ensalada y salsa a elegir" },
-      { id: "kebab-pollo", nombre: "Kebab de pollo", precio: 6.2, descripcion: "Pollo marinado, cebolla morada, yogur" },
-      { id: "kebab-picante", nombre: "Kebab picante", precio: 6.8, descripcion: "Con salsa harissa de la casa" },
+      { id: "kebab-ternera", nombre: "Kebab de ternera", precio: 6.5, descripcion: "Pan de pita, ternera, ensalada y salsa a elegir", modificadores: [SALSAS] },
+      { id: "kebab-pollo", nombre: "Kebab de pollo", precio: 6.2, descripcion: "Pollo marinado, cebolla morada, yogur", modificadores: [SALSAS] },
+      { id: "kebab-picante", nombre: "Kebab picante", precio: 6.8, descripcion: "Con salsa harissa de la casa", modificadores: [SALSAS] },
       { id: "plato-kebab", nombre: "Plato kebab", precio: 9.5, descripcion: "Con arroz, ensalada y pan" },
     ],
   },
   {
     categoria: "Dürüm",
     productos: [
-      { id: "durum-mixto", nombre: "Dürüm mixto", precio: 7.0, descripcion: "Tortilla de trigo, ternera y pollo" },
-      { id: "durum-falafel", nombre: "Dürüm falafel", precio: 6.8, descripcion: "Falafel casero, hummus, tahina" },
+      { id: "durum-mixto", nombre: "Dürüm mixto", precio: 7.0, descripcion: "Tortilla de trigo, ternera y pollo", modificadores: [SALSAS] },
+      { id: "durum-falafel", nombre: "Dürüm falafel", precio: 6.8, descripcion: "Falafel casero, hummus, tahina", modificadores: [SALSAS] },
     ],
   },
   {
