@@ -1,14 +1,32 @@
 import { supabase } from "../_lib/supabaseClient.js";
 import { findProducts } from "../_lib/menu.js";
 import { calcularTotales, mapRow } from "../_lib/orders.js";
-import { exigirRol } from "../_lib/auth.js";
+import { verificarToken } from "../_lib/auth.js";
 
 export default async function handler(req, res) {
   if (req.method === "GET") {
-    // Listar pedidos es para cocina/historial/recogida (personal), no para
-    // el kiosco público — el cliente solo consulta SU pedido por id
-    // (GET /api/orders/[id], sin rol) para ver el estado de su ticket.
-    if (!exigirRol(req, res, ["cocina", "caja"])) return;
+    // Listar pedidos con todo el detalle (para cocina/historial) exige
+    // rol. Pero /recogida es a propósito un tablero público sin login —
+    // un monitor de cara al cliente que nadie atiende, así que no puede
+    // depender de una sesión que expira. Sin token válido, en vez de
+    // rechazar con 401, se sirve una vista pública reducida: solo id/
+    // ticket/estado de los pedidos en_preparacion o listo, sin items ni
+    // ningún otro dato del pedido.
+    const header = req.headers.authorization || "";
+    const token = header.startsWith("Bearer ") ? header.slice(7) : null;
+    const rol = verificarToken(token, ["cocina", "caja"]);
+
+    if (!rol) {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("id, ticket_numero, estado")
+        .in("estado", ["en_preparacion", "listo"])
+        .order("creado_en", { ascending: true });
+      if (error) return res.status(500).json({ error: error.message });
+      return res.status(200).json(
+        data.map((row) => ({ id: row.id, ticketNumero: row.ticket_numero, estado: row.estado }))
+      );
+    }
 
     const { estado } = req.query;
     let query = supabase.from("orders").select("*").order("creado_en", { ascending: true });

@@ -125,14 +125,11 @@ export default function App() {
               </RutaProtegida>
             }
           />
-          <Route
-            path="/recogida"
-            element={
-              <RutaProtegida roles={["cocina", "caja"]}>
-                <Recogida />
-              </RutaProtegida>
-            }
-          />
+          {/* Pública a propósito: es un tablero para un monitor de cara
+              al cliente que nadie atiende, no puede depender de un login
+              que expire — ver GET /api/orders para la vista reducida
+              que recibe sin sesión. */}
+          <Route path="/recogida" element={<Recogida />} />
         </Routes>
       </main>
     </div>

@@ -24,7 +24,7 @@ panel).
 | `/caja` | `Caja.jsx` | Turno de caja (apertura/cierre/arqueo) + venta rápida en mostrador | Solo Caja |
 | `/carta` | `GestionMenu.jsx` | Editar el menú: categorías y productos (crear/editar/borrar) | Solo Caja |
 | `/panel` | `Panel.jsx` | KPIs del día, ventas por hora, más vendidos | Solo Caja |
-| `/recogida` | `Recogida.jsx` | Tablero de pedidos preparando/listo (pantalla pública) | Caja o Cocina |
+| `/recogida` | `Recogida.jsx` | Tablero de pedidos preparando/listo (pantalla pública) | Público (sin login) |
 
 Ver sección "Roles y acceso por PIN" más abajo para el porqué de esta
 columna y cómo está implementada.
@@ -308,6 +308,20 @@ oscuro, tipografía enorme. Solo lee `en_preparacion`/`listo` vía
 `GET /api/orders` con el mismo polling de 3s que cocina — no le añadas
 acciones (botones, formularios): es de solo lectura por diseño.
 
+**La ruta es pública a propósito, sin `RutaProtegida`** — es una
+pantalla sin nadie delante que la atienda (un monitor montado en la
+pared), así que no puede depender de una sesión que caduca a las 12h o
+que alguien cierre desde otro dispositivo. `GET /api/orders`
+(`client/api/orders/index.js`) refleja esto: sin token válido no
+devuelve 401, sirve una vista pública reducida (solo
+`id`/`ticketNumero`/`estado` de los pedidos `en_preparacion`/`listo`,
+nada de items ni el resto de campos); con token de `caja`/`cocina`
+sirve el pedido completo de siempre para `/cocina` y `/historial`. Si
+tocas este endpoint, mantén esa rama pública — quitarla rompe
+`/recogida` en cualquier pantalla donde la sesión no esté activa (fue
+justo el bug que se coló al añadir el login por PIN: se protegió esta
+ruta entera por error y dejó el tablero sin datos).
+
 ### Roles y acceso por PIN
 El TPV tiene dos roles con PIN numérico de 4 dígitos: **`caja`** (acceso
 total, sin restricciones — abre/cierra turno, venta rápida, edita el menú,
@@ -333,10 +347,15 @@ pagar. Si algo parece pedir un "rol usuario", probablemente ya es esto.
   cualquiera que lea el código fuente podría firmar tokens válidos.
   Configura las tres antes de depender de esto en producción real.
 - **Qué está protegido y qué no, y por qué**: todo lo de `/carta`,
-  `/caja`, `/historial`, `/panel` exige rol `caja`. `GET /api/orders` y
-  `PATCH /api/orders/[id]/estado` exigen `caja` o `cocina` (los usa
-  cocina, checkout-historial y recogida). Deliberadamente **sin
-  proteger**: `GET /api/menu` (el kiosco lo necesita sin login),
+  `/caja`, `/historial`, `/panel` exige rol `caja` con `exigirRol` (401
+  sin token válido). `PATCH /api/orders/[id]/estado` exige `caja` o
+  `cocina` igual (lo usa cocina y el "revertir" de historial).
+  `GET /api/orders` es distinto — no usa `exigirRol`: sin token responde
+  igualmente `200` con una vista pública reducida (solo lo que necesita
+  `/recogida`, ver la sección "Pantalla de recogida"), y con token de
+  `caja`/`cocina` responde el detalle completo que usan `/cocina` y
+  `/historial`. Deliberadamente **sin proteger en absoluto**:
+  `GET /api/menu` (el kiosco lo necesita sin login),
   `GET /api/orders/[id]` (el cliente consulta su propio ticket) y
   `PATCH /api/orders/[id]/pagar` (el autocobro del kiosco es público a
   propósito) — no le añadas `exigirRol` a estos tres sin que el dueño lo
