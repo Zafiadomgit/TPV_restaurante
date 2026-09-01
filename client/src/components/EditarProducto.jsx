@@ -209,7 +209,9 @@ export default function EditarProducto({ producto, categorias, otrosProductos, o
                       step="0.01"
                       min="0"
                       value={opcion.precioExtra}
-                      onChange={(e) => cambiarOpcion(paso.id, opcion.id, { precioExtra: Number(e.target.value) })}
+                      onChange={(e) =>
+                        cambiarOpcion(paso.id, opcion.id, { precioExtra: Math.max(0, Number(e.target.value) || 0) })
+                      }
                     />
                     <label>
                       <input

@@ -23,6 +23,20 @@ function slugify(texto) {
     .replace(/^-+|-+$/g, "");
 }
 
+// Un modificador nunca debe poder abaratar el producto — "quitar un
+// ingrediente" es gratis (0€), nunca un descuento. Si esto no se
+// valida aquí, /carta (o una petición cruda) podría guardar un
+// precioExtra negativo y dejar el precio final por debajo del base.
+function modificadoresValidos(modificadores) {
+  if (!modificadores) return true;
+  if (!Array.isArray(modificadores)) return false;
+  return modificadores.every(
+    (paso) =>
+      Array.isArray(paso.opciones) &&
+      paso.opciones.every((o) => Number.isFinite(o.precioExtra) && o.precioExtra >= 0)
+  );
+}
+
 export default async function handler(req, res) {
   if (!exigirRol(req, res, ["caja"])) return;
 
@@ -53,6 +67,9 @@ export default async function handler(req, res) {
       const precioNumero = Number(precio);
       if (!Number.isFinite(precioNumero) || precioNumero < 0) {
         return res.status(400).json({ error: "El precio debe ser un número válido" });
+      }
+      if (!modificadoresValidos(modificadores)) {
+        return res.status(400).json({ error: "Ninguna opción de personalización puede tener un precio negativo" });
       }
 
       const baseId = slugify(nombre);
@@ -120,7 +137,12 @@ export default async function handler(req, res) {
       cambios.precio = precioNumero;
     }
     if (body.categoriaId !== undefined) cambios.categoria_id = body.categoriaId;
-    if (body.modificadores !== undefined) cambios.modificadores = body.modificadores;
+    if (body.modificadores !== undefined) {
+      if (!modificadoresValidos(body.modificadores)) {
+        return res.status(400).json({ error: "Ninguna opción de personalización puede tener un precio negativo" });
+      }
+      cambios.modificadores = body.modificadores;
+    }
     if (body.activo !== undefined) cambios.activo = Boolean(body.activo);
     if (body.orden !== undefined) cambios.orden = Number(body.orden);
 
