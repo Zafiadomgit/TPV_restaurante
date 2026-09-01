@@ -339,6 +339,46 @@ un cambio de diseño real, no un ajuste trivial.
    cobra de verdad.
 7. `Historial.jsx`: pedidos cerrados, filtrables por estado.
 
+### Idioma del kiosco (ES/EN)
+Solo las pantallas del cliente (`Order.jsx` en sus 3 pasos y
+`Checkout.jsx`) tienen selector de idioma (`SelectorIdioma.jsx`, botones
+"ES"/"EN"); **las pantallas de personal (cocina, caja, historial, panel,
+carta, login) se quedan en español siempre** — no les añadas el selector.
+Piezas:
+- `client/src/idioma.js`: `getIdioma()`/`guardarIdioma()`, persistido en
+  `localStorage` (clave `tpv_idioma`), default `"es"`. Cada página lo lee
+  una vez al montar (`useState(() => getIdioma())`) y gestiona su propio
+  estado local para que el toggle sea instantáneo — no hay evento global
+  como el de `auth.js`, no hace falta (cada pantalla del kiosco es de
+  cliente único, no hay dos pestañas que sincronizar).
+- `client/src/textos.js`: diccionario `TEXTOS.es`/`TEXTOS.en` + helper
+  `t(idioma, clave)`, más `ESTADOS_LABEL`, `METODO_PAGO_LABEL` y
+  `TIPO_SERVICIO_DISPLAY` (todos indexados por idioma). Solo textos fijos
+  de interfaz (botones, títulos, placeholders) — **a propósito NO
+  traduce nombres/descripciones de producto**, que vienen de la base de
+  datos y son los mismos en los dos idiomas; si se pide traducir también
+  la carta, es un cambio de alcance real (tocaría el esquema de
+  productos), no solo añadir claves aquí.
+- **Regla que no se puede romper**: `order.mesa` (lo que ven
+  cocina/historial/caja, y de lo que depende el color por origen en
+  `/cocina` — ver punto 5 más arriba, `.kds-ticket-llevar` compara
+  exactamente contra `"Para llevar"`) se manda al backend **siempre en
+  español**, sin importar el idioma elegido por el cliente. Por eso
+  `Order.jsx` mantiene `TIPO_SERVICIO_LABEL` (español, fijo, usado solo
+  para el `mesa` que se envía a `createOrder()`) totalmente separado de
+  `TIPO_SERVICIO_DISPLAY[idioma]` (traducido, solo para lo que ve el
+  cliente en pantalla). Lo mismo aplica a `order.estado` y
+  `order.metodoPago`: se guardan en español en la BD, y
+  `ESTADOS_LABEL[idioma]`/`METODO_PAGO_LABEL[idioma]` en `textos.js` son
+  solo para mostrárselos al cliente traducidos — nunca cambies lo que se
+  envía al backend según el idioma.
+- Si añades una pantalla o texto nuevo al kiosco, añade la clave en
+  `TEXTOS.es` y `TEXTOS.en` (ambas a la vez, no dejes una sin traducir)
+  y usa `t(idioma, "claveNueva")` — no hardcodees español directo en
+  JSX de `Order.jsx`/`Checkout.jsx` ni en los componentes que renderizan
+  (`MenuItemCard.jsx`, `CartSidebar.jsx`, `Personalizar.jsx`, todos
+  reciben `idioma` como prop para esto).
+
 ### Panel del dueño e informes
 `GET /api/informes` (`client/api/informes.js` + `_lib/informes.js`)
 agrega los pedidos **de hoy** (desde las 00:00 UTC — simplificación
@@ -441,9 +481,14 @@ solo el icono) y `logo-ticket-*` (pensados para el ticket impreso —
 **aún no usados en ningún sitio**, disponibles si se añade impresión de
 ticket con logo). Si necesitas el logo en una pantalla nueva, usa uno de
 estos archivos — no reintroduzcas el placeholder "CA" en círculo ni texto
-emoji. El color de marca del kit (`#2c2e35`) se normalizó a `#1f2933` en
-`manifest.json` para no crear un segundo tono oscuro que no case con el
-resto de la app.
+emoji. El color de marca del kit (`#2c2e35`, el fondo embebido en el SVG
+del logo horizontal) se normalizó a `#1f2933` en `manifest.json` para no
+crear un segundo tono oscuro que no case con el resto de la app; la
+excepción deliberada es `.kiosk-inicio`, que sí usa `#2c2e35` — es donde
+vive ese mismo logo a tamaño grande, y el dueño prefirió que el fondo
+hiciera juego exacto con la caja de color del SVG en vez de con el resto
+de pantallas oscuras (`#1f2933` en `.kds-page`/`.recogida-page`). No
+uses `#2c2e35` en otra pantalla oscura sin que se pida lo mismo.
 
 ### Sincronización: polling, no websockets
 Todas las pantallas que necesitan reflejar cambios de otra pantalla

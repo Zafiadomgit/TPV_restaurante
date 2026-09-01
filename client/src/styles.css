@@ -202,6 +202,7 @@ h4,
 
 /* ---- Kiosco: pantalla de inicio ---- */
 .kiosk-inicio {
+  position: relative;
   margin: -1.5rem;
   flex: 1;
   background: #2c2e35;
@@ -284,6 +285,58 @@ h4,
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.4);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ---- Selector de idioma ES/EN ---- */
+.selector-idioma {
+  display: flex;
+  gap: 0.3rem;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.selector-idioma button {
+  border: none;
+  background: none;
+  color: inherit;
+  opacity: 0.6;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.selector-idioma button.activo {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.kiosk-idioma-selector {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.2rem;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.kiosk-idioma-selector button.activo {
+  background: #d1622f;
+}
+
+.checkout-idioma-selector {
+  margin: 0 0 1rem auto;
+  width: fit-content;
+  background: #eee;
+}
+
+.checkout-idioma-selector button {
+  color: #444;
+}
+
+.checkout-idioma-selector button.activo {
+  background: #d1622f;
+  color: #fff;
 }
 
 /* ---- Kiosco: cabecera del paso de menú ---- */

@@ -2,14 +2,9 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api.js";
 import { formatTicket } from "../format.js";
-
-const ESTADOS_LABEL = {
-  pendiente: "Recibido por cocina",
-  en_preparacion: "En preparación",
-  listo: "Listo para servir",
-  entregado: "Entregado en mesa",
-  cancelado: "Cancelado",
-};
+import { getIdioma, guardarIdioma } from "../idioma.js";
+import { t, ESTADOS_LABEL, METODO_PAGO_LABEL } from "../textos.js";
+import SelectorIdioma from "../components/SelectorIdioma.jsx";
 
 const POLL_MS = 3000;
 
@@ -17,6 +12,12 @@ export default function Checkout() {
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
   const [error, setError] = useState("");
+  const [idioma, setIdioma] = useState(() => getIdioma());
+
+  const cambiarIdioma = (nuevo) => {
+    setIdioma(nuevo);
+    guardarIdioma(nuevo);
+  };
 
   useEffect(() => {
     let activo = true;
@@ -28,7 +29,7 @@ export default function Checkout() {
           if (activo) setOrder(data);
         })
         .catch(() => {
-          if (activo) setError("No se encontró el pedido");
+          if (activo) setError(t(idioma, "pedidoNoEncontrado"));
         });
 
     cargar();
@@ -37,16 +38,22 @@ export default function Checkout() {
       activo = false;
       clearInterval(interval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId]);
 
   if (error) return <p className="error">{error}</p>;
-  if (!order) return <p className="loading">Cargando pedido...</p>;
+  if (!order) return <p className="loading">{t(idioma, "cargandoPedido")}</p>;
+
+  const estadoLabel = ESTADOS_LABEL[idioma]?.[order.estado] || order.estado;
+  const metodoPagoLabel = METODO_PAGO_LABEL[idioma]?.[order.metodoPago] || order.metodoPago;
 
   return (
     <div className="checkout-page">
-      <h2>Comanda enviada a cocina ✅</h2>
+      <SelectorIdioma idioma={idioma} onCambiar={cambiarIdioma} className="checkout-idioma-selector" />
+
+      <h2>{t(idioma, "comandaEnviada")} ✅</h2>
       <p className="estado-actual">
-        Estado: <strong>{ESTADOS_LABEL[order.estado] || order.estado}</strong>
+        {t(idioma, "estado")} <strong>{estadoLabel}</strong>
       </p>
 
       <div className="ticket">
@@ -67,37 +74,43 @@ export default function Checkout() {
             </li>
           ))}
         </ul>
-        {order.notasGenerales && <p className="notas">Nota: {order.notasGenerales}</p>}
+        {order.notasGenerales && (
+          <p className="notas">
+            {t(idioma, "nota")} {order.notasGenerales}
+          </p>
+        )}
 
         <div className="totales">
           <div>
-            <span>Subtotal</span>
+            <span>{t(idioma, "subtotal")}</span>
             <span>{order.subtotal.toFixed(2)} €</span>
           </div>
           <div>
-            <span>IVA (10%)</span>
+            <span>{t(idioma, "iva")}</span>
             <span>{order.iva.toFixed(2)} €</span>
           </div>
           <div className="total-final">
-            <span>TOTAL A PAGAR</span>
+            <span>{t(idioma, "totalAPagar")}</span>
             <span>{order.total.toFixed(2)} €</span>
           </div>
         </div>
       </div>
 
       {order.pagado ? (
-        <p className="pagado-ok">Pagado con {order.metodoPago} ✔️</p>
+        <p className="pagado-ok">
+          {t(idioma, "pagadoCon")} {metodoPagoLabel} ✔️
+        </p>
       ) : (
         <div className="pasa-a-caja">
-          <p className="pasa-a-caja-titulo">👉 Pasa a caja para finalizar tu pago y recibir tu pedido</p>
+          <p className="pasa-a-caja-titulo">{t(idioma, "pasaACajaTitulo")}</p>
           <p className="pasa-a-caja-sub">
-            Diles el número <strong>{formatTicket(order.ticketNumero)}</strong>
+            {t(idioma, "dilesElNumero")} <strong>{formatTicket(order.ticketNumero)}</strong>
           </p>
         </div>
       )}
 
       <Link to="/" className="nuevo-pedido">
-        + Nuevo pedido
+        {t(idioma, "nuevoPedido")}
       </Link>
     </div>
   );

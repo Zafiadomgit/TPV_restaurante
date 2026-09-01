@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { t } from "../textos.js";
 
 function seleccionInicial(producto) {
   const inicial = {};
@@ -8,7 +9,7 @@ function seleccionInicial(producto) {
   return inicial;
 }
 
-export default function Personalizar({ producto, onConfirmar, onCancelar }) {
+export default function Personalizar({ producto, idioma, onConfirmar, onCancelar }) {
   const [seleccion, setSeleccion] = useState(() => seleccionInicial(producto));
   const [cantidad, setCantidad] = useState(1);
 
@@ -115,7 +116,7 @@ export default function Personalizar({ producto, onConfirmar, onCancelar }) {
             <button onClick={() => setCantidad((c) => c + 1)}>+</button>
           </div>
           <button className="personalizar-confirmar" onClick={confirmar}>
-            Añadir · {precioTotal.toFixed(2)} €
+            {t(idioma, "anadir")} · {precioTotal.toFixed(2)} €
           </button>
         </div>
       </div>

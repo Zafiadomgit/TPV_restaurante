@@ -2,10 +2,18 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api.js";
 import { calcularTotales } from "../totales.js";
+import { getIdioma, guardarIdioma } from "../idioma.js";
+import { t, TIPO_SERVICIO_DISPLAY } from "../textos.js";
 import MenuItemCard from "../components/MenuItemCard.jsx";
 import CartSidebar from "../components/CartSidebar.jsx";
 import Personalizar from "../components/Personalizar.jsx";
+import SelectorIdioma from "../components/SelectorIdioma.jsx";
 
+// Lo que ve el personal (cocina/historial/caja) en order.mesa se guarda
+// SIEMPRE en español, sin importar el idioma que elija el cliente en
+// pantalla — de esto depende también el color por origen en /cocina
+// (.kds-ticket-llevar busca exactamente "Para llevar"). Para lo que se
+// le muestra al cliente se usa TIPO_SERVICIO_DISPLAY (textos.js) aparte.
 const TIPO_SERVICIO_LABEL = {
   aqui: "Comer aquí",
   llevar: "Para llevar",
@@ -29,6 +37,12 @@ export default function Order() {
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(true);
   const [productoPersonalizando, setProductoPersonalizando] = useState(null);
+  const [idioma, setIdioma] = useState(() => getIdioma());
+
+  const cambiarIdioma = (nuevo) => {
+    setIdioma(nuevo);
+    guardarIdioma(nuevo);
+  };
 
   useEffect(() => {
     api
@@ -143,59 +157,67 @@ export default function Order() {
     }
   };
 
-  if (cargando) return <p className="loading">Cargando menú...</p>;
+  if (cargando) return <p className="loading">{t(idioma, "cargandoMenu")}</p>;
 
   if (paso === "inicio") {
     return (
       <div className="kiosk-inicio">
+        <SelectorIdioma idioma={idioma} onCambiar={cambiarIdioma} className="kiosk-idioma-selector" />
         <div className="kiosk-inicio-centro">
           <div className="kiosk-logo">
             <img src="/brand/svg/logo-horizontal-color.svg" alt="California — Kebab, Hamburguesería, Pizzería" className="kiosk-logo-img" />
-            <p>Toca para empezar tu pedido</p>
+            <p>{t(idioma, "tocaParaEmpezar")}</p>
           </div>
           <div className="kiosk-opciones">
             <button className="kiosk-opcion" onClick={() => elegirTipoServicio("aqui")}>
-              <span className="kiosk-opcion-titulo">COMER AQUÍ</span>
-              <span className="kiosk-opcion-sub">En el local</span>
+              <span className="kiosk-opcion-titulo">{t(idioma, "comerAqui")}</span>
+              <span className="kiosk-opcion-sub">{t(idioma, "enElLocal")}</span>
             </button>
             <button className="kiosk-opcion kiosk-opcion-primaria" onClick={() => elegirTipoServicio("llevar")}>
-              <span className="kiosk-opcion-titulo">PARA LLEVAR</span>
-              <span className="kiosk-opcion-sub">Para llevar</span>
+              <span className="kiosk-opcion-titulo">{t(idioma, "paraLlevar")}</span>
+              <span className="kiosk-opcion-sub">{t(idioma, "paraLlevarSub")}</span>
             </button>
           </div>
         </div>
-        <div className="kiosk-footer">Cocina abierta</div>
+        <div className="kiosk-footer">{t(idioma, "cocinaAbierta")}</div>
       </div>
     );
   }
+
+  const tipoServicioDisplay = TIPO_SERVICIO_DISPLAY[idioma]?.[tipoServicio];
 
   if (paso === "categorias") {
     return (
       <div className="kiosk-categorias-page">
         <div className="kiosk-menu-header">
           <span>
-            Tu pedido · <strong>{TIPO_SERVICIO_LABEL[tipoServicio]}</strong>
+            {t(idioma, "tuPedido")} · <strong>{tipoServicioDisplay}</strong>
           </span>
-          <button className="kiosk-cancelar" onClick={cancelarPedido}>
-            Cancelar pedido
-          </button>
+          <div className="kiosk-menu-header-acciones">
+            <SelectorIdioma idioma={idioma} onCambiar={cambiarIdioma} />
+            <button className="kiosk-cancelar" onClick={cancelarPedido}>
+              {t(idioma, "cancelarPedido")}
+            </button>
+          </div>
         </div>
 
         {error && <p className="error">{error}</p>}
 
-        <h2 className="kiosk-categorias-titulo">¿Qué te apetece?</h2>
+        <h2 className="kiosk-categorias-titulo">{t(idioma, "queTeApetece")}</h2>
         <div className="kiosk-categorias-grid">
           {menu.map((cat) => (
             <button key={cat.categoria} className="kiosk-categoria-tile" onClick={() => elegirCategoria(cat.categoria)}>
               <span className="kiosk-categoria-nombre">{cat.categoria}</span>
-              <span className="kiosk-categoria-cantidad">{cat.productos.length} productos</span>
+              <span className="kiosk-categoria-cantidad">
+                {cat.productos.length} {t(idioma, "productos")}
+              </span>
             </button>
           ))}
         </div>
 
         {items.length > 0 && (
           <button className="kiosk-ver-carrito" onClick={() => setPaso("menu")}>
-            Ver carrito ({items.reduce((acc, i) => acc + i.cantidad, 0)}) · {total.toFixed(2)} €
+            {t(idioma, "verCarrito")} ({items.reduce((acc, i) => acc + i.cantidad, 0)}) · {total.toFixed(2)} €
           </button>
         )}
       </div>
@@ -207,6 +229,7 @@ export default function Order() {
       {productoPersonalizando && (
         <Personalizar
           producto={productoPersonalizando}
+          idioma={idioma}
           onConfirmar={confirmarPersonalizacion}
           onCancelar={() => setProductoPersonalizando(null)}
         />
@@ -215,14 +238,15 @@ export default function Order() {
       <div className="menu-area">
         <div className="kiosk-menu-header">
           <span>
-            Tu pedido · <strong>{TIPO_SERVICIO_LABEL[tipoServicio]}</strong>
+            {t(idioma, "tuPedido")} · <strong>{tipoServicioDisplay}</strong>
           </span>
           <div className="kiosk-menu-header-acciones">
+            <SelectorIdioma idioma={idioma} onCambiar={cambiarIdioma} />
             <button className="kiosk-ver-categorias" onClick={() => setPaso("categorias")}>
-              ◀ Categorías
+              {t(idioma, "volverCategorias")}
             </button>
             <button className="kiosk-cancelar" onClick={cancelarPedido}>
-              Cancelar pedido
+              {t(idioma, "cancelarPedido")}
             </button>
           </div>
         </div>
@@ -245,13 +269,14 @@ export default function Order() {
           {menu
             .find((cat) => cat.categoria === categoriaActiva)
             ?.productos.map((producto) => (
-              <MenuItemCard key={producto.id} producto={producto} onAdd={onAddProducto} />
+              <MenuItemCard key={producto.id} producto={producto} idioma={idioma} onAdd={onAddProducto} />
             ))}
         </div>
       </div>
 
       <CartSidebar
         items={items}
+        idioma={idioma}
         onIncrease={increase}
         onDecrease={decrease}
         onRemove={remove}

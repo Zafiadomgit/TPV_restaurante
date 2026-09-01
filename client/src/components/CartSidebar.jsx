@@ -1,5 +1,8 @@
+import { t } from "../textos.js";
+
 export default function CartSidebar({
   items,
+  idioma,
   onIncrease,
   onDecrease,
   onRemove,
@@ -16,10 +19,10 @@ export default function CartSidebar({
 
   return (
     <aside className="cart">
-      <h3>Pedido</h3>
+      <h3>{t(idioma, "pedido")}</h3>
 
       {items.length === 0 ? (
-        <p className="empty">Añade productos del menú</p>
+        <p className="empty">{t(idioma, "anadeProductos")}</p>
       ) : (
         <ul className="cart-items">
           {items.map((item) => (
@@ -44,7 +47,7 @@ export default function CartSidebar({
               <input
                 type="text"
                 className="nota-input"
-                placeholder="Notas (ej. sin cebolla)"
+                placeholder={t(idioma, "notasItemPlaceholder")}
                 value={item.notas}
                 onChange={(e) => onNotaChange(item.lineId, e.target.value)}
               />
@@ -55,32 +58,32 @@ export default function CartSidebar({
 
       <textarea
         className="notas-generales"
-        placeholder="Notas generales del pedido"
+        placeholder={t(idioma, "notasGeneralesPlaceholder")}
         value={notasGenerales}
         onChange={(e) => setNotasGenerales(e.target.value)}
       />
 
       <div className="totales">
         <div>
-          <span>Subtotal</span>
+          <span>{t(idioma, "subtotal")}</span>
           <span>{subtotal.toFixed(2)} €</span>
         </div>
         <div>
-          <span>IVA (10%)</span>
+          <span>{t(idioma, "iva")}</span>
           <span>{iva.toFixed(2)} €</span>
         </div>
         <div className="total-final">
-          <span>Total</span>
+          <span>{t(idioma, "total")}</span>
           <span>{total.toFixed(2)} €</span>
         </div>
       </div>
 
       <button className="btn-enviar" disabled={faltaItems || enviando} onClick={onEnviar}>
-        {enviando ? "Enviando..." : "Enviar comanda a cocina"}
+        {enviando ? t(idioma, "enviando") : t(idioma, "enviarComanda")}
       </button>
 
       {!enviando && faltaItems && (
-        <p className="hint-enviar">Añade al menos un producto para poder enviar</p>
+        <p className="hint-enviar">{t(idioma, "anadeAlMenos")}</p>
       )}
     </aside>
   );
