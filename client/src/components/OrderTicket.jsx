@@ -28,9 +28,10 @@ function formatTranscurrido(iso) {
 export default function OrderTicket({ order, onAvanzar }) {
   const siguiente = SIGUIENTE_ESTADO[order.estado];
   const urgente = minutosDesde(order.creadoEn) >= MINUTOS_URGENTE;
+  const paraLlevar = order.mesa === "Para llevar";
 
   return (
-    <div className="kds-ticket">
+    <div className={`kds-ticket ${paraLlevar ? "kds-ticket-llevar" : ""}`}>
       <div className="kds-ticket-top">
         <span className="kds-ticket-id">{formatTicket(order.ticketNumero)}</span>
         <span className={`kds-ticket-tiempo ${urgente ? "urgente" : ""}`}>
