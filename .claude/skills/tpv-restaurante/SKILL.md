@@ -196,6 +196,18 @@ mismos endpoints que el resto de la app, no crees un camino de cobro
 paralelo. La división de cuenta (`caja-dividir`) es solo informativa
 (total ÷ N personas), no reparte el pago en transacciones separadas.
 
+Tras cobrar, aparece un botón "Imprimir recibo" que llama a
+`window.print()` sobre `ReciboImprimible.jsx` (`client/src/components/`)
+— un ticket de 80mm oculto en pantalla (`.recibo-imprimible { display:
+none }`) que solo se muestra mediante `@media print` en `styles.css` (con
+la técnica estándar `visibility: hidden` en `body *` + `visibility:
+visible` en el recibo, no `display`, para no romper el layout del resto
+de la página al volver de imprimir). No hay integración con una
+impresora térmica concreta a propósito — es impresión de navegador, así
+que funciona con cualquier impresora que tenga controlador de sistema.
+Si se pide en el futuro imprimir sin diálogo (ESC/POS directo por USB/
+red), es una pieza nueva, no una extensión de esto.
+
 ### Pedidos y su numeración
 La tabla `orders` usa `id uuid` como clave primaria, pero además tiene
 `ticket_numero` (columna `serial`, autoincremental, sin condiciones de

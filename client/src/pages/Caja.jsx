@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../api.js";
 import { calcularTotales } from "../totales.js";
 import { formatTicket } from "../format.js";
+import ReciboImprimible from "../components/ReciboImprimible.jsx";
 
 const POLL_MS = 3000;
 
@@ -161,6 +162,8 @@ export default function Caja() {
       <h2>Caja</h2>
       {error && <p className="error">{error}</p>}
 
+      <ReciboImprimible venta={ultimaVenta} />
+
       {turnoAbierto ? (
         <div className="caja-pos-layout">
           <div className="caja-productos">
@@ -189,9 +192,14 @@ export default function Caja() {
 
           <aside className="caja-ticket-panel">
             {ultimaVenta && (
-              <p className="caja-venta-ok">
-                Cobrado {formatTicket(ultimaVenta.ticketNumero)} · {ultimaVenta.total.toFixed(2)} €
-              </p>
+              <div className="caja-venta-ok">
+                <p>
+                  Cobrado {formatTicket(ultimaVenta.ticketNumero)} · {ultimaVenta.total.toFixed(2)} €
+                </p>
+                <button type="button" className="btn-imprimir-recibo" onClick={() => window.print()}>
+                  Imprimir recibo
+                </button>
+              </div>
             )}
 
             {items.length === 0 ? (

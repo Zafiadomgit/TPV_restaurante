@@ -1084,6 +1084,140 @@ h4,
   border-radius: 8px;
   font-size: 0.85rem;
   margin: 0 0 0.8rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.caja-venta-ok p {
+  margin: 0;
+}
+
+.btn-imprimir-recibo {
+  background: white;
+  border: 1px solid #1f9d55;
+  color: #1f9d55;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-imprimir-recibo:hover {
+  background: #1f9d55;
+  color: white;
+}
+
+/* ---- Recibo imprimible (solo visible al imprimir, ver @media print) ---- */
+.recibo-imprimible {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .recibo-imprimible,
+  .recibo-imprimible * {
+    visibility: visible;
+  }
+
+  .recibo-imprimible {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 80mm;
+    margin: 0 auto;
+    font-family: "Barlow", "Segoe UI", monospace, sans-serif;
+    color: #000;
+    font-size: 12px;
+  }
+
+  .recibo-header {
+    text-align: center;
+    margin-bottom: 0.4rem;
+  }
+
+  .recibo-logo {
+    width: 60mm;
+    height: auto;
+  }
+
+  .recibo-tagline {
+    margin: 0.2rem 0 0;
+    font-size: 10px;
+  }
+
+  .recibo-ticket {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0.5rem 0 0.1rem;
+  }
+
+  .recibo-fecha,
+  .recibo-origen {
+    text-align: center;
+    margin: 0.1rem 0;
+    font-size: 11px;
+  }
+
+  .recibo-imprimible hr {
+    border: none;
+    border-top: 1px dashed #000;
+    margin: 0.4rem 0;
+  }
+
+  .recibo-items {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .recibo-items td {
+    padding: 0.15rem 0;
+    vertical-align: top;
+  }
+
+  .recibo-item-nombre {
+    text-align: left;
+  }
+
+  .recibo-item-mods {
+    display: block;
+    font-size: 10px;
+    color: #333;
+  }
+
+  .recibo-item-precio {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .recibo-totales div {
+    display: flex;
+    justify-content: space-between;
+    margin: 0.15rem 0;
+  }
+
+  .recibo-total-final {
+    font-weight: 700;
+    font-size: 14px;
+    border-top: 1px dashed #000;
+    padding-top: 0.3rem;
+    margin-top: 0.3rem !important;
+  }
+
+  .recibo-pago,
+  .recibo-footer {
+    text-align: center;
+    margin: 0.4rem 0 0;
+    font-size: 11px;
+  }
 }
 
 .caja-dividir {
