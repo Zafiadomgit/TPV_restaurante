@@ -3,8 +3,15 @@ import { api } from "../api.js";
 import { calcularTotales } from "../totales.js";
 import { formatTicket } from "../format.js";
 import ReciboImprimible from "../components/ReciboImprimible.jsx";
+import Personalizar from "../components/Personalizar.jsx";
 
 const POLL_MS = 3000;
+
+function nuevoLineId() {
+  return typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `line-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
 
 function formatHora(iso) {
   return iso ? new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
@@ -30,6 +37,7 @@ export default function Caja() {
   const [cobrando, setCobrando] = useState(false);
   const [dividirEntre, setDividirEntre] = useState("");
   const [ultimaVenta, setUltimaVenta] = useState(null);
+  const [productoPersonalizando, setProductoPersonalizando] = useState(null);
 
   useEffect(() => {
     api
@@ -113,26 +121,57 @@ export default function Caja() {
 
   const addItem = (producto) => {
     setUltimaVenta(null);
+    if (producto.modificadores) {
+      setProductoPersonalizando(producto);
+      return;
+    }
     setItems((prev) => {
-      const existente = prev.find((i) => i.productId === producto.id);
+      const existente = prev.find((i) => i.productId === producto.id && !i.modificadoresTexto);
       if (existente) {
-        return prev.map((i) =>
-          i.productId === producto.id ? { ...i, cantidad: i.cantidad + 1 } : i
-        );
+        return prev.map((i) => (i.lineId === existente.lineId ? { ...i, cantidad: i.cantidad + 1 } : i));
       }
-      return [...prev, { productId: producto.id, nombre: producto.nombre, precio: producto.precio, cantidad: 1 }];
+      return [
+        ...prev,
+        {
+          lineId: nuevoLineId(),
+          productId: producto.id,
+          nombre: producto.nombre,
+          precio: producto.precio,
+          cantidad: 1,
+          modificadores: null,
+          modificadoresTexto: "",
+        },
+      ];
     });
   };
 
-  const increase = (productId) =>
-    setItems((prev) => prev.map((i) => (i.productId === productId ? { ...i, cantidad: i.cantidad + 1 } : i)));
+  const confirmarPersonalizacion = ({ seleccion, cantidad, precioUnidad, modificadoresTexto }) => {
+    const producto = productoPersonalizando;
+    setUltimaVenta(null);
+    setItems((prev) => [
+      ...prev,
+      {
+        lineId: nuevoLineId(),
+        productId: producto.id,
+        nombre: producto.nombre,
+        precio: precioUnidad,
+        cantidad,
+        modificadores: seleccion,
+        modificadoresTexto,
+      },
+    ]);
+    setProductoPersonalizando(null);
+  };
 
-  const decrease = (productId) =>
+  const increase = (lineId) =>
+    setItems((prev) => prev.map((i) => (i.lineId === lineId ? { ...i, cantidad: i.cantidad + 1 } : i)));
+
+  const decrease = (lineId) =>
     setItems((prev) =>
-      prev.map((i) => (i.productId === productId ? { ...i, cantidad: i.cantidad - 1 } : i)).filter((i) => i.cantidad > 0)
+      prev.map((i) => (i.lineId === lineId ? { ...i, cantidad: i.cantidad - 1 } : i)).filter((i) => i.cantidad > 0)
     );
 
-  const remove = (productId) => setItems((prev) => prev.filter((i) => i.productId !== productId));
+  const remove = (lineId) => setItems((prev) => prev.filter((i) => i.lineId !== lineId));
 
   const { subtotal, iva, total } = useMemo(() => calcularTotales(items), [items]);
 
@@ -143,7 +182,16 @@ export default function Caja() {
     setError("");
     setCobrando(true);
     try {
-      const nuevoPedido = await api.createOrder({ mesa: "Mostrador", items, notasGenerales: "" });
+      const nuevoPedido = await api.createOrder({
+        mesa: "Mostrador",
+        notasGenerales: "",
+        items: items.map((i) => ({
+          productId: i.productId,
+          cantidad: i.cantidad,
+          notas: "",
+          modificadores: i.modificadores,
+        })),
+      });
       const pagado = await api.pagarOrder(nuevoPedido.id, metodoPago);
       setUltimaVenta(pagado);
       setItems([]);
@@ -183,12 +231,23 @@ export default function Caja() {
                 .find((cat) => cat.categoria === categoriaActiva)
                 ?.productos.map((producto) => (
                   <button key={producto.id} className="caja-boton-producto" onClick={() => addItem(producto)}>
-                    <span>{producto.nombre}</span>
+                    <span>
+                      {producto.nombre}
+                      {producto.modificadores && <span className="caja-personalizable-punto" title="Personalizable" />}
+                    </span>
                     <strong>{producto.precio.toFixed(2)} €</strong>
                   </button>
                 ))}
             </div>
           </div>
+
+          {productoPersonalizando && (
+            <Personalizar
+              producto={productoPersonalizando}
+              onConfirmar={confirmarPersonalizacion}
+              onCancelar={() => setProductoPersonalizando(null)}
+            />
+          )}
 
           <aside className="caja-ticket-panel">
             {ultimaVenta && (
@@ -207,18 +266,21 @@ export default function Caja() {
             ) : (
               <ul className="cart-items">
                 {items.map((item) => (
-                  <li key={item.productId} className="cart-item">
+                  <li key={item.lineId} className="cart-item">
                     <div className="cart-item-row">
                       <span className="cart-item-name">{item.nombre}</span>
-                      <button className="btn-remove" onClick={() => remove(item.productId)}>
+                      <button className="btn-remove" onClick={() => remove(item.lineId)}>
                         ✕
                       </button>
                     </div>
+                    {item.modificadoresTexto && (
+                      <p className="cart-item-mods">{item.modificadoresTexto}</p>
+                    )}
                     <div className="cart-item-row">
                       <div className="qty-controls">
-                        <button onClick={() => decrease(item.productId)}>-</button>
+                        <button onClick={() => decrease(item.lineId)}>-</button>
                         <span>{item.cantidad}</span>
-                        <button onClick={() => increase(item.productId)}>+</button>
+                        <button onClick={() => increase(item.lineId)}>+</button>
                       </div>
                       <span>{(item.precio * item.cantidad).toFixed(2)} €</span>
                     </div>

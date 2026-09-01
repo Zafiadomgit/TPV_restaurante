@@ -196,6 +196,18 @@ mismos endpoints que el resto de la app, no crees un camino de cobro
 paralelo. La división de cuenta (`caja-dividir`) es solo informativa
 (total ÷ N personas), no reparte el pago en transacciones separadas.
 
+Un producto con `modificadores` (kebab/dürüm/lahmacum/plato) tampoco se
+añade directo desde caja: abre el mismo modal `Personalizar.jsx` que usa
+el kiosco (sección "El menú" más arriba), con el mismo `precioUnidad`
+recalculado y el mismo `precioSiTodoQuitado`. Igual que en `Order.jsx`,
+el carrito de caja opera por `lineId` (no `productId`) por el mismo
+motivo: el mismo producto puede tener varias líneas con personalizaciones
+distintas. Un punto naranja junto al nombre del botón
+(`.caja-personalizable-punto`) marca qué productos abren el modal — no es
+un badge de texto como en el kiosco porque el botón de caja es un cuadro
+de 84px de alto pensado para toque rápido, no tiene sitio para una
+segunda línea.
+
 Tras cobrar, aparece un botón "Imprimir recibo" que llama a
 `window.print()` sobre `ReciboImprimible.jsx` (`client/src/components/`)
 — un ticket de 80mm oculto en pantalla (`.recibo-imprimible { display:
