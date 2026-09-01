@@ -38,8 +38,14 @@ h4,
 }
 
 .brand {
-  font-weight: bold;
-  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+}
+
+.brand-logo {
+  height: 32px;
+  width: auto;
+  display: block;
 }
 
 .topbar nav a {
@@ -86,22 +92,9 @@ h4,
   gap: 0.5rem;
 }
 
-.kiosk-logo-circulo {
-  width: 84px;
-  height: 84px;
-  border-radius: 50%;
-  background: #d1622f;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: "Barlow Condensed", sans-serif;
-  font-weight: 700;
-  font-size: 1.8rem;
-}
-
-.kiosk-logo h1 {
-  margin: 0.6rem 0 0 0;
-  font-size: 2.4rem;
+.kiosk-logo-img {
+  width: min(420px, 80vw);
+  height: auto;
 }
 
 .kiosk-logo p {

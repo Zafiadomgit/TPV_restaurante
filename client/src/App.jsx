@@ -12,7 +12,9 @@ export default function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <div className="brand">🥙 TPV California</div>
+        <div className="brand">
+          <img src="/brand/svg/logo-monocromo-blanco.svg" alt="California" className="brand-logo" />
+        </div>
         <nav>
           <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
             Pedidos

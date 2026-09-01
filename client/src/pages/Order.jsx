@@ -150,8 +150,7 @@ export default function Order() {
       <div className="kiosk-inicio">
         <div className="kiosk-inicio-centro">
           <div className="kiosk-logo">
-            <div className="kiosk-logo-circulo">CA</div>
-            <h1>CALIFORNIA</h1>
+            <img src="/brand/svg/logo-horizontal-color.svg" alt="California — Kebab, Hamburguesería, Pizzería" className="kiosk-logo-img" />
             <p>Toca para empezar tu pedido</p>
           </div>
           <div className="kiosk-opciones">
