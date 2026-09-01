@@ -45,6 +45,19 @@ export default function EditarProducto({ producto, categorias, otrosProductos, o
     setModificadores((prev) => prev.map((p) => (p.id === pasoId ? { ...p, titulo } : p)));
   };
 
+  const cambiarPrecioSiTodoQuitado = (pasoId, valor) => {
+    setModificadores((prev) =>
+      prev.map((p) => {
+        if (p.id !== pasoId) return p;
+        if (valor === null) {
+          const { precioSiTodoQuitado, ...resto } = p;
+          return resto;
+        }
+        return { ...p, precioSiTodoQuitado: Math.max(0, Number(valor) || 0) };
+      })
+    );
+  };
+
   const eliminarPaso = (pasoId) => {
     setModificadores((prev) => prev.filter((p) => p.id !== pasoId));
   };
@@ -196,6 +209,23 @@ export default function EditarProducto({ producto, categorias, otrosProductos, o
                     Eliminar paso
                   </button>
                 </div>
+                <label className="gestion-precio-todo-quitado">
+                  <input
+                    type="checkbox"
+                    checked={paso.precioSiTodoQuitado !== undefined}
+                    onChange={(e) => cambiarPrecioSiTodoQuitado(paso.id, e.target.checked ? 0 : null)}
+                  />
+                  Precio fijo si se marcan todas las opciones de este paso
+                  {paso.precioSiTodoQuitado !== undefined && (
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={paso.precioSiTodoQuitado}
+                      onChange={(e) => cambiarPrecioSiTodoQuitado(paso.id, e.target.value)}
+                    />
+                  )}
+                </label>
                 {paso.opciones.map((opcion) => (
                   <div key={opcion.id} className="gestion-opcion-fila">
                     <input

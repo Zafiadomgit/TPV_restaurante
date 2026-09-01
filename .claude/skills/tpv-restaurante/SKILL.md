@@ -160,13 +160,27 @@ Salsas, Bebidas, Ensaladas, Pizzas, Haz tu menú).
   **`precioExtra` nunca puede ser negativo** (validado en
   POST/PATCH de `menu-productos` y clampado en `EditarProducto.jsx`):
   "quitar un ingrediente" es y debe seguir siendo gratis, nunca un
-  descuento — si algún día se pide una rebaja por quitar algo, es una
-  regla de precio nueva, no un `precioExtra` negativo en un paso de
-  "Quitar ingredientes". No existe una opción "Solo carne" como extra
+  descuento por su cuenta. No existe una opción "Solo carne" como extra
   de pago — se quitó porque duplicaba, de forma confusa y de pago, lo
   que ya se consigue gratis marcando las 4 opciones de "Quitar
   ingredientes". No la reintroduzcas como extra sin que el dueño lo
   pida explícitamente.
+- **Precio fijo al quitar todo un paso** (`precioSiTodoQuitado`, número
+  opcional en el propio paso, junto a `titulo`/`opciones`): si el cliente
+  marca **todas** las opciones de ese paso, el precio base del producto
+  pasa a ser ese valor fijo en vez de `producto.precio` — los `precioExtra`
+  de cualquier paso (incluidos otros "Extras") se siguen sumando encima
+  con normalidad. Pensado para vender el kebab/dürüm/lahmacum "solo
+  carne" (las 4 "Quitar ingredientes" marcadas) a un precio fijo más bajo
+  en vez de dejarlo al mismo precio de siempre. Recalculado siempre en el
+  backend a partir de la selección ya validada (`orders/index.js`), igual
+  que `precioExtra` — nunca a partir de lo que afirme el cliente. Solo
+  está activo en los 15 sabores base de Kebab/Dürüm/Lahmacum (ternera,
+  pollo, mixto, falafel, vegetal con queso gouda) a 1€ — **a propósito
+  no** en las variantes premium (doble, loco, solo carne), que se quedan
+  con su precio normal aunque se quite todo. Editable por paso desde
+  `/carta` (checkbox "Precio fijo si se marcan todas las opciones de este
+  paso" en `EditarProducto.jsx`).
 - **No hay** un constructor visual de menús tipo arrastrar-y-soltar (armar
   combos desde ingredientes sueltos en una UI de slots) — se decidió no
   construirlo; `/carta` es un CRUD de categorías/productos, no un editor de

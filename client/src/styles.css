@@ -1816,6 +1816,22 @@ h4,
   font-weight: 600;
 }
 
+.gestion-precio-todo-quitado {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 0.6rem;
+}
+
+.gestion-precio-todo-quitado input[type="number"] {
+  width: 70px;
+  padding: 0.3rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
 .gestion-opcion-fila {
   display: flex;
   align-items: center;

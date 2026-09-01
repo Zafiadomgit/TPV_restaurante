@@ -26,6 +26,17 @@ export default function Personalizar({ producto, onConfirmar, onCancelar }) {
     });
   };
 
+  // Si un paso trae precioSiTodoQuitado y el cliente marcó TODAS sus
+  // opciones (ej. las 4 de "Quitar ingredientes"), el precio base pasa a
+  // ser ese valor en vez del precio normal del producto — pensado para
+  // vender el kebab/dürüm/lahmacum "solo carne" a un precio fijo más bajo.
+  const pasoConPrecioBase = (producto.modificadores || []).find((paso) => {
+    if (typeof paso.precioSiTodoQuitado !== "number" || paso.opciones.length === 0) return false;
+    const elegidas = seleccion[paso.id] || [];
+    return paso.opciones.every((o) => elegidas.includes(o.id));
+  });
+  const precioBase = pasoConPrecioBase ? pasoConPrecioBase.precioSiTodoQuitado : producto.precio;
+
   const extraPorUnidad = (producto.modificadores || []).reduce((acc, paso) => {
     const elegidas = seleccion[paso.id] || [];
     return (
@@ -37,7 +48,7 @@ export default function Personalizar({ producto, onConfirmar, onCancelar }) {
     );
   }, 0);
 
-  const precioUnidad = producto.precio + extraPorUnidad;
+  const precioUnidad = precioBase + extraPorUnidad;
   const precioTotal = precioUnidad * cantidad;
 
   const confirmar = () => {

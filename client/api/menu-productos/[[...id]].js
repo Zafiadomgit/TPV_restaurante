@@ -23,17 +23,21 @@ function slugify(texto) {
     .replace(/^-+|-+$/g, "");
 }
 
-// Un modificador nunca debe poder abaratar el producto — "quitar un
-// ingrediente" es gratis (0€), nunca un descuento. Si esto no se
-// valida aquí, /carta (o una petición cruda) podría guardar un
-// precioExtra negativo y dejar el precio final por debajo del base.
+// Una opción nunca debe poder abaratar el producto por su cuenta —
+// "quitar un ingrediente" es gratis (0€), nunca un descuento con
+// precioExtra negativo. La única forma soportada de bajar el precio es
+// precioSiTodoQuitado en el propio paso (ver orders/index.js y
+// Personalizar.jsx), que también se valida aquí: si está presente debe
+// ser un número finito y no negativo.
 function modificadoresValidos(modificadores) {
   if (!modificadores) return true;
   if (!Array.isArray(modificadores)) return false;
   return modificadores.every(
     (paso) =>
       Array.isArray(paso.opciones) &&
-      paso.opciones.every((o) => Number.isFinite(o.precioExtra) && o.precioExtra >= 0)
+      paso.opciones.every((o) => Number.isFinite(o.precioExtra) && o.precioExtra >= 0) &&
+      (paso.precioSiTodoQuitado === undefined ||
+        (Number.isFinite(paso.precioSiTodoQuitado) && paso.precioSiTodoQuitado >= 0))
   );
 }
 

@@ -51,6 +51,8 @@ export default async function handler(req, res) {
       // siempre aquí a partir de la definición del menú — nunca se confía
       // en el precio ni el recargo que mande el cliente.
       let extra = 0;
+      let precioBase = producto.precio;
+      let baseSobrescrita = false;
       const nombresSeleccionados = [];
       for (const paso of producto.modificadores || []) {
         const seleccionCliente = Array.isArray(item.modificadores?.[paso.id])
@@ -59,6 +61,21 @@ export default async function handler(req, res) {
         const seleccionValida = seleccionCliente
           .filter((optId) => paso.opciones.some((o) => o.id === optId))
           .slice(0, paso.maxSeleccion ?? seleccionCliente.length);
+
+        // Si el paso trae precioSiTodoQuitado y el cliente marcó TODAS sus
+        // opciones (validadas arriba, nunca lo que mande el cliente sin
+        // comprobar), el precio base pasa a ser ese valor fijo — pensado
+        // para vender el kebab/dürüm/lahmacum "solo carne" más barato.
+        if (
+          !baseSobrescrita &&
+          typeof paso.precioSiTodoQuitado === "number" &&
+          paso.opciones.length > 0 &&
+          paso.opciones.every((o) => seleccionValida.includes(o.id))
+        ) {
+          precioBase = paso.precioSiTodoQuitado;
+          baseSobrescrita = true;
+        }
+
         for (const optId of seleccionValida) {
           const opcion = paso.opciones.find((o) => o.id === optId);
           extra += opcion.precioExtra;
@@ -69,7 +86,7 @@ export default async function handler(req, res) {
       itemsResueltos.push({
         productId: producto.id,
         nombre: producto.nombre,
-        precio: Number((producto.precio + extra).toFixed(2)),
+        precio: Number((precioBase + extra).toFixed(2)),
         cantidad,
         notas: item.notas || "",
         modificadoresTexto: nombresSeleccionados.join(", "),
