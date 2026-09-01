@@ -268,3 +268,13 @@ from (values
 join menu_categorias c on c.nombre = v.categoria_nombre
 on conflict (id) do nothing;
 
+-- Nombre/descripción en inglés, opcionales, para el selector de idioma del
+-- kiosco (ver textos.js / SelectorIdioma.jsx). NULL = todavía sin traducir:
+-- el kiosco en inglés cae de vuelta al texto en español (ver conIdioma() en
+-- client/src/textos.js), así que dejar estas columnas vacías nunca rompe
+-- nada, solo deja ese producto/categoría sin traducir hasta que alguien lo
+-- rellene desde /carta.
+alter table menu_categorias add column if not exists nombre_en text;
+alter table menu_productos add column if not exists nombre_en text;
+alter table menu_productos add column if not exists descripcion_en text;
+

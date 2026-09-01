@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../api.js";
 import { calcularTotales } from "../totales.js";
 import { getIdioma, guardarIdioma } from "../idioma.js";
-import { t, TIPO_SERVICIO_DISPLAY } from "../textos.js";
+import { t, TIPO_SERVICIO_DISPLAY, conIdioma } from "../textos.js";
 import MenuItemCard from "../components/MenuItemCard.jsx";
 import CartSidebar from "../components/CartSidebar.jsx";
 import Personalizar from "../components/Personalizar.jsx";
@@ -90,6 +90,7 @@ export default function Order() {
           lineId: nuevoLineId(),
           productId: producto.id,
           nombre: producto.nombre,
+          nombreEn: producto.nombreEn,
           precio: producto.precio,
           cantidad: 1,
           notas: "",
@@ -108,6 +109,7 @@ export default function Order() {
         lineId: nuevoLineId(),
         productId: producto.id,
         nombre: producto.nombre,
+        nombreEn: producto.nombreEn,
         precio: precioUnidad,
         cantidad,
         notas: "",
@@ -207,7 +209,7 @@ export default function Order() {
         <div className="kiosk-categorias-grid">
           {menu.map((cat) => (
             <button key={cat.categoria} className="kiosk-categoria-tile" onClick={() => elegirCategoria(cat.categoria)}>
-              <span className="kiosk-categoria-nombre">{cat.categoria}</span>
+              <span className="kiosk-categoria-nombre">{conIdioma(cat.categoria, cat.categoriaEn, idioma)}</span>
               <span className="kiosk-categoria-cantidad">
                 {cat.productos.length} {t(idioma, "productos")}
               </span>
@@ -258,7 +260,7 @@ export default function Order() {
               className={categoriaActiva === cat.categoria ? "active" : ""}
               onClick={() => setCategoriaActiva(cat.categoria)}
             >
-              {cat.categoria}
+              {conIdioma(cat.categoria, cat.categoriaEn, idioma)}
             </button>
           ))}
         </div>

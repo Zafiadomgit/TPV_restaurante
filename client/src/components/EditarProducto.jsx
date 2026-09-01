@@ -19,7 +19,9 @@ function nuevoPasoId(existentes) {
 export default function EditarProducto({ producto, categorias, otrosProductos, onGuardar, onCancelar, onEliminar }) {
   const esNuevo = !producto.id;
   const [nombre, setNombre] = useState(producto.nombre || "");
+  const [nombreEn, setNombreEn] = useState(producto.nombreEn || "");
   const [descripcion, setDescripcion] = useState(producto.descripcion || "");
+  const [descripcionEn, setDescripcionEn] = useState(producto.descripcionEn || "");
   const [precio, setPrecio] = useState(producto.precio ?? "");
   const [categoriaId, setCategoriaId] = useState(producto.categoriaId || categorias[0]?.id || "");
   const [activo, setActivo] = useState(producto.activo ?? true);
@@ -118,7 +120,9 @@ export default function EditarProducto({ producto, categorias, otrosProductos, o
     try {
       await onGuardar({
         nombre: nombre.trim(),
+        nombreEn: nombreEn.trim() || null,
         descripcion: descripcion.trim(),
+        descripcionEn: descripcionEn.trim() || null,
         precio: precioNumero,
         categoriaId,
         activo,
@@ -162,6 +166,14 @@ export default function EditarProducto({ producto, categorias, otrosProductos, o
             <label className="gestion-campo gestion-campo-ancho">
               Descripción
               <input type="text" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
+            </label>
+            <label className="gestion-campo">
+              Nombre en inglés (opcional)
+              <input type="text" value={nombreEn} onChange={(e) => setNombreEn(e.target.value)} />
+            </label>
+            <label className="gestion-campo gestion-campo-ancho">
+              Descripción en inglés (opcional)
+              <input type="text" value={descripcionEn} onChange={(e) => setDescripcionEn(e.target.value)} />
             </label>
             <label className="gestion-campo">
               Categoría

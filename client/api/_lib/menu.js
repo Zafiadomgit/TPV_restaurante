@@ -4,8 +4,10 @@ function mapProducto(row) {
   return {
     id: row.id,
     nombre: row.nombre,
+    nombreEn: row.nombre_en || null,
     precio: Number(row.precio),
     descripcion: row.descripcion || "",
+    descripcionEn: row.descripcion_en || null,
     ...(row.modificadores ? { modificadores: row.modificadores } : {}),
   };
 }
@@ -31,6 +33,7 @@ export async function getMenu() {
   return categorias
     .map((cat) => ({
       categoria: cat.nombre,
+      categoriaEn: cat.nombre_en || null,
       productos: productos.filter((p) => p.categoria_id === cat.id).map(mapProducto),
     }))
     .filter((cat) => cat.productos.length > 0);

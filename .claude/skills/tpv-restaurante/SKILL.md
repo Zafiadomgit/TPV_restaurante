@@ -353,12 +353,25 @@ Piezas:
   cliente único, no hay dos pestañas que sincronizar).
 - `client/src/textos.js`: diccionario `TEXTOS.es`/`TEXTOS.en` + helper
   `t(idioma, clave)`, más `ESTADOS_LABEL`, `METODO_PAGO_LABEL` y
-  `TIPO_SERVICIO_DISPLAY` (todos indexados por idioma). Solo textos fijos
-  de interfaz (botones, títulos, placeholders) — **a propósito NO
-  traduce nombres/descripciones de producto**, que vienen de la base de
-  datos y son los mismos en los dos idiomas; si se pide traducir también
-  la carta, es un cambio de alcance real (tocaría el esquema de
-  productos), no solo añadir claves aquí.
+  `TIPO_SERVICIO_DISPLAY` (todos indexados por idioma), para los textos
+  fijos de interfaz (botones, títulos, placeholders).
+- **Nombres/descripciones de categoría y producto SÍ se pueden
+  traducir**, pero no viven en `textos.js` — vienen de la base de datos
+  (`menu_categorias.nombre_en`, `menu_productos.nombre_en`/
+  `descripcion_en`, columnas de texto nullable). El cajero las rellena
+  desde `/carta` (`GestionMenu.jsx`/`EditarProducto.jsx`, campos "...(en
+  inglés, opcional)"; para renombrar una categoría existente hay un
+  botón "Editar" en su cabecera). `GET /api/menu` (`_lib/menu.js`)
+  devuelve `categoriaEn`/`nombreEn`/`descripcionEn` junto a las
+  versiones en español. El frontend usa `conIdioma(valorEs, valorEn,
+  idioma)` (`textos.js`) para elegir cuál mostrar — **si `valorEn` es
+  `null`/vacío (categoría o producto aún sin traducir) cae siempre al
+  español**, nunca se queda en blanco. Si añades una pantalla nueva que
+  muestre nombre/descripción de categoría o producto, pasa por
+  `conIdioma()` en vez de leer `cat.categoria`/`producto.nombre`
+  directo. Los pasos/opciones de personalización (`paso.titulo`,
+  `opcion.nombre` en `producto.modificadores`) siguen sin traducir a
+  propósito — no se pidió, y son un esquema más anidado.
 - **Regla que no se puede romper**: `order.mesa` (lo que ven
   cocina/historial/caja, y de lo que depende el color por origen en
   `/cocina` — ver punto 5 más arriba, `.kds-ticket-llevar` compara
@@ -371,7 +384,13 @@ Piezas:
   `order.metodoPago`: se guardan en español en la BD, y
   `ESTADOS_LABEL[idioma]`/`METODO_PAGO_LABEL[idioma]` en `textos.js` son
   solo para mostrárselos al cliente traducidos — nunca cambies lo que se
-  envía al backend según el idioma.
+  envía al backend según el idioma. Por la misma razón, `item.nombre`
+  dentro de `orders.items` se congela en español al crear el pedido
+  (`POST /api/orders` siempre usa `producto.nombre`, nunca `nombreEn` —
+  ver `_lib/orders.js`) y así se queda: es el mismo objeto que lee
+  `/cocina`, así que el ticket de `Checkout.jsx` muestra los nombres de
+  producto en español aunque el cliente haya pedido en inglés — solo la
+  navegación por el menú (antes de enviar la comanda) está traducida.
 - Si añades una pantalla o texto nuevo al kiosco, añade la clave en
   `TEXTOS.es` y `TEXTOS.en` (ambas a la vez, no dejes una sin traducir)
   y usa `t(idioma, "claveNueva")` — no hardcodees español directo en

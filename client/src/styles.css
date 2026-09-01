@@ -1961,6 +1961,7 @@ h4,
 
 .gestion-nueva-categoria {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.6rem;
   margin-bottom: 1.5rem;
 }
@@ -2012,6 +2013,49 @@ h4,
   font-weight: 500;
   cursor: pointer;
   font-size: 0.85rem;
+}
+
+.gestion-categoria-acciones {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.gestion-editar {
+  border: none;
+  background: none;
+  color: #1f2933;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.gestion-categoria-editando {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.gestion-categoria-editando input {
+  flex: 1;
+  min-width: 160px;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.gestion-categoria-guardar {
+  padding: 0.4rem 0.9rem;
+  border: none;
+  border-radius: 6px;
+  background: #1f9d55;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.gestion-categoria-guardar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .gestion-productos-grid {

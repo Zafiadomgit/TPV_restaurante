@@ -8,9 +8,14 @@ export default function GestionMenu() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [nuevaCategoria, setNuevaCategoria] = useState("");
+  const [nuevaCategoriaEn, setNuevaCategoriaEn] = useState("");
   const [creandoCategoria, setCreandoCategoria] = useState(false);
   const [editando, setEditando] = useState(null); // producto existente, o {} para uno nuevo
   const [categoriaParaNuevo, setCategoriaParaNuevo] = useState(null);
+  const [editandoCategoria, setEditandoCategoria] = useState(null); // categoría cuyo nombre ES/EN se está editando
+  const [nombreCategoriaEdit, setNombreCategoriaEdit] = useState("");
+  const [nombreCategoriaEnEdit, setNombreCategoriaEnEdit] = useState("");
+  const [guardandoCategoria, setGuardandoCategoria] = useState(false);
 
   const cargar = () =>
     Promise.all([api.getCategorias(), api.getProductosAdmin()])
@@ -31,13 +36,37 @@ export default function GestionMenu() {
     if (!nuevaCategoria.trim()) return;
     setCreandoCategoria(true);
     try {
-      const cat = await api.crearCategoria(nuevaCategoria.trim());
+      const cat = await api.crearCategoria(nuevaCategoria.trim(), nuevaCategoriaEn.trim() || undefined);
       setCategorias((prev) => [...prev, cat]);
       setNuevaCategoria("");
+      setNuevaCategoriaEn("");
     } catch (e) {
       setError(e.message);
     } finally {
       setCreandoCategoria(false);
+    }
+  };
+
+  const abrirEdicionCategoria = (categoria) => {
+    setEditandoCategoria(categoria.id);
+    setNombreCategoriaEdit(categoria.nombre);
+    setNombreCategoriaEnEdit(categoria.nombreEn || "");
+  };
+
+  const guardarNombreCategoria = async (categoria) => {
+    if (!nombreCategoriaEdit.trim()) return;
+    setGuardandoCategoria(true);
+    try {
+      const actualizada = await api.actualizarCategoria(categoria.id, {
+        nombre: nombreCategoriaEdit.trim(),
+        nombreEn: nombreCategoriaEnEdit.trim() || null,
+      });
+      setCategorias((prev) => prev.map((c) => (c.id === actualizada.id ? actualizada : c)));
+      setEditandoCategoria(null);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setGuardandoCategoria(false);
     }
   };
 
@@ -110,6 +139,12 @@ export default function GestionMenu() {
           value={nuevaCategoria}
           onChange={(e) => setNuevaCategoria(e.target.value)}
         />
+        <input
+          type="text"
+          placeholder="Nombre en inglés (opcional)"
+          value={nuevaCategoriaEn}
+          onChange={(e) => setNuevaCategoriaEn(e.target.value)}
+        />
         <button type="submit" disabled={creandoCategoria || !nuevaCategoria.trim()}>
           {creandoCategoria ? "Creando..." : "+ Nueva categoría"}
         </button>
@@ -119,14 +154,47 @@ export default function GestionMenu() {
         const productosCategoria = productos.filter((p) => p.categoriaId === cat.id);
         return (
           <section className="gestion-categoria" key={cat.id}>
-            <div className="gestion-categoria-header">
-              <h3>
-                {cat.nombre} <span className="gestion-categoria-count">({productosCategoria.length})</span>
-              </h3>
-              <button className="gestion-borrar" onClick={() => eliminarCategoria(cat)}>
-                Borrar categoría
-              </button>
-            </div>
+            {editandoCategoria === cat.id ? (
+              <div className="gestion-categoria-header gestion-categoria-editando">
+                <input
+                  type="text"
+                  value={nombreCategoriaEdit}
+                  onChange={(e) => setNombreCategoriaEdit(e.target.value)}
+                  placeholder="Nombre"
+                />
+                <input
+                  type="text"
+                  value={nombreCategoriaEnEdit}
+                  onChange={(e) => setNombreCategoriaEnEdit(e.target.value)}
+                  placeholder="Nombre en inglés (opcional)"
+                />
+                <button
+                  type="button"
+                  className="gestion-categoria-guardar"
+                  disabled={guardandoCategoria || !nombreCategoriaEdit.trim()}
+                  onClick={() => guardarNombreCategoria(cat)}
+                >
+                  {guardandoCategoria ? "Guardando..." : "Guardar"}
+                </button>
+                <button type="button" className="gestion-borrar" onClick={() => setEditandoCategoria(null)}>
+                  Cancelar
+                </button>
+              </div>
+            ) : (
+              <div className="gestion-categoria-header">
+                <h3>
+                  {cat.nombre} <span className="gestion-categoria-count">({productosCategoria.length})</span>
+                </h3>
+                <div className="gestion-categoria-acciones">
+                  <button className="gestion-editar" onClick={() => abrirEdicionCategoria(cat)}>
+                    Editar
+                  </button>
+                  <button className="gestion-borrar" onClick={() => eliminarCategoria(cat)}>
+                    Borrar categoría
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="gestion-productos-grid">
               {productosCategoria.map((p) => (

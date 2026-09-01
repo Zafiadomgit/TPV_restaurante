@@ -118,3 +118,12 @@ export const TIPO_SERVICIO_DISPLAY = {
 export function t(idioma, clave) {
   return TEXTOS[idioma]?.[clave] ?? TEXTOS.es[clave] ?? clave;
 }
+
+// Para contenido que viene de la base de datos (nombre/descripción de
+// categoría o producto, ej. producto.nombre + producto.nombreEn): si hay
+// traducción al inglés y el idioma es "en", se usa; si no, se cae siempre
+// al valor en español — así una categoría/producto sin traducir todavía
+// nunca se queda en blanco en el kiosco.
+export function conIdioma(valorEs, valorEn, idioma) {
+  return idioma === "en" && valorEn ? valorEn : valorEs;
+}

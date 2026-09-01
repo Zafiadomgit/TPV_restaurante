@@ -44,8 +44,8 @@ export const api = {
     }),
   getResumen: () => request("/informes"),
   getCategorias: () => request("/menu-categorias"),
-  crearCategoria: (nombre) =>
-    request("/menu-categorias", { method: "POST", body: JSON.stringify({ nombre }) }),
+  crearCategoria: (nombre, nombreEn) =>
+    request("/menu-categorias", { method: "POST", body: JSON.stringify({ nombre, nombreEn }) }),
   actualizarCategoria: (id, cambios) =>
     request(`/menu-categorias?id=${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(cambios) }),
   eliminarCategoria: (id) => request(`/menu-categorias?id=${encodeURIComponent(id)}`, { method: "DELETE" }),

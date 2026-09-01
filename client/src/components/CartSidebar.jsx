@@ -1,4 +1,4 @@
-import { t } from "../textos.js";
+import { t, conIdioma } from "../textos.js";
 
 export default function CartSidebar({
   items,
@@ -28,7 +28,7 @@ export default function CartSidebar({
           {items.map((item) => (
             <li key={item.lineId} className="cart-item">
               <div className="cart-item-row">
-                <span className="cart-item-name">{item.nombre}</span>
+                <span className="cart-item-name">{conIdioma(item.nombre, item.nombreEn, idioma)}</span>
                 <button className="btn-remove" onClick={() => onRemove(item.lineId)}>
                   ✕
                 </button>

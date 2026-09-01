@@ -2,7 +2,7 @@ import { supabase } from "../_lib/supabaseClient.js";
 import { exigirRol } from "../_lib/auth.js";
 
 function mapRow(row) {
-  return { id: row.id, nombre: row.nombre, orden: row.orden };
+  return { id: row.id, nombre: row.nombre, nombreEn: row.nombre_en || null, orden: row.orden };
 }
 
 // Categorías y su detalle comparten un único archivo (una sola función
@@ -27,7 +27,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "POST") {
-      const { nombre } = req.body || {};
+      const { nombre, nombreEn } = req.body || {};
       if (!nombre || typeof nombre !== "string" || !nombre.trim()) {
         return res.status(400).json({ error: "El nombre de la categoría es obligatorio" });
       }
@@ -36,7 +36,7 @@ export default async function handler(req, res) {
 
       const { data, error } = await supabase
         .from("menu_categorias")
-        .insert({ nombre: nombre.trim(), orden: count ?? 0 })
+        .insert({ nombre: nombre.trim(), nombre_en: nombreEn?.trim() || null, orden: count ?? 0 })
         .select()
         .single();
 
@@ -61,6 +61,7 @@ export default async function handler(req, res) {
       }
       cambios.nombre = body.nombre.trim();
     }
+    if (body.nombreEn !== undefined) cambios.nombre_en = body.nombreEn?.trim() || null;
     if (body.orden !== undefined) cambios.orden = Number(body.orden);
 
     if (Object.keys(cambios).length === 0) {

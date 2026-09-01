@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { t } from "../textos.js";
+import { t, conIdioma } from "../textos.js";
 
 function seleccionInicial(producto) {
   const inicial = {};
@@ -69,8 +69,8 @@ export default function Personalizar({ producto, idioma, onConfirmar, onCancelar
       <div className="personalizar-modal" onClick={(e) => e.stopPropagation()}>
         <div className="personalizar-header">
           <div>
-            <h3>{producto.nombre.toUpperCase()}</h3>
-            <p>{producto.descripcion}</p>
+            <h3>{conIdioma(producto.nombre, producto.nombreEn, idioma).toUpperCase()}</h3>
+            <p>{conIdioma(producto.descripcion, producto.descripcionEn, idioma)}</p>
           </div>
           <button className="personalizar-cerrar" onClick={onCancelar}>
             ✕

@@ -6,7 +6,9 @@ function mapRow(row) {
     id: row.id,
     categoriaId: row.categoria_id,
     nombre: row.nombre,
+    nombreEn: row.nombre_en || null,
     descripcion: row.descripcion || "",
+    descripcionEn: row.descripcion_en || null,
     precio: Number(row.precio),
     modificadores: row.modificadores || null,
     activo: row.activo,
@@ -65,7 +67,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "POST") {
-      const { categoriaId, nombre, descripcion, precio, modificadores } = req.body || {};
+      const { categoriaId, nombre, nombreEn, descripcion, descripcionEn, precio, modificadores } = req.body || {};
 
       if (!categoriaId) {
         return res.status(400).json({ error: "La categoría es obligatoria" });
@@ -112,7 +114,9 @@ export default async function handler(req, res) {
           id: productoId,
           categoria_id: categoriaId,
           nombre: nombre.trim(),
+          nombre_en: nombreEn?.trim() || null,
           descripcion: descripcion || "",
+          descripcion_en: descripcionEn || null,
           precio: precioNumero,
           modificadores: modificadores || null,
           orden: count ?? 0,
@@ -137,7 +141,9 @@ export default async function handler(req, res) {
       }
       cambios.nombre = body.nombre.trim();
     }
+    if (body.nombreEn !== undefined) cambios.nombre_en = body.nombreEn?.trim() || null;
     if (body.descripcion !== undefined) cambios.descripcion = body.descripcion;
+    if (body.descripcionEn !== undefined) cambios.descripcion_en = body.descripcionEn || null;
     if (body.precio !== undefined) {
       const precioNumero = Number(body.precio);
       if (!Number.isFinite(precioNumero) || precioNumero < 0) {
