@@ -20,6 +20,7 @@ export const api = {
   login: (rol, pin) => request("/login", { method: "POST", body: JSON.stringify({ rol, pin }) }),
   getMenu: () => request("/menu"),
   getOrders: (estado) => request(`/orders${estado ? `?estado=${estado}` : ""}`),
+  getPedidosSinCobrar: () => request("/orders?pagado=false"),
   getOrder: (id) => request(`/orders/${id}`),
   createOrder: (payload) =>
     request("/orders", { method: "POST", body: JSON.stringify(payload) }),

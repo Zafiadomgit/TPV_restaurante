@@ -38,6 +38,9 @@ export default function Caja() {
   const [dividirEntre, setDividirEntre] = useState("");
   const [ultimaVenta, setUltimaVenta] = useState(null);
   const [productoPersonalizando, setProductoPersonalizando] = useState(null);
+  const [pedidosSinCobrar, setPedidosSinCobrar] = useState([]);
+  const [cobrandoPedidoId, setCobrandoPedidoId] = useState(null);
+  const enVueloSinCobrar = useRef(false);
 
   useEffect(() => {
     api
@@ -68,6 +71,41 @@ export default function Caja() {
     const interval = setInterval(cargar, POLL_MS);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const cargar = async () => {
+      if (enVueloSinCobrar.current) return;
+      enVueloSinCobrar.current = true;
+      try {
+        const data = await api.getPedidosSinCobrar();
+        // Un pedido cancelado antes de cobrarse no debe aparecer aquí —
+        // no hay nada que cobrar por él.
+        setPedidosSinCobrar(data.filter((o) => o.estado !== "cancelado"));
+      } catch {
+        // se reintenta en el siguiente ciclo de polling
+      } finally {
+        enVueloSinCobrar.current = false;
+      }
+    };
+
+    cargar();
+    const interval = setInterval(cargar, POLL_MS);
+    return () => clearInterval(interval);
+  }, []);
+
+  const cobrarPedidoKiosco = async (pedido, metodoPago) => {
+    setError("");
+    setCobrandoPedidoId(pedido.id);
+    try {
+      const pagado = await api.pagarOrder(pedido.id, metodoPago);
+      setUltimaVenta(pagado);
+      setPedidosSinCobrar((prev) => prev.filter((p) => p.id !== pedido.id));
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setCobrandoPedidoId(null);
+    }
+  };
 
   const turnoAbierto = turnos.find((t) => t.estado === "abierto") || null;
   const turnosCerrados = [...turnos]
@@ -212,6 +250,55 @@ export default function Caja() {
 
       <ReciboImprimible venta={ultimaVenta} />
 
+      {ultimaVenta && (
+        <div className="caja-venta-ok">
+          <p>
+            Cobrado {formatTicket(ultimaVenta.ticketNumero)} · {ultimaVenta.total.toFixed(2)} €
+          </p>
+          <button type="button" className="btn-imprimir-recibo" onClick={() => window.print()}>
+            Imprimir recibo
+          </button>
+        </div>
+      )}
+
+      {pedidosSinCobrar.length > 0 && (
+        <div className="pedidos-sin-cobrar">
+          <h3 className="pedidos-sin-cobrar-titulo">
+            Pedidos del kiosco sin cobrar ({pedidosSinCobrar.length})
+          </h3>
+          <div className="pedidos-sin-cobrar-lista">
+            {pedidosSinCobrar.map((pedido) => (
+              <div key={pedido.id} className="pedido-sin-cobrar-card">
+                <div className="pedido-sin-cobrar-info">
+                  <span className="pedido-sin-cobrar-ticket">{formatTicket(pedido.ticketNumero)}</span>
+                  <span className="pedido-sin-cobrar-origen">{pedido.mesa}</span>
+                  <p className="pedido-sin-cobrar-items">
+                    {pedido.items.map((i) => `${i.cantidad}x ${i.nombre}`).join(", ")}
+                  </p>
+                </div>
+                <div className="pedido-sin-cobrar-derecha">
+                  <strong className="pedido-sin-cobrar-total">{pedido.total.toFixed(2)} €</strong>
+                  <div className="pedido-sin-cobrar-botones">
+                    <button
+                      disabled={cobrandoPedidoId === pedido.id}
+                      onClick={() => cobrarPedidoKiosco(pedido, "efectivo")}
+                    >
+                      {cobrandoPedidoId === pedido.id ? "Cobrando..." : "Efectivo"}
+                    </button>
+                    <button
+                      disabled={cobrandoPedidoId === pedido.id}
+                      onClick={() => cobrarPedidoKiosco(pedido, "tarjeta")}
+                    >
+                      {cobrandoPedidoId === pedido.id ? "Cobrando..." : "Tarjeta"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {turnoAbierto ? (
         <div className="caja-pos-layout">
           <div className="caja-productos">
@@ -250,17 +337,6 @@ export default function Caja() {
           )}
 
           <aside className="caja-ticket-panel">
-            {ultimaVenta && (
-              <div className="caja-venta-ok">
-                <p>
-                  Cobrado {formatTicket(ultimaVenta.ticketNumero)} · {ultimaVenta.total.toFixed(2)} €
-                </p>
-                <button type="button" className="btn-imprimir-recibo" onClick={() => window.print()}>
-                  Imprimir recibo
-                </button>
-              </div>
-            )}
-
             {items.length === 0 ? (
               <p className="empty">Toca un producto para añadirlo</p>
             ) : (

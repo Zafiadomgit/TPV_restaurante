@@ -1,7 +1,15 @@
 import { supabase } from "../../_lib/supabaseClient.js";
 import { mapRow } from "../../_lib/orders.js";
+import { exigirRol } from "../../_lib/auth.js";
 
+// Marcar un pedido como pagado exige rol caja — el cliente ya no puede
+// auto-marcarse como pagado desde /pago/:orderId (ver Checkout.jsx):
+// solo un cajero cobra de verdad y lo confirma aquí. Si esto no se
+// protegiera, cualquiera podría llamar a este endpoint directamente
+// (sin pasar por la UI) y marcar su propio pedido como pagado gratis.
 export default async function handler(req, res) {
+  if (!exigirRol(req, res, ["caja"])) return;
+
   if (req.method !== "PATCH") {
     return res.status(405).json({ error: "Método no permitido" });
   }

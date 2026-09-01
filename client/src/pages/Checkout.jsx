@@ -17,7 +17,6 @@ export default function Checkout() {
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
   const [error, setError] = useState("");
-  const [pagando, setPagando] = useState(false);
 
   useEffect(() => {
     let activo = true;
@@ -39,18 +38,6 @@ export default function Checkout() {
       clearInterval(interval);
     };
   }, [orderId]);
-
-  const pagar = async (metodoPago) => {
-    setPagando(true);
-    try {
-      const updated = await api.pagarOrder(orderId, metodoPago);
-      setOrder(updated);
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setPagando(false);
-    }
-  };
 
   if (error) return <p className="error">{error}</p>;
   if (!order) return <p className="loading">Cargando pedido...</p>;
@@ -101,13 +88,11 @@ export default function Checkout() {
       {order.pagado ? (
         <p className="pagado-ok">Pagado con {order.metodoPago} ✔️</p>
       ) : (
-        <div className="pago-botones">
-          <button disabled={pagando} onClick={() => pagar("efectivo")}>
-            Cobrar en efectivo
-          </button>
-          <button disabled={pagando} onClick={() => pagar("tarjeta")}>
-            Cobrar con tarjeta
-          </button>
+        <div className="pasa-a-caja">
+          <p className="pasa-a-caja-titulo">👉 Pasa a caja para finalizar tu pago y recibir tu pedido</p>
+          <p className="pasa-a-caja-sub">
+            Enséñales el número <strong>{formatTicket(order.ticketNumero)}</strong>
+          </p>
         </div>
       )}
 

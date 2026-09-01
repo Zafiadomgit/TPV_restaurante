@@ -220,6 +220,25 @@ que funciona con cualquier impresora que tenga controlador de sistema.
 Si se pide en el futuro imprimir sin diálogo (ESC/POS directo por USB/
 red), es una pieza nueva, no una extensión de esto.
 
+**Cola de "Pedidos del kiosco sin cobrar"**: como el kiosco no tiene
+datáfono integrado (ver "Flujo de un pedido" más abajo), el cobro real
+de un pedido creado desde `/` lo hace un cajero desde esta cola, no el
+cliente. Se ve siempre en `/caja` (fuera del `if (turnoAbierto)`, no
+hace falta turno abierto para cobrar) cuando hay algún pedido con
+`pagado: false` — polling de 3s vía `GET /api/orders?pagado=false`
+(filtra también `estado === "cancelado"` en el cliente: un pedido
+cancelado antes de cobrarse no tiene nada que cobrar). El cajero toca
+Efectivo/Tarjeta sobre la tarjeta del pedido, que llama al mismo
+`pagarOrder()` de siempre — la confirmación "Cobrado ... · Imprimir
+recibo" (`.caja-venta-ok`) vive fuera del `if (turnoAbierto)` por el
+mismo motivo que la cola: si no, cobrar sin turno abierto no mostraba
+ninguna confirmación ni daba opción de imprimir. `PATCH
+/api/orders/[id]/pagar` exige rol `caja` (`exigirRol`) — es el cambio
+que hace que esto sea un cobro real: antes era público porque el
+propio cliente lo llamaba desde `Checkout.jsx`, y si se dejara público
+ahora cualquiera podría marcar su pedido como pagado sin pasar por
+caja, llamando al endpoint directamente sin usar la UI.
+
 ### Pedidos y su numeración
 La tabla `orders` usa `id uuid` como clave primaria, pero además tiene
 `ticket_numero` (columna `serial`, autoincremental, sin condiciones de
@@ -286,7 +305,16 @@ un cambio de diseño real, no un ajuste trivial.
    de estos dos. Es solo `/cocina` (`Recogida.jsx` tiene su propio
    marcado de ticket, no reutiliza `OrderTicket.jsx`) — si se pide lo
    mismo en recogida, hay que replicarlo ahí aparte.
-6. `Checkout.jsx` (`/pago/:orderId`): ticket y cobro (efectivo/tarjeta).
+6. `Checkout.jsx` (`/pago/:orderId`): muestra el ticket y el estado en
+   vivo, pero **ya no deja pagar desde ahí** — no hay datáfono
+   integrado en el kiosco, así que el cliente no puede cobrarse a sí
+   mismo. Si `!order.pagado` se muestra un aviso amistoso ("Pasa a caja
+   para finalizar tu pago y recibir tu pedido" + el número de ticket
+   bien grande); solo un cajero cobra de verdad, desde la cola de
+   "Pedidos del kiosco sin cobrar" en `/caja` (ver sección "Venta
+   rápida en caja"). No reintroduzcas botones de pago aquí sin que el
+   dueño lo pida explícitamente — sería volver a un cobro que nadie
+   cobra de verdad.
 7. `Historial.jsx`: pedidos cerrados, filtrables por estado.
 
 ### Panel del dueño e informes
@@ -354,13 +382,16 @@ pagar. Si algo parece pedir un "rol usuario", probablemente ya es esto.
   igualmente `200` con una vista pública reducida (solo lo que necesita
   `/recogida`, ver la sección "Pantalla de recogida"), y con token de
   `caja`/`cocina` responde el detalle completo que usan `/cocina` y
-  `/historial`. Deliberadamente **sin proteger en absoluto**:
-  `GET /api/menu` (el kiosco lo necesita sin login),
-  `GET /api/orders/[id]` (el cliente consulta su propio ticket) y
-  `PATCH /api/orders/[id]/pagar` (el autocobro del kiosco es público a
-  propósito) — no le añadas `exigirRol` a estos tres sin que el dueño lo
-  pida explícitamente, porque rompería el flujo público de pedir y pagar
-  que es el corazón del kiosco.
+  `/historial`. `PATCH /api/orders/[id]/pagar` exige rol `caja` — el
+  cliente ya no se cobra a sí mismo (ver "Cola de pedidos del kiosco
+  sin cobrar" en "Venta rápida en caja"), así que este es el único de
+  los endpoints de pedidos que SÍ pasó de público a protegido; no lo
+  reviertas a público sin que el dueño lo pida. Deliberadamente **sin
+  proteger en absoluto**: `GET /api/menu` (el kiosco lo necesita sin
+  login) y `GET /api/orders/[id]` (el cliente consulta su propio
+  ticket) — no le añadas `exigirRol` a estos dos sin que el dueño lo
+  pida explícitamente, porque rompería el flujo público de pedir que es
+  el corazón del kiosco.
 - **Frontend**: sesión en `localStorage` vía `client/src/auth.js`
   (`getSesion`/`guardarSesion`/`cerrarSesion`, más un evento
   `window` (`tpv:sesion`) para que `App.jsx` reaccione al login/logout sin

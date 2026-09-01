@@ -656,21 +656,33 @@ h4,
   color: #666;
 }
 
-.pago-botones {
-  display: flex;
-  gap: 1rem;
+.pasa-a-caja {
   margin-top: 1.2rem;
+  padding: 1.2rem;
+  border-radius: 10px;
+  background: #fdf0e8;
+  border: 2px solid #d1622f;
+  text-align: center;
 }
 
-.pago-botones button {
-  flex: 1;
-  padding: 0.8rem;
-  border: none;
-  border-radius: 8px;
-  background: #d1622f;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
+.pasa-a-caja-titulo {
+  margin: 0;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: #b04d1f;
+}
+
+.pasa-a-caja-sub {
+  margin: 0.5rem 0 0;
+  color: #444;
+  font-size: 1rem;
+}
+
+.pasa-a-caja-sub strong {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 1.15rem;
+  color: #1f2933;
 }
 
 .pagado-ok {
@@ -1116,6 +1128,92 @@ h4,
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   position: sticky;
   top: 1rem;
+}
+
+.pedidos-sin-cobrar {
+  background: #fdf0e8;
+  border: 2px solid #d1622f;
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.pedidos-sin-cobrar-titulo {
+  margin: 0 0 0.8rem;
+  color: #b04d1f;
+}
+
+.pedidos-sin-cobrar-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.pedido-sin-cobrar-card {
+  background: white;
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.pedido-sin-cobrar-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.pedido-sin-cobrar-ticket {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.pedido-sin-cobrar-origen {
+  font-size: 0.8rem;
+  color: #616e7c;
+}
+
+.pedido-sin-cobrar-items {
+  margin: 0.2rem 0 0;
+  font-size: 0.85rem;
+  color: #444;
+}
+
+.pedido-sin-cobrar-derecha {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pedido-sin-cobrar-total {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 1.2rem;
+  white-space: nowrap;
+}
+
+.pedido-sin-cobrar-botones {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pedido-sin-cobrar-botones button {
+  padding: 0.5rem 0.9rem;
+  border: none;
+  border-radius: 6px;
+  background: #1f9d55;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pedido-sin-cobrar-botones button:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 .caja-venta-ok {

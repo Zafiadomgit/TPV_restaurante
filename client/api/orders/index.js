@@ -28,9 +28,14 @@ export default async function handler(req, res) {
       );
     }
 
-    const { estado } = req.query;
+    const { estado, pagado } = req.query;
     let query = supabase.from("orders").select("*").order("creado_en", { ascending: true });
     if (estado) query = query.eq("estado", estado);
+    // Usado por la cola de "pedidos del kiosco sin cobrar" en /caja —
+    // pagado=false (los pedidos de venta rápida de caja nunca aparecen
+    // aquí porque se crean y se cobran en el mismo paso, nunca quedan
+    // pendientes de cobro).
+    if (pagado !== undefined) query = query.eq("pagado", pagado === "true");
 
     const { data, error } = await query;
     if (error) return res.status(500).json({ error: error.message });
