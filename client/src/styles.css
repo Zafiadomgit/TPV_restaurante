@@ -93,6 +93,8 @@ h4,
 .content {
   flex: 1;
   padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ---- Login por PIN ---- */
@@ -200,7 +202,7 @@ h4,
 /* ---- Kiosco: pantalla de inicio ---- */
 .kiosk-inicio {
   margin: -1.5rem;
-  min-height: calc(100vh - 56px);
+  flex: 1;
   background: #1f2933;
   color: #fff;
   display: flex;
@@ -803,7 +805,7 @@ h4,
   padding: 1.2rem 1.4rem;
   background: #12181d;
   color: #fff;
-  min-height: calc(100vh - 120px);
+  flex: 1;
 }
 
 .kds-header {
@@ -1815,7 +1817,7 @@ h4,
 /* ---- Pantalla de recogida ---- */
 .recogida-page {
   margin: -1.5rem;
-  min-height: calc(100vh - 56px);
+  flex: 1;
   background: #12181d;
   color: #fff;
   display: flex;

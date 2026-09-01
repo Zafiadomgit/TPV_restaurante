@@ -66,6 +66,16 @@ aparte:
   `.card-caja` — no mezcles ambos sistemas. La pantalla de inicio del
   kiosco (`.kiosk-inicio`) también es oscura, pero es un caso aparte
   (bienvenida a pantalla completa), no un tablero de datos.
+  Las tres (`.kds-page`, `.recogida-page`, `.kiosk-inicio`) se estiran
+  hasta el borde con `margin: -1.5rem` (cancela el padding de
+  `.content`) + `flex: 1` — `.content` es `display: flex;
+  flex-direction: column` justo para esto. **No le pongas un
+  `min-height: calc(100vh - <N>px)` a una pantalla nueva de estas**: un
+  número de píxeles adivinado para el alto de la barra superior nunca
+  coincide exactamente (fue justo el bug real: `120px` en `.kds-page`
+  frente a los ~58px reales de `.topbar`, dejaba una franja clara abajo
+  en pantallas con poco contenido) — usa `flex: 1` en la pantalla como
+  hacen estas tres.
 - **Badges** redondeados (`.badge-estado` + modificador) para mostrar el
   estado como texto corto dentro de una tarjeta o fila.
 - **Botones grandes y táctiles**: esto lo va a usar un camarero de pie,
