@@ -76,6 +76,18 @@ aparte:
   frente a los ~58px reales de `.topbar`, dejaba una franja clara abajo
   en pantallas con poco contenido) — usa `flex: 1` en la pantalla como
   hacen estas tres.
+  **Efecto secundario de que `.content` sea flex**: cualquier pantalla
+  que se centra con `max-width: Npx; margin: 0 auto;` (`.login-page`,
+  `.kiosk-categorias-page`, `.checkout-page`, `.gestion-menu-page`)
+  necesita también `width: 100%` explícito — sin él, los márgenes
+  horizontales en `auto` anulan el `align-items: stretch` por defecto
+  de flex (regla real de la spec, no un bug de navegador) y la pantalla
+  se encoge a su contenido en vez de ocupar el ancho completo. No se
+  nota en una tarjeta simple, pero si dentro hay un grid con `auto-fill`
+  (como la rejilla de categorías del kiosco) se ve como una sola
+  columna estrecha en vez de varias — fue un bug real que se coló al
+  arreglar la franja clara de arriba. Si añades una pantalla nueva con
+  este patrón de centrado, incluye `width: 100%` desde el principio.
 - **Badges** redondeados (`.badge-estado` + modificador) para mostrar el
   estado como texto corto dentro de una tarjeta o fila.
 - **Botones grandes y táctiles**: esto lo va a usar un camarero de pie,
