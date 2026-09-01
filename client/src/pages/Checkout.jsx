@@ -91,7 +91,7 @@ export default function Checkout() {
         <div className="pasa-a-caja">
           <p className="pasa-a-caja-titulo">👉 Pasa a caja para finalizar tu pago y recibir tu pedido</p>
           <p className="pasa-a-caja-sub">
-            Enséñales el número <strong>{formatTicket(order.ticketNumero)}</strong>
+            Diles el número <strong>{formatTicket(order.ticketNumero)}</strong>
           </p>
         </div>
       )}
