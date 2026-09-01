@@ -29,9 +29,11 @@ export default function OrderTicket({ order, onAvanzar }) {
   const siguiente = SIGUIENTE_ESTADO[order.estado];
   const urgente = minutosDesde(order.creadoEn) >= MINUTOS_URGENTE;
   const paraLlevar = order.mesa === "Para llevar";
+  const mostrador = order.mesa === "Mostrador";
+  const origenClass = paraLlevar ? "kds-ticket-llevar" : mostrador ? "kds-ticket-mostrador" : "";
 
   return (
-    <div className={`kds-ticket ${paraLlevar ? "kds-ticket-llevar" : ""}`}>
+    <div className={`kds-ticket ${origenClass}`}>
       <div className="kds-ticket-top">
         <span className="kds-ticket-id">{formatTicket(order.ticketNumero)}</span>
         <span className={`kds-ticket-tiempo ${urgente ? "urgente" : ""}`}>

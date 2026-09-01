@@ -889,6 +889,22 @@ h4,
   letter-spacing: 0.03em;
 }
 
+/* Pedidos "Mostrador" (venta rápida en caja): un tercer color propio
+   (morado), distinto tanto del gris normal de "Comer aquí" como del
+   azul de "Para llevar" — así los tres orígenes se distinguen entre sí
+   de un vistazo, no solo "para llevar" frente al resto. */
+.kds-ticket-mostrador {
+  background: #241b36;
+  border-left: 5px solid #9b6fd9;
+}
+
+.kds-ticket-mostrador .kds-ticket-origen {
+  color: #cba8f7;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
 .kds-ticket-top {
   display: flex;
   align-items: baseline;

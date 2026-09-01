@@ -275,14 +275,17 @@ un cambio de diseño real, no un ajuste trivial.
    aparte. Definidos en `ESTADOS_VALIDOS` (`_lib/orders.js`). Al llegar a
    `listo` por primera vez se graba `listo_en` (una sola vez, no se pisa en
    un revertir — lo usa el panel del dueño para el tiempo medio de
-   cocina). Los tickets con `order.mesa === "Para llevar"` llevan la
-   clase `.kds-ticket-llevar` (`OrderTicket.jsx`) — tarjeta entera en
-   azul en vez del gris oscuro normal, para que un cocinero con mucho
-   volumen distinga "para llevar" de "comer aquí"/"mostrador" sin tener
-   que leer el texto de cada ticket. Es solo `/cocina`
-   (`Recogida.jsx` tiene su propio marcado de ticket, no reutiliza
-   `OrderTicket.jsx`) — si se pide lo mismo en recogida, hay que
-   replicarlo ahí aparte.
+   cocina). Cada origen (`order.mesa`) tiene su propio color de tarjeta
+   en `OrderTicket.jsx` para distinguirlos de un vistazo sin leer el
+   texto: "Comer aquí" es el gris oscuro normal (sin clase extra),
+   "Para llevar" usa `.kds-ticket-llevar` (azul) y "Mostrador" usa
+   `.kds-ticket-mostrador` (morado) — tres colores distintos entre sí y
+   fuera de la paleta roja/naranja/verde de urgencia y estado de las
+   columnas, para no confundir origen con urgencia. Si se añade un
+   origen nuevo, dale también su propio color en vez de reutilizar uno
+   de estos dos. Es solo `/cocina` (`Recogida.jsx` tiene su propio
+   marcado de ticket, no reutiliza `OrderTicket.jsx`) — si se pide lo
+   mismo en recogida, hay que replicarlo ahí aparte.
 6. `Checkout.jsx` (`/pago/:orderId`): ticket y cobro (efectivo/tarjeta).
 7. `Historial.jsx`: pedidos cerrados, filtrables por estado.
 
