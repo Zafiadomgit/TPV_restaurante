@@ -48,6 +48,12 @@ h4,
   display: block;
 }
 
+.topbar-derecha {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
 .topbar nav a {
   color: #cbd2d9;
   text-decoration: none;
@@ -55,14 +61,140 @@ h4,
   font-weight: 500;
 }
 
+.topbar nav a:first-child {
+  margin-left: 0;
+}
+
 .topbar nav a.active {
   color: white;
   border-bottom: 2px solid #d1622f;
 }
 
+.btn-salir,
+.btn-acceso {
+  background: transparent;
+  border: 1px solid #3e4c59;
+  color: #cbd2d9;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-salir:hover,
+.btn-acceso:hover {
+  border-color: #d1622f;
+  color: white;
+}
+
 .content {
   flex: 1;
   padding: 1.5rem;
+}
+
+/* ---- Login por PIN ---- */
+.login-page {
+  max-width: 420px;
+  margin: 3rem auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.login-page h1 {
+  margin: 0.5rem 0 0;
+  font-size: 2rem;
+}
+
+.login-page p {
+  color: #616e7c;
+  margin: 0 0 1rem;
+}
+
+.login-volver {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: #616e7c;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+}
+
+.login-roles {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.login-rol-btn {
+  flex: 1;
+  padding: 1.5rem 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 1px solid #d9dfe4;
+  background: white;
+  cursor: pointer;
+}
+
+.login-rol-btn:hover {
+  border-color: #d1622f;
+  color: #d1622f;
+}
+
+.login-pin-display {
+  display: flex;
+  gap: 0.8rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.login-pin-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #d9dfe4;
+  background: transparent;
+}
+
+.login-pin-dot.lleno {
+  background: #d1622f;
+  border-color: #d1622f;
+}
+
+.login-teclado {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.7rem;
+  width: 100%;
+}
+
+.login-teclado button {
+  padding: 1.1rem 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 1px solid #d9dfe4;
+  background: white;
+  cursor: pointer;
+}
+
+.login-teclado button:hover:not(:disabled) {
+  border-color: #d1622f;
+}
+
+.login-teclado button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.login-tecla-borrar {
+  font-size: 1.1rem !important;
 }
 
 /* ---- Kiosco: pantalla de inicio ---- */

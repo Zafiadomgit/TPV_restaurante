@@ -1,4 +1,5 @@
 import { supabase } from "../_lib/supabaseClient.js";
+import { exigirRol } from "../_lib/auth.js";
 
 function mapRow(row) {
   return {
@@ -23,6 +24,8 @@ function slugify(texto) {
 }
 
 export default async function handler(req, res) {
+  if (!exigirRol(req, res, ["caja"])) return;
+
   if (req.method === "GET") {
     // Lista completa (incluye inactivos) para la pantalla de gestión —
     // GET /api/menu ya filtra los inactivos para el kiosco.

@@ -1,9 +1,15 @@
 import { supabase } from "../_lib/supabaseClient.js";
 import { findProducts } from "../_lib/menu.js";
 import { calcularTotales, mapRow } from "../_lib/orders.js";
+import { exigirRol } from "../_lib/auth.js";
 
 export default async function handler(req, res) {
   if (req.method === "GET") {
+    // Listar pedidos es para cocina/historial/recogida (personal), no para
+    // el kiosco público — el cliente solo consulta SU pedido por id
+    // (GET /api/orders/[id], sin rol) para ver el estado de su ticket.
+    if (!exigirRol(req, res, ["cocina", "caja"])) return;
+
     const { estado } = req.query;
     let query = supabase.from("orders").select("*").order("creado_en", { ascending: true });
     if (estado) query = query.eq("estado", estado);

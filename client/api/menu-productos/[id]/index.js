@@ -1,4 +1,5 @@
 import { supabase } from "../../_lib/supabaseClient.js";
+import { exigirRol } from "../../_lib/auth.js";
 
 function mapRow(row) {
   return {
@@ -14,6 +15,8 @@ function mapRow(row) {
 }
 
 export default async function handler(req, res) {
+  if (!exigirRol(req, res, ["caja"])) return;
+
   const { id } = req.query;
 
   if (req.method === "PATCH") {

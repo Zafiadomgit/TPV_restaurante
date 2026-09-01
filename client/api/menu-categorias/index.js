@@ -1,10 +1,13 @@
 import { supabase } from "../_lib/supabaseClient.js";
+import { exigirRol } from "../_lib/auth.js";
 
 function mapRow(row) {
   return { id: row.id, nombre: row.nombre, orden: row.orden };
 }
 
 export default async function handler(req, res) {
+  if (!exigirRol(req, res, ["caja"])) return;
+
   if (req.method === "GET") {
     const { data, error } = await supabase
       .from("menu_categorias")

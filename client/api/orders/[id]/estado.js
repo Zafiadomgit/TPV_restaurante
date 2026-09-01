@@ -1,7 +1,10 @@
 import { supabase } from "../../_lib/supabaseClient.js";
 import { ESTADOS_VALIDOS, mapRow } from "../../_lib/orders.js";
+import { exigirRol } from "../../_lib/auth.js";
 
 export default async function handler(req, res) {
+  if (!exigirRol(req, res, ["cocina", "caja"])) return;
+
   if (req.method !== "PATCH") {
     return res.status(405).json({ error: "Método no permitido" });
   }

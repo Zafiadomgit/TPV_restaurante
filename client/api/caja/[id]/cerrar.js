@@ -1,7 +1,10 @@
 import { supabase } from "../../_lib/supabaseClient.js";
 import { calcularCierre, mapTurnoRow } from "../../_lib/caja.js";
+import { exigirRol } from "../../_lib/auth.js";
 
 export default async function handler(req, res) {
+  if (!exigirRol(req, res, ["caja"])) return;
+
   if (req.method !== "PATCH") {
     return res.status(405).json({ error: "Método no permitido" });
   }

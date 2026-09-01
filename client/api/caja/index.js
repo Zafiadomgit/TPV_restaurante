@@ -1,7 +1,10 @@
 import { supabase } from "../_lib/supabaseClient.js";
 import { mapTurnoRow } from "../_lib/caja.js";
+import { exigirRol } from "../_lib/auth.js";
 
 export default async function handler(req, res) {
+  if (!exigirRol(req, res, ["caja"])) return;
+
   if (req.method === "GET") {
     const { estado } = req.query;
     let query = supabase.from("turnos_caja").select("*").order("abierto_en", { ascending: false });

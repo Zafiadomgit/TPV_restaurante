@@ -1,11 +1,15 @@
+import { getSesion, cerrarSesion } from "./auth.js";
+
 const BASE_URL = "/api";
 
 async function request(path, options = {}) {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...options,
-  });
+  const sesion = getSesion();
+  const headers = { "Content-Type": "application/json", ...options.headers };
+  if (sesion?.token) headers.Authorization = `Bearer ${sesion.token}`;
+
+  const res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
   const data = await res.json().catch(() => null);
+  if (res.status === 401 && sesion) cerrarSesion();
   if (!res.ok) {
     throw new Error(data?.error || "Error en la petición");
   }
@@ -13,6 +17,7 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+  login: (rol, pin) => request("/login", { method: "POST", body: JSON.stringify({ rol, pin }) }),
   getMenu: () => request("/menu"),
   getOrders: (estado) => request(`/orders${estado ? `?estado=${estado}` : ""}`),
   getOrder: (id) => request(`/orders/${id}`),

@@ -14,16 +14,20 @@ panel).
 
 ## 0. Mapa de pantallas
 
-| Ruta | Página | Qué hace |
-| --- | --- | --- |
-| `/` | `Order.jsx` | Kiosco de autoservicio: inicio (aquí/para llevar) → menú + carrito, con personalización de producto |
-| `/pago/:orderId` | `Checkout.jsx` | Ticket del pedido y cobro |
-| `/cocina` | `Kitchen.jsx` | KDS, 3 columnas por estado |
-| `/historial` | `Historial.jsx` | Pedidos cerrados, filtrable por estado |
-| `/caja` | `Caja.jsx` | Turno de caja (apertura/cierre/arqueo) + venta rápida en mostrador |
-| `/carta` | `GestionMenu.jsx` | Editar el menú: categorías y productos (crear/editar/borrar) |
-| `/panel` | `Panel.jsx` | KPIs del día, ventas por hora, más vendidos |
-| `/recogida` | `Recogida.jsx` | Tablero de pedidos preparando/listo (pantalla pública) |
+| Ruta | Página | Qué hace | Acceso |
+| --- | --- | --- | --- |
+| `/` | `Order.jsx` | Kiosco de autoservicio: inicio (aquí/para llevar) → menú + carrito, con personalización de producto | Público (sin login) |
+| `/pago/:orderId` | `Checkout.jsx` | Ticket del pedido y cobro | Público (sin login) |
+| `/login` | `Login.jsx` | Selección de rol (Caja/Cocina) + teclado numérico de PIN | Público (es la puerta de entrada) |
+| `/cocina` | `Kitchen.jsx` | KDS, 3 columnas por estado | Caja o Cocina |
+| `/historial` | `Historial.jsx` | Pedidos cerrados, filtrable por estado | Solo Caja |
+| `/caja` | `Caja.jsx` | Turno de caja (apertura/cierre/arqueo) + venta rápida en mostrador | Solo Caja |
+| `/carta` | `GestionMenu.jsx` | Editar el menú: categorías y productos (crear/editar/borrar) | Solo Caja |
+| `/panel` | `Panel.jsx` | KPIs del día, ventas por hora, más vendidos | Solo Caja |
+| `/recogida` | `Recogida.jsx` | Tablero de pedidos preparando/listo (pantalla pública) | Caja o Cocina |
+
+Ver sección "Roles y acceso por PIN" más abajo para el porqué de esta
+columna y cómo está implementada.
 
 ## 1. Diseño visual — sigue lo que ya existe
 
@@ -247,6 +251,71 @@ oscuro, tipografía enorme. Solo lee `en_preparacion`/`listo` vía
 `GET /api/orders` con el mismo polling de 3s que cocina — no le añadas
 acciones (botones, formularios): es de solo lectura por diseño.
 
+### Roles y acceso por PIN
+El TPV tiene dos roles con PIN numérico de 4 dígitos: **`caja`** (acceso
+total, sin restricciones — abre/cierra turno, venta rápida, edita el menú,
+ve informes) y **`cocina`** (solo `/cocina` y `/recogida`). El kiosco
+público (`/`, `/pago/:orderId`) **no es un tercer rol**: es el estado
+"sin sesión" por diseño — el cliente nunca necesita PIN para pedir y
+pagar. Si algo parece pedir un "rol usuario", probablemente ya es esto.
+
+- **Backend** (`client/api/_lib/auth.js`): token firmado con HMAC-SHA256
+  (`crypto.createHmac`, sin librería nueva), sin tabla de sesiones —
+  stateless. `crearToken(rol)` genera `rol.expira.firma` (12h de validez);
+  `verificarToken(token, rolesPermitidos)` valida firma (con
+  `timingSafeEqual`), expiración y rol permitido; `verificarPin(rol, pin)`
+  compara contra `PIN_CAJA`/`PIN_COCINA`. `exigirRol(req, res, roles)` es
+  el guard que usan los handlers: lee `Authorization: Bearer <token>`, y si
+  no es válido responde `401` él mismo y devuelve `null` — el handler debe
+  cortar con `if (!exigirRol(req, res, [...])) return;` como primera línea
+  (o dentro del bloque del método que corresponda, ver más abajo).
+- **Variables de entorno** (Vercel): `AUTH_SECRET`, `PIN_CAJA`,
+  `PIN_COCINA`. El código tiene valores por defecto para poder probar en
+  local, pero **`AUTH_SECRET` no es seguro dejarlo así en producción** (a
+  diferencia de la clave anon de Supabase, que sí es pública por diseño) —
+  cualquiera que lea el código fuente podría firmar tokens válidos.
+  Configura las tres antes de depender de esto en producción real.
+- **Qué está protegido y qué no, y por qué**: todo lo de `/carta`,
+  `/caja`, `/historial`, `/panel` exige rol `caja`. `GET /api/orders` y
+  `PATCH /api/orders/[id]/estado` exigen `caja` o `cocina` (los usa
+  cocina, checkout-historial y recogida). Deliberadamente **sin
+  proteger**: `GET /api/menu` (el kiosco lo necesita sin login),
+  `GET /api/orders/[id]` (el cliente consulta su propio ticket) y
+  `PATCH /api/orders/[id]/pagar` (el autocobro del kiosco es público a
+  propósito) — no le añadas `exigirRol` a estos tres sin que el dueño lo
+  pida explícitamente, porque rompería el flujo público de pedir y pagar
+  que es el corazón del kiosco.
+- **Frontend**: sesión en `localStorage` vía `client/src/auth.js`
+  (`getSesion`/`guardarSesion`/`cerrarSesion`, más un evento
+  `window` (`tpv:sesion`) para que `App.jsx` reaccione al login/logout sin
+  recargar). `client/src/api.js` adjunta `Authorization: Bearer <token>`
+  automáticamente si hay sesión, y si el backend responde `401` limpia la
+  sesión local (token caducado o revocado). `RutaProtegida.jsx`
+  (`client/src/components/RutaProtegida.jsx`) envuelve cada `<Route>` que
+  necesita rol y redirige a `/login` si no hay sesión o el rol no
+  coincide. `App.jsx` muestra el nav condicional según `sesion?.rol` — un
+  cliente sin sesión solo ve "Pedidos"; si añades una pantalla nueva
+  protegida, añade también su `NavLink` condicional ahí, no solo la ruta.
+- Si se pide login "por empleado" (usuario/contraseña individual, no PIN
+  compartido por rol), es un cambio de diseño real — este sistema es
+  intencionalmente de PIN compartido por rol, no por persona.
+
+### Marca — logos y assets
+Los assets de marca reales viven en `client/public/brand/` (favicons,
+manifest PWA, PNGs en varios tamaños, SVGs). Variantes disponibles:
+`logo-horizontal-color.svg` (lockup completo con palmeras y la franja roja
+"KEBAB, HAMBURGUESERIA, PIZZERIA" — se usa en la bienvenida del kiosco,
+`.kiosk-logo-img`), `logo-monocromo-blanco.svg` (wordmark blanco sin
+fondo — se usa en la barra superior oscura, `.brand-logo`),
+`logo-monocromo-oscuro.svg`/`icono-marca-*` (variantes para fondo claro o
+solo el icono) y `logo-ticket-*` (pensados para el ticket impreso —
+**aún no usados en ningún sitio**, disponibles si se añade impresión de
+ticket con logo). Si necesitas el logo en una pantalla nueva, usa uno de
+estos archivos — no reintroduzcas el placeholder "CA" en círculo ni texto
+emoji. El color de marca del kit (`#2c2e35`) se normalizó a `#1f2933` en
+`manifest.json` para no crear un segundo tono oscuro que no case con el
+resto de la app.
+
 ### Sincronización: polling, no websockets
 Todas las pantallas que necesitan reflejar cambios de otra pantalla
 (cocina, checkout, recogida, caja) usan **polling cada 3 segundos** (el
@@ -295,3 +364,10 @@ Antes de decir que una función del TPV está lista, verifica manualmente
   `calcularResumen()` sigue siendo una función pura testeable sin Supabase.
 - **Consistencia visual**: la pantalla nueva usa la paleta y los patrones
   de la sección 1, no colores o componentes ad-hoc.
+- **Si la feature toca roles/acceso**: el endpoint nuevo rechaza con `401`
+  una petición cruda sin `Authorization` o con un token de rol equivocado
+  (pruébalo con una petición directa, no solo navegando con sesión
+  iniciada) — no confíes en que la ruta esté oculta en el nav; eso es solo
+  UI. Si la pantalla debe ser accesible sin login (como `/` o
+  `/pago/:orderId`), no le añadas `exigirRol` "por si acaso": rompe el
+  flujo público del kiosco.
