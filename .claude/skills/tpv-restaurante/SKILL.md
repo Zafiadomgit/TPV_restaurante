@@ -155,9 +155,18 @@ Salsas, Bebidas, Ensaladas, Pizzas, Haz tu menú).
   menú" de kebab y plato) siguen incluyendo los pasos "Quitar ingredientes"
   (Sin tomate/cebolla/repollo y zanahoria/lechuga, sin coste — repollo y
   zanahoria van combinados en una sola opción porque en cocina es un único
-  ingrediente premezclado) y "Extras" (Solo carne/Extra salsa/Extra queso,
-  +1€ cada una), sin límite de selección (`maxSeleccion` omitido a
-  propósito).
+  ingrediente premezclado) y "Extras" (Extra salsa/Extra queso, +1€ cada
+  una), sin límite de selección (`maxSeleccion` omitido a propósito).
+  **`precioExtra` nunca puede ser negativo** (validado en
+  POST/PATCH de `menu-productos` y clampado en `EditarProducto.jsx`):
+  "quitar un ingrediente" es y debe seguir siendo gratis, nunca un
+  descuento — si algún día se pide una rebaja por quitar algo, es una
+  regla de precio nueva, no un `precioExtra` negativo en un paso de
+  "Quitar ingredientes". No existe una opción "Solo carne" como extra
+  de pago — se quitó porque duplicaba, de forma confusa y de pago, lo
+  que ya se consigue gratis marcando las 4 opciones de "Quitar
+  ingredientes". No la reintroduzcas como extra sin que el dueño lo
+  pida explícitamente.
 - **No hay** un constructor visual de menús tipo arrastrar-y-soltar (armar
   combos desde ingredientes sueltos en una UI de slots) — se decidió no
   construirlo; `/carta` es un CRUD de categorías/productos, no un editor de
