@@ -118,9 +118,18 @@ aparte:
 - Cambios de esquema de datos van en `supabase/migration.sql` (tablas) y
   `supabase/policies.sql` (RLS). Si añades una tabla nueva, añade también
   su política — sin RLS la app no podrá leer/escribir esa tabla. `orders` y
-  `turnos_caja` no permiten borrar (son histórico); `menu_categorias` y
-  `menu_productos` sí (son un catálogo vivo) — sigue esa misma distinción
-  para tablas nuevas en vez de copiar una política sin pensar si aplica.
+  `turnos_caja` no permiten borrar **desde la app** (ni la UI ni la API
+  exponen un DELETE, son histórico) — eso no cambia. `supabase/
+  reset_datos_prueba.sql` es la excepción a propósito: un script de un
+  solo uso para que el dueño vacíe `orders`/`turnos_caja` a mano desde
+  el SQL Editor de Supabase (bypaseando la app por completo) cuando
+  quiere dejar el sistema "de cero" antes de empezar a usarlo de
+  verdad, tras un periodo de pruebas. No lo conviertas en un botón de
+  la UI ni en un endpoint — sigue siendo intencionadamente una acción
+  manual e irreversible fuera de la app, no una función del producto.
+  `menu_categorias` y `menu_productos` sí permiten borrar desde la app
+  (son un catálogo vivo) — sigue esa misma distinción para tablas
+  nuevas en vez de copiar una política sin pensar si aplica.
 - **No hay inventario/gestión de stock en este proyecto, a propósito.**
   Existió (tabla `inventario`, pantalla `/inventario`, vínculo
   `ingredienteClave` en el menú) pero se retiró por completo: el negocio
