@@ -397,6 +397,17 @@ Piezas:
   JSX de `Order.jsx`/`Checkout.jsx` ni en los componentes que renderizan
   (`MenuItemCard.jsx`, `CartSidebar.jsx`, `Personalizar.jsx`, todos
   reciben `idioma` como prop para esto).
+- **La traducción de categoría/producto NUNCA es automática** —
+  `nombre_en`/`descripcion_en` empiezan en `NULL` para todo lo que ya
+  existía en la BD antes de añadir esas columnas, así que sin rellenarlas
+  el kiosco en inglés cae a español en todo el menú (esperado, no un
+  bug: ver `conIdioma()` más arriba). `supabase/traducciones_menu_en.sql`
+  es un script de datos de un solo uso que rellena esas columnas para
+  los ~119 productos/11 categorías que ya existían en `migration.sql` en
+  el momento de añadir el idioma — el dueño lo ejecuta una vez en el SQL
+  Editor de Supabase. Cualquier producto/categoría creado después (desde
+  `/carta`) necesita su traducción a mano en el formulario, ese script no
+  se vuelve a ejecutar solo.
 
 ### Panel del dueño e informes
 `GET /api/informes` (`client/api/informes.js` + `_lib/informes.js`)
