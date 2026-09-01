@@ -46,12 +46,12 @@ export const api = {
   crearCategoria: (nombre) =>
     request("/menu-categorias", { method: "POST", body: JSON.stringify({ nombre }) }),
   actualizarCategoria: (id, cambios) =>
-    request(`/menu-categorias/${id}`, { method: "PATCH", body: JSON.stringify(cambios) }),
-  eliminarCategoria: (id) => request(`/menu-categorias/${id}`, { method: "DELETE" }),
+    request(`/menu-categorias?id=${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(cambios) }),
+  eliminarCategoria: (id) => request(`/menu-categorias?id=${encodeURIComponent(id)}`, { method: "DELETE" }),
   getProductosAdmin: () => request("/menu-productos"),
   crearProducto: (producto) =>
     request("/menu-productos", { method: "POST", body: JSON.stringify(producto) }),
   actualizarProducto: (id, cambios) =>
-    request(`/menu-productos/${id}`, { method: "PATCH", body: JSON.stringify(cambios) }),
-  eliminarProducto: (id) => request(`/menu-productos/${id}`, { method: "DELETE" }),
+    request(`/menu-productos?id=${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(cambios) }),
+  eliminarProducto: (id) => request(`/menu-productos?id=${encodeURIComponent(id)}`, { method: "DELETE" }),
 };

@@ -5,11 +5,16 @@ function mapRow(row) {
   return { id: row.id, nombre: row.nombre, orden: row.orden };
 }
 
+// Categorías y su detalle comparten un único archivo (una sola función
+// serverless) para no superar el límite de 12 funciones del plan Hobby
+// de Vercel — la categoría a editar/borrar se identifica por
+// ?id=<uuid> en la query string, no por un segmento de ruta, porque
+// las rutas dinámicas tipo [[...id]] son una convención de Next.js que
+// este proyecto (sin framework) no usa.
 export default async function handler(req, res) {
   if (!exigirRol(req, res, ["caja"])) return;
 
-  const segmentos = req.query.id;
-  const id = Array.isArray(segmentos) ? segmentos[0] : segmentos;
+  const { id } = req.query;
 
   if (!id) {
     if (req.method === "GET") {
