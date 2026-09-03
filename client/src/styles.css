@@ -714,6 +714,63 @@ h4,
   color: #666;
 }
 
+.aviso-whatsapp {
+  margin-top: 1rem;
+}
+
+.aviso-whatsapp-form {
+  padding: 1rem;
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.aviso-whatsapp-form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #1f2933;
+}
+
+.aviso-whatsapp-row {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.aviso-whatsapp-row input {
+  flex: 1;
+  padding: 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.aviso-whatsapp-row button {
+  padding: 0.6rem 1.1rem;
+  border: none;
+  border-radius: 8px;
+  background: #1f9d55;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.aviso-whatsapp-row button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.aviso-whatsapp-ok {
+  margin: 0;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  background: #eafaf1;
+  border: 1px solid #1f9d55;
+  color: #157a41;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
 .pasa-a-caja {
   margin-top: 1.2rem;
   padding: 1.2rem;

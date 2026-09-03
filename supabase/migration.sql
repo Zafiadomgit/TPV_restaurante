@@ -278,3 +278,9 @@ alter table menu_categorias add column if not exists nombre_en text;
 alter table menu_productos add column if not exists nombre_en text;
 alter table menu_productos add column if not exists descripcion_en text;
 
+-- Número de WhatsApp opcional que el cliente deja en Checkout.jsx para
+-- recibir un aviso cuando cocina marque su pedido "listo" (ver
+-- client/api/_lib/whatsapp.js). NULL = el cliente no lo dejó, no se
+-- envía nada.
+alter table orders add column if not exists telefono_whatsapp text;
+

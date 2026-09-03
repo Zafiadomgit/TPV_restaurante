@@ -22,6 +22,8 @@ export const api = {
   getOrders: (estado) => request(`/orders${estado ? `?estado=${estado}` : ""}`),
   getPedidosSinCobrar: () => request("/orders?pagado=false"),
   getOrder: (id) => request(`/orders/${id}`),
+  guardarTelefonoWhatsapp: (id, telefonoWhatsapp) =>
+    request(`/orders/${id}`, { method: "PATCH", body: JSON.stringify({ telefonoWhatsapp }) }),
   createOrder: (payload) =>
     request("/orders", { method: "POST", body: JSON.stringify(payload) }),
   updateEstado: (id, estado) =>

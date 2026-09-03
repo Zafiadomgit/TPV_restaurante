@@ -41,6 +41,12 @@ const TEXTOS = {
     nota: "Nota:",
     cargandoPedido: "Cargando pedido...",
     pedidoNoEncontrado: "No se encontró el pedido",
+    avisoWhatsappTitulo: "¿Te avisamos por WhatsApp cuando esté listo?",
+    avisoWhatsappPlaceholder: "Tu número de WhatsApp",
+    avisoWhatsappGuardar: "Avísame",
+    avisoWhatsappGuardando: "Guardando...",
+    avisoWhatsappGuardado: "Te avisaremos por WhatsApp al",
+    avisoWhatsappError: "Ese número no parece válido",
   },
   en: {
     cargandoMenu: "Loading menu...",
@@ -79,6 +85,12 @@ const TEXTOS = {
     nota: "Note:",
     cargandoPedido: "Loading order...",
     pedidoNoEncontrado: "Order not found",
+    avisoWhatsappTitulo: "Want a WhatsApp message when it's ready?",
+    avisoWhatsappPlaceholder: "Your WhatsApp number",
+    avisoWhatsappGuardar: "Notify me",
+    avisoWhatsappGuardando: "Saving...",
+    avisoWhatsappGuardado: "We'll message you on WhatsApp at",
+    avisoWhatsappError: "That number doesn't look valid",
   },
 };
 

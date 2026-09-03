@@ -1,6 +1,7 @@
 import { supabase } from "../../_lib/supabaseClient.js";
 import { ESTADOS_VALIDOS, mapRow } from "../../_lib/orders.js";
 import { exigirRol } from "../../_lib/auth.js";
+import { enviarAvisoPedidoListo } from "../../_lib/whatsapp.js";
 
 export default async function handler(req, res) {
   if (!exigirRol(req, res, ["cocina", "caja"])) return;
@@ -38,5 +39,14 @@ export default async function handler(req, res) {
 
   if (error) return res.status(500).json({ error: error.message });
   if (!data) return res.status(404).json({ error: "Pedido no encontrado" });
+
+  // Aviso de WhatsApp solo la primera vez que el pedido llega a "listo"
+  // (mismo criterio que listo_en, para no reavisar si luego se revierte
+  // y se vuelve a marcar desde el historial). enviarAvisoPedidoListo
+  // nunca lanza, así que esto no puede hacer fallar la respuesta.
+  if (cambios.listo_en && data.telefono_whatsapp) {
+    await enviarAvisoPedidoListo(data.telefono_whatsapp, data.ticket_numero);
+  }
+
   res.status(200).json(mapRow(data));
 }

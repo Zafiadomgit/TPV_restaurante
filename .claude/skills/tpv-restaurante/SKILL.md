@@ -421,6 +421,50 @@ Piezas:
   `/carta`) necesita su traducción a mano en el formulario, ese script no
   se vuelve a ejecutar solo.
 
+### Aviso de WhatsApp cuando el pedido está listo
+En `Checkout.jsx`, si el pedido no está aún en un estado terminal
+(`listo`/`entregado`/`cancelado` — ver `ESTADOS_SIN_AVISO`), se muestra
+un formulario para que el cliente deje su número; en cuanto lo guarda se
+sustituye por una confirmación ("Te avisaremos por WhatsApp al +34...").
+Piezas:
+- `orders.telefono_whatsapp` (nullable) — `PATCH /api/orders/[id]`
+  (`client/api/orders/[id]/index.js`) es **público a propósito**, igual
+  que el `GET` que ya vivía en ese archivo (el cliente lo llama sin
+  sesión desde `/pago/:orderId`), pero solo acepta tocar este campo —
+  nunca `estado`/`pagado`/importes, que siguen exigiendo rol en sus
+  propios endpoints. Se añadió a este archivo en vez de crear uno nuevo
+  porque el proyecto ya iba al límite de 12 funciones del plan Hobby de
+  Vercel (ver más abajo) — sigue este patrón (ampliar un `index.js`
+  existente por método/query) antes de añadir un archivo nuevo bajo
+  `client/api/`.
+- `normalizarTelefonoWhatsapp()` (`_lib/orders.js`) asume prefijo +34
+  cuando el cliente teclea un móvil de 9 dígitos sin prefijo (caso
+  normal para el negocio) y devuelve `null` si no parece un número
+  válido — el endpoint responde 400 en ese caso.
+- `_lib/whatsapp.js` → `enviarAvisoPedidoListo()` llama a la Meta Cloud
+  API (WhatsApp Business Platform) directamente, sin Twilio ni ningún
+  otro intermediario — decisión tomada por coste (Meta da ~1000
+  conversaciones/mes gratis). Se dispara desde
+  `orders/[id]/estado.js`, **solo la primera vez** que un pedido llega a
+  `listo` (mismo criterio que `listo_en`, para no reavisar si se
+  revierte y se vuelve a marcar desde el historial) y solo si el pedido
+  tiene `telefono_whatsapp`. **Nunca lanza** — si Meta responde error, o
+  si las variables de entorno no están puestas, se traga el fallo (con
+  `console.error`) y la respuesta al cocinero sigue siendo 200: marcar
+  "listo" en cocina tiene que funcionar siempre, pase lo que pase con
+  WhatsApp.
+- Variables de entorno que hacen falta en Vercel para que esto envíe de
+  verdad (sin ellas, `enviarAvisoPedidoListo` no hace nada, no rompe
+  nada): `WHATSAPP_TOKEN` (token de acceso permanente de la app de Meta
+  for Developers), `WHATSAPP_PHONE_NUMBER_ID` (el Phone Number ID del
+  número de WhatsApp Business del negocio) y `WHATSAPP_TEMPLATE_NAME`
+  (nombre de la plantilla aprobada por Meta, con un único parámetro de
+  texto para el ticket, ej. *"Tu pedido {{1}} ya está listo para
+  recoger"*). Dar de alta esto (cuenta de Meta Business, número
+  verificado, plantilla aprobada) es cosa del dueño — no algo que se
+  pueda automatizar desde aquí. Mientras no estén puestas, el kiosco
+  sigue funcionando normal, simplemente no se manda ningún WhatsApp.
+
 ### Panel del dueño e informes
 `GET /api/informes` (`client/api/informes.js` + `_lib/informes.js`)
 agrega los pedidos **de hoy** (desde las 00:00 UTC — simplificación

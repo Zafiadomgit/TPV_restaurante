@@ -8,15 +8,35 @@ import SelectorIdioma from "../components/SelectorIdioma.jsx";
 
 const POLL_MS = 3000;
 
+const ESTADOS_SIN_AVISO = ["listo", "entregado", "cancelado"];
+
 export default function Checkout() {
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
   const [error, setError] = useState("");
   const [idioma, setIdioma] = useState(() => getIdioma());
+  const [telefonoInput, setTelefonoInput] = useState("");
+  const [guardandoTelefono, setGuardandoTelefono] = useState(false);
+  const [errorTelefono, setErrorTelefono] = useState("");
 
   const cambiarIdioma = (nuevo) => {
     setIdioma(nuevo);
     guardarIdioma(nuevo);
+  };
+
+  const guardarTelefono = async (e) => {
+    e.preventDefault();
+    if (!telefonoInput.trim()) return;
+    setErrorTelefono("");
+    setGuardandoTelefono(true);
+    try {
+      const actualizado = await api.guardarTelefonoWhatsapp(orderId, telefonoInput.trim());
+      setOrder(actualizado);
+    } catch {
+      setErrorTelefono(t(idioma, "avisoWhatsappError"));
+    } finally {
+      setGuardandoTelefono(false);
+    }
   };
 
   useEffect(() => {
@@ -95,6 +115,33 @@ export default function Checkout() {
           </div>
         </div>
       </div>
+
+      {!ESTADOS_SIN_AVISO.includes(order.estado) && (
+        <div className="aviso-whatsapp">
+          {order.telefonoWhatsapp ? (
+            <p className="aviso-whatsapp-ok">
+              {t(idioma, "avisoWhatsappGuardado")} <strong>+{order.telefonoWhatsapp}</strong> 📲
+            </p>
+          ) : (
+            <form className="aviso-whatsapp-form" onSubmit={guardarTelefono}>
+              <label htmlFor="telefono-whatsapp">{t(idioma, "avisoWhatsappTitulo")}</label>
+              <div className="aviso-whatsapp-row">
+                <input
+                  id="telefono-whatsapp"
+                  type="tel"
+                  placeholder={t(idioma, "avisoWhatsappPlaceholder")}
+                  value={telefonoInput}
+                  onChange={(e) => setTelefonoInput(e.target.value)}
+                />
+                <button type="submit" disabled={guardandoTelefono || !telefonoInput.trim()}>
+                  {guardandoTelefono ? t(idioma, "avisoWhatsappGuardando") : t(idioma, "avisoWhatsappGuardar")}
+                </button>
+              </div>
+              {errorTelefono && <p className="error">{errorTelefono}</p>}
+            </form>
+          )}
+        </div>
+      )}
 
       {order.pagado ? (
         <p className="pagado-ok">
