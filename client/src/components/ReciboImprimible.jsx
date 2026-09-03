@@ -8,6 +8,16 @@ function formatFechaHora(iso) {
 
 const NOMBRE_METODO_PAGO = { efectivo: "Efectivo", tarjeta: "Tarjeta" };
 
+// Datos fiscales del negocio para el recibo impreso. Cambian rara vez —
+// si el dueño los actualiza (ej. nuevo CIF, cambio de dirección), es
+// este objeto el que hay que tocar, no el JSX de abajo.
+const DATOS_NEGOCIO = {
+  cif: "X6995146H",
+  telefono: "605 665 040",
+  direccion: "Calle Mayor, 90, 09500 Medina de Pomar",
+  email: "Kebabcali21@gmail.com",
+};
+
 // Se queda fuera de la vista en pantalla (ver .recibo-imprimible en
 // styles.css) y solo se muestra cuando el navegador imprime — no es un
 // modal, así que no necesita botón de cerrar ni overlay.
@@ -19,6 +29,13 @@ export default function ReciboImprimible({ venta }) {
       <div className="recibo-header">
         <img src="/brand/svg/logo-ticket-negro.svg" alt="California" className="recibo-logo" />
         <p className="recibo-tagline">Kebab · Hamburguesería · Pizzería</p>
+        <div className="recibo-datos-fiscales">
+          <p>CIF {DATOS_NEGOCIO.cif}</p>
+          <p>{DATOS_NEGOCIO.direccion}</p>
+          <p>
+            Tel. {DATOS_NEGOCIO.telefono} · {DATOS_NEGOCIO.email}
+          </p>
+        </div>
       </div>
 
       <p className="recibo-ticket">{formatTicket(venta.ticketNumero)}</p>

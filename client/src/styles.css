@@ -1351,6 +1351,16 @@ h4,
     font-size: 10px;
   }
 
+  .recibo-datos-fiscales {
+    margin: 0.3rem 0 0;
+  }
+
+  .recibo-datos-fiscales p {
+    margin: 0;
+    font-size: 9px;
+    color: #333;
+  }
+
   .recibo-ticket {
     text-align: center;
     font-size: 16px;

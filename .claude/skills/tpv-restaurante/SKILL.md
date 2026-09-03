@@ -249,7 +249,10 @@ de la página al volver de imprimir). No hay integración con una
 impresora térmica concreta a propósito — es impresión de navegador, así
 que funciona con cualquier impresora que tenga controlador de sistema.
 Si se pide en el futuro imprimir sin diálogo (ESC/POS directo por USB/
-red), es una pieza nueva, no una extensión de esto.
+red), es una pieza nueva, no una extensión de esto. Los datos fiscales
+del negocio (CIF, dirección, teléfono, email) que aparecen bajo el logo
+del recibo están en la constante `DATOS_NEGOCIO` al principio de
+`ReciboImprimible.jsx` — si cambian, se edita ese objeto, no el JSX.
 
 **Cola de "Pedidos del kiosco sin cobrar"**: como el kiosco no tiene
 datáfono integrado (ver "Flujo de un pedido" más abajo), el cobro real
