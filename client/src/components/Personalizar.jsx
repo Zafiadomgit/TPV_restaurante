@@ -42,29 +42,72 @@ export default function Personalizar({ producto, idioma, onConfirmar, onCancelar
   });
   const precioBase = pasoConPrecioBase ? pasoConPrecioBase.precioSiTodoQuitado : producto.precio;
 
-  const extraPorUnidad = (producto.modificadores || []).reduce((acc, paso) => {
+  // Mismo cálculo de extra y texto que el backend (POST /api/orders) para
+  // cada paso — ver comentarios ahí. Se calcula una vez por render y se
+  // reutiliza tanto para el precio en vivo como para el texto al confirmar,
+  // para que el modal nunca muestre un precio o un texto que luego no
+  // coincida con lo que realmente cobra/guarda el backend.
+  const detallePasos = (producto.modificadores || []).map((paso) => {
     const elegidas = seleccion[paso.id] || [];
-    return (
-      acc +
-      elegidas.reduce((sub, optId) => {
-        const opcion = paso.opciones.find((o) => o.id === optId);
-        return sub + (opcion ? opcion.precioExtra : 0);
-      }, 0)
+    const seleccionadas = elegidas.map((optId) => paso.opciones.find((o) => o.id === optId)).filter(Boolean);
+
+    // primerosGratis: las primeras N opciones elegidas (por precio
+    // ascendente) no suman precioExtra, el resto sí.
+    const gratis = typeof paso.primerosGratis === "number" ? paso.primerosGratis : 0;
+    const idsGratis = new Set(
+      [...seleccionadas]
+        .sort((a, b) => a.precioExtra - b.precioExtra)
+        .slice(0, gratis)
+        .map((o) => o.id)
     );
-  }, 0);
+    let extra = 0;
+    for (const opcion of seleccionadas) {
+      if (!idsGratis.has(opcion.id)) extra += opcion.precioExtra;
+    }
+
+    // Texto para cocina — mismos tres modos que el backend, en el mismo
+    // orden: resumenQuitarMuchos (a partir de `umbral` quitados, resume en
+    // vez de listar cada "Sin X"), textoSiVacio (si no queda nada
+    // seleccionado), o por defecto solo los CAMBIOS respecto a lo marcado
+    // por defecto.
+    const textos = [];
+    const umbral = paso.resumenQuitarMuchos?.umbral;
+    if (typeof umbral === "number" && seleccionadas.length >= umbral) {
+      const restantes = paso.opciones.filter((o) => !elegidas.includes(o.id));
+      if (restantes.length > 0) {
+        textos.push(`Solo con ${restantes.map((o) => o.ingrediente || o.nombre).join(" y ")}`);
+      } else if (paso.resumenQuitarMuchos.siTodoVacio) {
+        textos.push(paso.resumenQuitarMuchos.siTodoVacio);
+      }
+    } else if (seleccionadas.length === 0 && paso.textoSiVacio) {
+      textos.push(paso.textoSiVacio);
+    } else {
+      const porDefectoIds = new Set(paso.opciones.filter((o) => o.porDefecto).map((o) => o.id));
+      for (const opcion of seleccionadas) {
+        if (!porDefectoIds.has(opcion.id)) textos.push(opcion.nombre);
+      }
+      for (const opcion of paso.opciones) {
+        if (porDefectoIds.has(opcion.id) && !elegidas.includes(opcion.id)) {
+          textos.push(`Sin ${opcion.ingrediente || opcion.nombre}`);
+        }
+      }
+    }
+
+    return { extra, textos };
+  });
+
+  const extraPorUnidad = detallePasos.reduce((acc, d) => acc + d.extra, 0);
 
   const precioUnidad = precioBase + extraPorUnidad;
   const precioTotal = precioUnidad * cantidad;
 
   const confirmar = () => {
-    const nombresSeleccionados = (producto.modificadores || []).flatMap((paso) =>
-      (seleccion[paso.id] || []).map((optId) => paso.opciones.find((o) => o.id === optId)?.nombre)
-    );
+    const modificadoresTexto = detallePasos.flatMap((d) => d.textos).join(", ");
     onConfirmar({
       seleccion,
       cantidad,
       precioUnidad: Number(precioUnidad.toFixed(2)),
-      modificadoresTexto: nombresSeleccionados.filter(Boolean).join(", "),
+      modificadoresTexto,
     });
   };
 

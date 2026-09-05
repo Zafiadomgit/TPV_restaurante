@@ -1831,6 +1831,13 @@ h4,
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
 }
 
+/* Modal de upsell de Complementos al finalizar el pedido — muestra una
+   parrilla de productos en vez de un único formulario de personalización,
+   así que necesita más ancho que el modal de personalizar estándar. */
+.upsell-modal {
+  max-width: 900px;
+}
+
 .personalizar-header {
   background: #fff;
   padding: 1.2rem 1.4rem;

@@ -84,6 +84,9 @@ export default async function handler(req, res) {
         const seleccionValida = seleccionCliente
           .filter((optId) => paso.opciones.some((o) => o.id === optId))
           .slice(0, paso.maxSeleccion ?? seleccionCliente.length);
+        const seleccionadas = seleccionValida
+          .map((optId) => paso.opciones.find((o) => o.id === optId))
+          .filter(Boolean);
 
         // Si el paso trae precioSiTodoQuitado, el precio base pasa a ser
         // ese valor fijo — pensado para vender el kebab/dürüm/lahmacum
@@ -110,10 +113,58 @@ export default async function handler(req, res) {
           }
         }
 
-        for (const optId of seleccionValida) {
-          const opcion = paso.opciones.find((o) => o.id === optId);
-          extra += opcion.precioExtra;
-          nombresSeleccionados.push(opcion.nombre);
+        // primerosGratis (ej. "Pizza a tu gusto"): las primeras N opciones
+        // elegidas no suman precioExtra, el resto sí — "las primeras" se
+        // decide por precio ascendente (las más baratas cuentan como las
+        // gratis), nunca por el orden en que las mandó el cliente.
+        const gratis = typeof paso.primerosGratis === "number" ? paso.primerosGratis : 0;
+        const idsGratis = new Set(
+          [...seleccionadas]
+            .sort((a, b) => a.precioExtra - b.precioExtra)
+            .slice(0, gratis)
+            .map((o) => o.id)
+        );
+        for (const opcion of seleccionadas) {
+          if (!idsGratis.has(opcion.id)) extra += opcion.precioExtra;
+        }
+
+        // Texto para cocina. Tres modos, en este orden:
+        //  1. resumenQuitarMuchos (paso "quitar ingredientes" tipo kebab/
+        //     dürüm/lahmacum): si se quitan `umbral` o más, en vez de
+        //     listar cada "Sin X" se resume lo que SÍ queda ("Solo con
+        //     lechuga"); si no queda nada, usa `siTodoVacio` ("Solo
+        //     carne") en vez de no decir nada.
+        //  2. textoSiVacio (paso tipo "elige tus salsas", con opciones
+        //     por defecto): si el cliente quita TODAS las opciones que
+        //     venían marcadas y no añade ninguna otra, usa ese texto
+        //     ("Sin salsa") en vez de listar cada "Sin salsa X" suelta.
+        //  3. Por defecto: solo se listan los CAMBIOS respecto a lo que
+        //     venía marcado por defecto — lo añadido (nombre tal cual,
+        //     ej. "Salsa picante") y lo quitado que sí venía por defecto
+        //     ("Sin " + ingrediente). Una opción nunca marcada por
+        //     defecto (ej. "Sin tomate" en el paso de quitar) siempre
+        //     cuenta como "añadida" si se marca, así que este modo
+        //     reproduce el comportamiento de siempre para esos pasos.
+        const umbral = paso.resumenQuitarMuchos?.umbral;
+        if (typeof umbral === "number" && seleccionadas.length >= umbral) {
+          const restantes = paso.opciones.filter((o) => !seleccionValida.includes(o.id));
+          if (restantes.length > 0) {
+            nombresSeleccionados.push(`Solo con ${restantes.map((o) => o.ingrediente || o.nombre).join(" y ")}`);
+          } else if (paso.resumenQuitarMuchos.siTodoVacio) {
+            nombresSeleccionados.push(paso.resumenQuitarMuchos.siTodoVacio);
+          }
+        } else if (seleccionadas.length === 0 && paso.textoSiVacio) {
+          nombresSeleccionados.push(paso.textoSiVacio);
+        } else {
+          const porDefectoIds = new Set(paso.opciones.filter((o) => o.porDefecto).map((o) => o.id));
+          for (const opcion of seleccionadas) {
+            if (!porDefectoIds.has(opcion.id)) nombresSeleccionados.push(opcion.nombre);
+          }
+          for (const opcion of paso.opciones) {
+            if (porDefectoIds.has(opcion.id) && !seleccionValida.includes(opcion.id)) {
+              nombresSeleccionados.push(`Sin ${opcion.ingrediente || opcion.nombre}`);
+            }
+          }
         }
       }
 

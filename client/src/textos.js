@@ -48,6 +48,9 @@ const TEXTOS = {
     avisoWhatsappGuardado: "Te avisaremos por WhatsApp al",
     avisoWhatsappError: "Ese número no parece válido",
     tiempoEsperaLabel: "Tiempo de espera estimado",
+    upsellTitulo: "¿Añadimos algo más a tu pedido?",
+    upsellSubtitulo: "Aros de cebolla, samosas, cheese bites, falafel...",
+    upsellFinalizar: "Finalizar pedido",
   },
   en: {
     cargandoMenu: "Loading menu...",
@@ -93,6 +96,9 @@ const TEXTOS = {
     avisoWhatsappGuardado: "We'll message you on WhatsApp at",
     avisoWhatsappError: "That number doesn't look valid",
     tiempoEsperaLabel: "Estimated wait",
+    upsellTitulo: "Want to add anything else?",
+    upsellSubtitulo: "Onion rings, samosas, cheese bites, falafel...",
+    upsellFinalizar: "Finish order",
   },
 };
 

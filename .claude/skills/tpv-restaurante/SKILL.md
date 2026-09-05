@@ -142,9 +142,14 @@ aparte:
 ### El menú — editable desde `/carta`
 El menú **ya no es estático**: vive en Supabase (`menu_categorias`,
 `menu_productos`) y se edita desde `/carta` (`GestionMenu.jsx`). Es la
-carta real del negocio (~119 productos de partida, 11 categorías: Kebab,
-Dürüm, Lahmacum, Platos combinados, Especialidades, Patatas y snacks,
-Salsas, Bebidas, Ensaladas, Pizzas, Haz tu menú).
+carta real del negocio. Desde la reorganización de carta (ver más abajo)
+son 16 categorías, en este orden de aparición en el kiosco: Haz tu menú,
+Kebab, Dürüm, Lahmacum, Pedratas, Patatas, Platos combinados,
+Complementos, Zona crujiente, Pizzas, Hamburguesas, Perrito caliente,
+Pollo asado, Ensaladas, Bebidas, Salsas. Las categorías "Especialidades" y
+"Patatas y snacks" que existían al principio (~119 productos/11
+categorías de partida) ya no existen — se disolvieron en las categorías
+finas de arriba.
 
 - `client/api/_lib/menu.js` expone dos funciones **async** (consultan
   Supabase, ya no hay un array estático que importar):
@@ -247,6 +252,141 @@ Salsas, Bebidas, Ensaladas, Pizzas, Haz tu menú).
   construirlo; `/carta` es un CRUD de categorías/productos, no un editor de
   combos con reglas de slots. Si se pide explícitamente, es una pieza
   nueva.
+- **Campos adicionales del paso/opción** (añadidos en la reorganización de
+  carta grande, ver más abajo — calculados siempre en el backend
+  `orders/index.js` y espejados en `Personalizar.jsx`, igual que
+  `precioSiTodoQuitado`; **no tienen UI en `/carta` todavía**, solo se
+  configuran por SQL o editando el jsonb a mano):
+  - `ingrediente` (string, por opción): nombre corto del ingrediente,
+    usado en los textos "Sin X"/"Solo con X" en vez de `nombre` (que es el
+    texto largo de cara al cliente, ej. `nombre: "Sin repollo y
+    zanahoria"` vs `ingrediente: "repollo y zanahoria"`). Si una opción no
+    trae `ingrediente`, se usa `nombre` tal cual (fallback, no rompe
+    productos antiguos sin este campo).
+  - `resumenQuitarMuchos` (objeto `{umbral, siTodoVacio?}`, a nivel de
+    paso): pensado para pasos de "quitar ingredientes". Si el cliente
+    quita `umbral` o más opciones, en vez de listar cada "Sin X" por
+    separado en cocina, se resume en "Solo con [lo que queda]"; si no
+    queda nada (se quitó todo), se usa el texto `siTodoVacio` (ej. "Solo
+    carne") en vez de no decir nada. Se usa en Kebab/Dürüm/Lahmacum con
+    `umbral: 3` — a partir de 3 ingredientes quitados de los 4
+    (tomate/cebolla/repollo y zanahoria/lechuga) sale el resumen.
+  - `textoSiVacio` (string, a nivel de paso): para pasos de selección con
+    opciones por defecto (ej. salsas). Si el cliente quita TODAS las
+    opciones marcadas por defecto y no añade ninguna otra, se muestra este
+    texto (ej. "Sin salsa") en vez de listar cada "Sin salsa X" suelta.
+  - `primerosGratis` (número, a nivel de paso): las primeras N opciones
+    elegidas no suman `precioExtra` — "las primeras" se decide por precio
+    ascendente (las más baratas cuentan como gratis), nunca por el orden
+    en que las eligió el cliente. Usado en "Pizza a tu gusto" (3
+    ingredientes gratis, el resto +1€ cada uno).
+  - **Texto de cocina por defecto, rediseñado**: para un paso que NO cae
+    en `resumenQuitarMuchos` ni en `textoSiVacio`, el texto ya no lista
+    "todo lo seleccionado" — lista solo los CAMBIOS respecto a lo marcado
+    `porDefecto`: lo añadido que no venía por defecto (con `nombre`, tal
+    cual) y lo quitado que sí venía por defecto (`"Sin " + (ingrediente ||
+    nombre)`). Para pasos de "quitar ingredientes" de siempre (ninguna
+    opción es `porDefecto`) esto se comporta exactamente igual que antes
+    (todo lo marcado se lista como "añadido"). Para el paso nuevo de
+    salsas (blanca y roja `porDefecto: true`), un pedido sin tocar nada no
+    genera ningún texto — solo aparece algo si el cliente realmente
+    cambió algo, para no ensuciar cada ticket con "Salsa de yogurt
+    (Blanca), Salsa de tomate (Roja)" en todos los pedidos.
+
+### Reorganización de carta (categorías nuevas + salsas + resúmenes)
+Cambio grande de datos + lógica pedido por el dueño, entregado como 8
+scripts SQL de un solo uso en `supabase/menu_reorg_1_categorias.sql` a
+`menu_reorg_8_bebidas.sql` (se ejecutan en ese orden — el 2 en adelante
+asume que las categorías nuevas del script 1 ya existen). Igual que los
+scripts anteriores (`traducciones_menu_en.sql`,
+`precio_alternativo_quitar_bulky.sql`, `fix_precio_solo_carne.sql`), el
+dueño los pega y ejecuta a mano en el SQL Editor de Supabase — esta
+sesión no tiene acceso de escritura directo a la BD de producción.
+
+- **Categorías nuevas**: Pedratas, Patatas, Complementos, Zona crujiente,
+  Hamburguesas, Perrito caliente y Pollo asado. "Especialidades" y
+  "Patatas y snacks" quedan vacías y se dejan de usar (sus productos se
+  reparten en las categorías nuevas) — no se borran las filas de
+  `menu_categorias`, por si quedara algún pedido histórico que las
+  referencie indirectamente en un log, pero no vuelven a aparecer en el
+  kiosco al no tener productos activos.
+- **Ningún nombre de categoría existente se cambió** — el pedido del
+  dueño incluía aclaraciones entre paréntesis (ej. "Lahmacun (Pizza
+  turca)", "Pedratas (Patatas con carne)") que son solo explicaciones
+  para entender el pedido, no nombres nuevos.
+- **Salsas globales en Kebab/Dürüm/Lahmacum** (24 productos: los 8
+  sabores × 3 categorías): paso nuevo "salsas" (Salsa de yogurt Blanca /
+  Salsa de tomate Roja / Salsa picante — blanca y roja marcadas por
+  defecto) con `textoSiVacio: "Sin salsa"`. "Solo carne" y "loco" (6
+  productos) **pierden el paso de quitar ingredientes** (no llevan
+  ensalada) pero sí llevan salsas y extras. El resto (ternera/pollo/
+  mixto/falafel/vegetal con queso/doble, 18 productos) mantiene el paso
+  de quitar con `resumenQuitarMuchos: {umbral: 3, siTodoVacio: "Solo
+  carne"}`. Los 3 productos de falafel (kebab/dürüm/lahmacum) ganan
+  "Extra falafel +1,5€" en su paso de extras.
+- **Pedratas**: 3 tamaños existentes (4,50€/6€/7€, sin cambio de precio)
+  más un tamaño nuevo "Pedrata XXL" a 12€ (`pedratas-xxl`). Los 4
+  productos ganan: elegir carne (Ternera/Pollo/Mixto, Ternera por
+  defecto — `maxSeleccion: 1`, no es un radio button real, el cliente
+  podría en teoría desmarcar hasta dejarlo vacío, mismo límite que el
+  resto del sistema de modificadores), el paso de salsas de siempre, y
+  extras (extra salsa/extra queso/pan de kebab, +1€ cada uno).
+- **Patatas** (clásicas y deluxe, 6 productos, precio sin cambio 4,50€/
+  6€/7€): sistema de salsas en dos niveles — "salsas" (por encima,
+  gratis) y "salsas-aparte" (tarrina aparte, +1€ cada una). Mismo sistema
+  en 5 de los 6 productos de **Zona crujiente** (alitas, nuggets,
+  palomitas, tiras de pollo, tarrina de arroz con falafel). El burrito
+  (6º producto de Zona crujiente) además tiene su propio paso de quitar
+  (tomate/cebolla/repollo y zanahoria/lechuga/patatas, todo gratis) y su
+  propio paso de extras (extra salsa/extra queso +1€, extra pollo
+  crujiente +1,50€).
+- **Complementos** (categoría nueva): Aros de cebolla, Samosa, Cheese
+  bites, Falafel — más "Pan de kebab", que no encajaba en ninguna
+  categoría nueva del pedido del dueño tras desaparecer "Patatas y
+  snacks" y se colocó aquí por descarte (confírmalo con el dueño si
+  prefiere otro sitio). Solo el falafel lleva el paso de salsas — el
+  resto va sin modificadores. Esta es la categoría que se ofrece como
+  upsell al finalizar el pedido (ver más abajo).
+- **Pizza a tu gusto** (3 tamaños): paso nuevo de 13 ingredientes con
+  `primerosGratis: 3` (los 3 primeros gratis, el resto +1€ cada uno;
+  salsa de tomate y queso van siempre incluidos en la base, no son parte
+  de este paso).
+- **Hamburguesas** (categoría nueva, 3 productos): "Hamburguesa" se
+  renombró a "Hamburguesa de vacuno" para distinguirla de la de pollo
+  crispy (mismo precio, 4,50€, es solo el nombre). Los 3 productos ganan
+  un paso de quitar ingredientes propio (según lo que lleve cada una) y
+  un paso de extras compartido (extra huevo/extra bacon, +1€ cada uno).
+- **Perrito caliente** y **Pollo asado** (categorías nuevas de un
+  producto cada una): perrito caliente con paso de quitar (salchicha/
+  ketchup/mayonesa, gratis); pollo asado con paso de quitar (patatas/
+  salsa del pollo, gratis) y extras de pago (pan de kebab, tarrina de
+  cada una de las 3 salsas, +1€ cada uno).
+- **Ensaladas** (3 productos): cada una gana su propio paso de quitar
+  ingredientes con SU lista concreta (no comparten opciones entre sí,
+  cada ensalada lleva ingredientes distintos).
+- **Bebidas — reemplazo completo**: se borran `refresco-lata`, `agua`,
+  `bebida-energetica` y `ayran` (Ayran retirado a petición explícita del
+  dueño) y se insertan 8 productos con nombre propio: Coca-Cola,
+  Coca-Cola 0, Aquarius limón, Fuze Tea, Zumo tropical, Fanta naranja
+  (1,80€ cada una), Monster (3€) y Agua (`agua-33cl`, 1€, reemplaza al
+  `agua` genérico anterior con un id distinto).
+- **Upsell de Complementos al finalizar el pedido**
+  (`UpsellComplementos.jsx`, usado desde `Order.jsx`): a petición
+  explícita del dueño ("que aparezca automáticamente cada vez que el
+  cliente vaya a finalizar un pedido"), al pulsar "Enviar comanda" se
+  intercepta el envío (`intentarFinalizar` en vez de llamar directo a
+  `enviarComanda`) y se muestra un modal con la parrilla de productos de
+  "Complementos" (reutiliza `MenuItemCard`, mismo `onAdd` que el resto del
+  kiosco, así que si el cliente añade el falafel se abre `Personalizar`
+  por encima del propio modal de upsell). Se muestra **una sola vez por
+  pedido** (`upsellVisto`, se resetea en `cancelarPedido`) y se salta si
+  el carrito ya tiene algo de Complementos o si esa categoría no existe
+  todavía en la BD (kiosco sigue funcionando igual antes de que el dueño
+  ejecute los scripts de reorganización). El botón "Finalizar pedido" del
+  modal cierra el modal y llama a `enviarComanda()` — no hay diferencia
+  funcional entre "cerrar sin añadir" y "finalizar", ambos caminos llevan
+  al mismo sitio una vez el carrito ya tiene lo que el cliente quiso
+  añadir.
 
 ### Venta rápida en caja
 `Caja.jsx` no es solo apertura/cierre de turno: con un turno abierto

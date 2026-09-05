@@ -8,6 +8,9 @@ import MenuItemCard from "../components/MenuItemCard.jsx";
 import CartSidebar from "../components/CartSidebar.jsx";
 import Personalizar from "../components/Personalizar.jsx";
 import SelectorIdioma from "../components/SelectorIdioma.jsx";
+import UpsellComplementos from "../components/UpsellComplementos.jsx";
+
+const CATEGORIA_UPSELL = "Complementos";
 
 // Lo que ve el personal (cocina/historial/caja) en order.mesa se guarda
 // SIEMPRE en español, sin importar el idioma que elija el cliente en
@@ -39,6 +42,8 @@ export default function Order() {
   const [productoPersonalizando, setProductoPersonalizando] = useState(null);
   const [idioma, setIdioma] = useState(() => getIdioma());
   const [tiempoEsperaMinutos, setTiempoEsperaMinutos] = useState(null);
+  const [mostrarUpsell, setMostrarUpsell] = useState(false);
+  const [upsellVisto, setUpsellVisto] = useState(false);
 
   const cambiarIdioma = (nuevo) => {
     setIdioma(nuevo);
@@ -75,6 +80,7 @@ export default function Order() {
     setNotasGenerales("");
     setTipoServicio(null);
     setPaso("inicio");
+    setUpsellVisto(false);
   };
 
   const onAddProducto = (producto) => {
@@ -139,6 +145,28 @@ export default function Order() {
     setItems((prev) => prev.map((i) => (i.lineId === lineId ? { ...i, notas } : i)));
 
   const { subtotal, iva, total } = useMemo(() => calcularTotales(items), [items]);
+
+  // La categoría "Complementos" se ofrece una vez, justo al pulsar
+  // "Enviar comanda" (a petición del cliente) — no se vuelve a mostrar en
+  // este mismo pedido tras cerrarla, para no ser pesados si el cliente
+  // toca "enviar" varias veces (ej. tras editar una nota).
+  const categoriaComplementos = menu.find((cat) => cat.categoria === CATEGORIA_UPSELL);
+  const yaTieneComplementos =
+    !!categoriaComplementos && items.some((i) => categoriaComplementos.productos.some((p) => p.id === i.productId));
+
+  const intentarFinalizar = () => {
+    if (!upsellVisto && categoriaComplementos?.productos.length && !yaTieneComplementos) {
+      setMostrarUpsell(true);
+      return;
+    }
+    enviarComanda();
+  };
+
+  const cerrarUpsell = () => {
+    setMostrarUpsell(false);
+    setUpsellVisto(true);
+    enviarComanda();
+  };
 
   const enviarComanda = async () => {
     setError("");
@@ -243,6 +271,15 @@ export default function Order() {
 
   return (
     <div className="order-page">
+      {mostrarUpsell && categoriaComplementos && (
+        <UpsellComplementos
+          productos={categoriaComplementos.productos}
+          idioma={idioma}
+          onAdd={onAddProducto}
+          onFinalizar={cerrarUpsell}
+        />
+      )}
+
       {productoPersonalizando && (
         <Personalizar
           producto={productoPersonalizando}
@@ -303,7 +340,7 @@ export default function Order() {
         subtotal={subtotal}
         iva={iva}
         total={total}
-        onEnviar={enviarComanda}
+        onEnviar={intentarFinalizar}
         enviando={enviando}
       />
     </div>
