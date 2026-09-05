@@ -113,32 +113,59 @@ export default async function handler(req, res) {
           }
         }
 
+        // esSelectorTamano (ej. pizzas: un producto por sabor con un paso
+        // "Tamaño" en vez de una fila por tamaño en menu_productos): la
+        // opción elegida trae su propio precioBase ABSOLUTO (no un
+        // precioExtra que se suma) — sustituye el precio base del
+        // producto, igual que precioSiTodoQuitado pero elegido por el
+        // cliente en vez de disparado por quitar ingredientes. Si por lo
+        // que sea no hay ninguna opción válida seleccionada (cliente sin
+        // marcar nada todavía, o un dato corrupto), cae a la opción
+        // porDefecto — nunca se deja sin tamaño resuelto.
+        if (!baseSobrescrita && paso.esSelectorTamano) {
+          const opcionTamano =
+            paso.opciones.find((o) => seleccionValida.includes(o.id)) ||
+            paso.opciones.find((o) => o.porDefecto);
+          if (opcionTamano && typeof opcionTamano.precioBase === "number") {
+            precioBase = opcionTamano.precioBase;
+            baseSobrescrita = true;
+          }
+        }
+
         // primerosGratis (ej. "Pizza a tu gusto"): las primeras N opciones
         // elegidas no suman precioExtra, el resto sí — "las primeras" se
         // decide por precio ascendente (las más baratas cuentan como las
-        // gratis), nunca por el orden en que las mandó el cliente.
-        const gratis = typeof paso.primerosGratis === "number" ? paso.primerosGratis : 0;
-        const idsGratis = new Set(
-          [...seleccionadas]
-            .sort((a, b) => a.precioExtra - b.precioExtra)
-            .slice(0, gratis)
-            .map((o) => o.id)
-        );
-        for (const opcion of seleccionadas) {
-          if (!idsGratis.has(opcion.id)) extra += opcion.precioExtra;
+        // gratis), nunca por el orden en que las mandó el cliente. No
+        // aplica al paso de tamaño — su coste ya está en precioBase, no
+        // en precioExtra.
+        if (!paso.esSelectorTamano) {
+          const gratis = typeof paso.primerosGratis === "number" ? paso.primerosGratis : 0;
+          const idsGratis = new Set(
+            [...seleccionadas]
+              .sort((a, b) => a.precioExtra - b.precioExtra)
+              .slice(0, gratis)
+              .map((o) => o.id)
+          );
+          for (const opcion of seleccionadas) {
+            if (!idsGratis.has(opcion.id)) extra += opcion.precioExtra;
+          }
         }
 
-        // Texto para cocina. Tres modos, en este orden:
-        //  1. resumenQuitarMuchos (paso "quitar ingredientes" tipo kebab/
+        // Texto para cocina. Cuatro modos, en este orden:
+        //  1. esSelectorTamano: el tamaño elegido SIEMPRE se muestra (a
+        //     diferencia de los demás modos, incluso si es la opción por
+        //     defecto) — cocina necesita saber qué tamaño preparar, no es
+        //     un extra opcional que se pueda omitir del ticket.
+        //  2. resumenQuitarMuchos (paso "quitar ingredientes" tipo kebab/
         //     dürüm/lahmacum): si se quitan `umbral` o más, en vez de
         //     listar cada "Sin X" se resume lo que SÍ queda ("Solo con
         //     lechuga"); si no queda nada, usa `siTodoVacio` ("Solo
         //     carne") en vez de no decir nada.
-        //  2. textoSiVacio (paso tipo "elige tus salsas", con opciones
+        //  3. textoSiVacio (paso tipo "elige tus salsas", con opciones
         //     por defecto): si el cliente quita TODAS las opciones que
         //     venían marcadas y no añade ninguna otra, usa ese texto
         //     ("Sin salsa") en vez de listar cada "Sin salsa X" suelta.
-        //  3. Por defecto: solo se listan los CAMBIOS respecto a lo que
+        //  4. Por defecto: solo se listan los CAMBIOS respecto a lo que
         //     venía marcado por defecto — lo añadido (nombre tal cual,
         //     ej. "Salsa picante") y lo quitado que sí venía por defecto
         //     ("Sin " + ingrediente). Una opción nunca marcada por
@@ -146,7 +173,12 @@ export default async function handler(req, res) {
         //     cuenta como "añadida" si se marca, así que este modo
         //     reproduce el comportamiento de siempre para esos pasos.
         const umbral = paso.resumenQuitarMuchos?.umbral;
-        if (typeof umbral === "number" && seleccionadas.length >= umbral) {
+        if (paso.esSelectorTamano) {
+          const opcionElegida =
+            paso.opciones.find((o) => seleccionValida.includes(o.id)) ||
+            paso.opciones.find((o) => o.porDefecto);
+          if (opcionElegida) nombresSeleccionados.push(opcionElegida.nombre);
+        } else if (typeof umbral === "number" && seleccionadas.length >= umbral) {
           const restantes = paso.opciones.filter((o) => !seleccionValida.includes(o.id));
           if (restantes.length > 0) {
             nombresSeleccionados.push(`Solo con ${restantes.map((o) => o.ingrediente || o.nombre).join(" y ")}`);

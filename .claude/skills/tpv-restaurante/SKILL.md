@@ -168,14 +168,24 @@ finas de arriba.
 - Borrar o editar un producto **nunca** altera pedidos ya hechos:
   `orders.items` guarda una copia congelada (nombre/precio/modificadores)
   en el momento del pedido, no una referencia viva al producto.
-- **Kebab/Dürüm/Lahmacum y Pizzas son "matrices de precio"**: la misma
-  proteína o sabor tiene un precio distinto por formato/tamaño (ej. Ternera
-  4,50€ en kebab / 6€ en dürüm / 6,50€ en lahmacum; cada pizza en
-  pequeña/mediana/familiar). Son **filas independientes** en
-  `menu_productos` (una por combinación) — el modelo sigue siendo "un
-  producto = un precio". Si se añade un sabor o proteína nueva, créalo así
-  desde `/carta` (una fila por variante), no le añadas un selector de
-  tamaño a un único producto sin cambiar el modelo primero.
+- **Kebab/Dürüm/Lahmacum siguen siendo una "matriz de precio"**: la misma
+  proteína tiene un precio distinto por formato (ej. Ternera 4,50€ en
+  kebab / 6€ en dürüm / 6,50€ en lahmacum). Son **filas independientes**
+  en `menu_productos` (una por combinación) — el modelo sigue siendo "un
+  producto = un precio". Si se añade una proteína nueva, créala así desde
+  `/carta` (una fila por variante), no le añadas un selector de formato a
+  un único producto sin cambiar el modelo primero. Esto es distinto de
+  formato/tamaño porque kebab/dürüm/lahmacum son bases físicamente
+  distintas (pan de pita/tortilla/masa turca), no solo "el mismo producto
+  más grande" — por eso siguen siendo filas separadas y no se tocaron al
+  añadir el selector de tamaño de Pizzas (ver más abajo).
+- **Pizzas SÍ dejó de ser una matriz de precio** (a petición del dueño):
+  antes eran 39 filas (13 sabores × 3 tamaños); ahora son 13 filas, una
+  por sabor, cada una con un paso `esSelectorTamano` (ver más abajo) que
+  deja elegir el tamaño DENTRO del modal de personalizar y cambia el
+  precio según la opción — mismo caso de uso que la matriz de antes, pero
+  resuelto con un modificador porque aquí el tamaño sí es "el mismo
+  producto, más grande" (no una base física distinta).
 - **Modificadores de personalización** (`modificadores` jsonb por fila de
   `menu_productos`, mismo shape de siempre: pasos con `titulo`/`tipo`/
   `opciones`, cada opción con `nombre`/`precioExtra`/`porDefecto`). Ya no
@@ -280,6 +290,49 @@ finas de arriba.
     ascendente (las más baratas cuentan como gratis), nunca por el orden
     en que las eligió el cliente. Usado en "Pizza a tu gusto" (3
     ingredientes gratis, el resto +1€ cada uno).
+  - `esSelectorTamano` (boolean, a nivel de paso) + `precioBase` (número,
+    por opción, junto a `precioExtra`): a diferencia de todo lo anterior,
+    esta opción no SUMA sobre el precio del producto — lo SUSTITUYE por
+    `precioBase` (precio absoluto de esa opción). Pensado para "un
+    producto = varios tamaños con precio propio" sin necesitar una fila
+    por tamaño en `menu_productos` (ver Pizzas más abajo). Reglas:
+    - El paso debe ser de selección única (`maxSeleccion: 1`) con una
+      opción `porDefecto: true` — si el cliente no ha marcado ninguna
+      todavía (o manda algo inválido), se usa esa por defecto, nunca se
+      queda sin tamaño resuelto.
+    - Cada opción necesita `precioBase` (el precio final de ESE tamaño) Y
+      `precioExtra: 0` (por higiene — un paso `esSelectorTamano` no
+      participa en la suma de extras ni en `primerosGratis`, así que su
+      `precioExtra` no se usa para nada, pero lo valida
+      `modificadoresValidos()` en `menu-productos/index.js` igual que
+      cualquier otra opción).
+    - Compite con `precioSiTodoQuitado` por sustituir el precio base — en
+      la práctica nunca coinciden en el mismo producto (uno lo usan
+      kebab/dürüm/lahmacum, el otro pizzas), pero si algún día coinciden,
+      gana el primero de los dos que aparezca en el array `modificadores`
+      (mismo patrón `baseSobrescrita` que ya existía).
+    - En el ticket de cocina, el tamaño elegido **siempre se muestra**,
+      incluso si es el de por defecto — a diferencia del resto de campos
+      (que ocultan la opción por defecto para no ensuciar el ticket),
+      aquí cocina necesita saber qué tamaño preparar en todos los casos.
+    - **No tiene UI en `/carta` todavía** (como el resto de campos de este
+      bloque) — se configura por SQL. `EditarProducto.jsx` no lo rompe
+      si no se toca esa opción concreta (el editor conserva campos
+      desconocidos al guardar), pero "+ Añadir opción" en un paso
+      `esSelectorTamano` crearía una opción sin `precioBase` — el backend
+      lo degrada con seguridad (esa opción nunca gana la sustitución de
+      precio) en vez de corromper el precio, pero no hace lo que un
+      cajero esperaría, así que evita añadir opciones a este paso desde
+      `/carta` hasta que tenga su propia UI.
+  - **Fix de "selección única" en `Personalizar.jsx`**: un paso con
+    `maxSeleccion: 1` (elegir carne en Pedratas, elegir tamaño en
+    Pizzas) NO se comporta como un radio button de verdad — antes, tocar
+    una opción nueva cuando ya había una marcada **no hacía nada** (el
+    límite de selección bloqueaba añadir la segunda sin quitar antes la
+    primera). Se arregló en `toggleOpcion()`: para `maxSeleccion === 1`,
+    tocar cualquier opción SUSTITUYE la marcada por la nueva; tocar la ya
+    marcada no hace nada (un paso de "elige uno" no debe poder quedarse
+    sin ninguna marcada). Si tocas `toggleOpcion()`, no rompas este caso.
   - **Texto de cocina por defecto, rediseñado**: para un paso que NO cae
     en `resumenQuitarMuchos` ni en `textoSiVacio`, el texto ya no lista
     "todo lo seleccionado" — lista solo los CAMBIOS respecto a lo marcado
@@ -401,6 +454,20 @@ patrón), `traducciones_menu_en.sql` no se vuelve a ejecutar solo.
   funcional entre "cerrar sin añadir" y "finalizar", ambos caminos llevan
   al mismo sitio una vez el carrito ya tiene lo que el cliente quiso
   añadir.
+- **Pizzas consolidadas de 39 a 13 productos** (`menu_reorg_10_
+  pizzas_por_tamano.sql`, posterior a los 9 scripts de la reorganización
+  grande): a petición del dueño, cada sabor pasó de 3 filas
+  (pequeña/mediana/familiar) a 1 sola fila con un paso `esSelectorTamano`
+  (ver "Campos adicionales del paso/opción" más arriba) donde el tamaño
+  se elige dentro del modal de personalizar y cambia el precio (8€/10€/
+  14€, iguales para los 13 sabores). Los ids nuevos no llevan sufijo de
+  tamaño (ej. `pizza-cuatro-quesos` en vez de `pizza-cuatro-quesos-
+  pequena`) — son productos DISTINTOS de los 39 antiguos, que se borran
+  en el mismo script; los pedidos históricos no se ven afectados (copia
+  congelada). "Pizza a tu gusto" conserva su paso de ingredientes
+  (`primerosGratis: 3`) además del paso de tamaño nuevo. Esto es lo que
+  volvió obsoleta la nota de "Pizzas es una matriz de precio" en El
+  menú — ver la nota actualizada ahí.
 
 ### Venta rápida en caja
 `Caja.jsx` no es solo apertura/cierre de turno: con un turno abierto
