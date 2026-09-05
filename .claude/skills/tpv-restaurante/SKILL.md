@@ -18,12 +18,12 @@ panel).
 | --- | --- | --- | --- |
 | `/` | `Order.jsx` | Kiosco de autoservicio: inicio (aquí/para llevar) → menú + carrito, con personalización de producto | Público (sin login) |
 | `/pago/:orderId` | `Checkout.jsx` | Ticket del pedido y cobro | Público (sin login) |
-| `/login` | `Login.jsx` | Selección de rol (Caja/Cocina) + teclado numérico de PIN | Público (es la puerta de entrada) |
+| `/login` | `Login.jsx` | Selección de rol (Caja/Cocina/Panel) + teclado numérico de PIN | Público (es la puerta de entrada) |
 | `/cocina` | `Kitchen.jsx` | KDS, 3 columnas por estado | Caja o Cocina |
 | `/historial` | `Historial.jsx` | Pedidos cerrados, filtrable por estado | Solo Caja |
 | `/caja` | `Caja.jsx` | Turno de caja (apertura/cierre/arqueo) + venta rápida en mostrador | Solo Caja |
 | `/carta` | `GestionMenu.jsx` | Editar el menú: categorías y productos (crear/editar/borrar) | Solo Caja |
-| `/panel` | `Panel.jsx` | KPIs del día, ventas por hora, más vendidos | Solo Caja |
+| `/panel` | `Panel.jsx` | KPIs del día, ventas por hora, más vendidos | Solo Panel (no Caja — ver "Roles y acceso por PIN") |
 | `/recogida` | `Recogida.jsx` | Tablero de pedidos preparando/listo (pantalla pública) | Público (sin login) |
 
 Ver sección "Roles y acceso por PIN" más abajo para el porqué de esta
@@ -465,6 +465,34 @@ Piezas:
   pueda automatizar desde aquí. Mientras no estén puestas, el kiosco
   sigue funcionando normal, simplemente no se manda ningún WhatsApp.
 
+### Tiempo de espera del kiosco
+En la pantalla de inicio del kiosco (`.kiosk-footer`, junto a "Cocina
+abierta") se muestra un tiempo de espera estimado ("Tiempo de espera
+estimado: ~15 min"). Es un ajuste global editable **siempre**, no algo
+que se fija una sola vez — desde `/caja` (arriba del todo, visible con o
+sin turno abierto) hay un campo numérico + botón "Guardar" que lo
+actualiza en cualquier momento.
+
+- `ajustes` (tabla de una sola fila, `id` siempre `1`) guarda
+  `tiempo_espera_minutos`. **No la conviertas en un almacén de
+  clave/valor genérico** aunque parezca "más preparado para el futuro"
+  — de momento solo hay un ajuste; si se pide otro, se añade como
+  columna nueva a esta misma fila, no se rediseña el esquema sin que
+  haga falta.
+- `GET/PATCH /api/ajustes` (`client/api/ajustes.js`): GET es público a
+  propósito (el kiosco lo lee sin sesión, igual que `GET /api/menu`);
+  PATCH exige rol `caja` (se edita desde `/caja`, como pidió el dueño —
+  no `panel`, que es para ver informes, no para configurar el kiosco).
+- **Límite de funciones de Vercel ya alcanzado**: este endpoint dejó el
+  proyecto en 12 funciones serverless — el máximo del plan Hobby. Si se
+  pide un endpoint nuevo, la única forma de añadirlo sin subir de plan
+  es ampliar un `index.js`/archivo existente por método o por query
+  param (como ya se hizo con `orders/[id]/index.js` para el teléfono de
+  WhatsApp, o con `menu-categorias/index.js` para categoría/id) — no
+  crear un archivo nuevo bajo `client/api/` sin comprobar antes cuántas
+  funciones hay (`find client/api -name "*.js" -not -path "*/_lib/*" |
+  wc -l`).
+
 ### Panel del dueño e informes
 `GET /api/informes` (`client/api/informes.js` + `_lib/informes.js`)
 agrega los pedidos **de hoy** (desde las 00:00 UTC — simplificación
@@ -499,33 +527,43 @@ justo el bug que se coló al añadir el login por PIN: se protegió esta
 ruta entera por error y dejó el tablero sin datos).
 
 ### Roles y acceso por PIN
-El TPV tiene dos roles con PIN numérico de 4 dígitos: **`caja`** (acceso
-total, sin restricciones — abre/cierra turno, venta rápida, edita el menú,
-ve informes) y **`cocina`** (solo `/cocina` y `/recogida`). El kiosco
-público (`/`, `/pago/:orderId`) **no es un tercer rol**: es el estado
-"sin sesión" por diseño — el cliente nunca necesita PIN para pedir y
-pagar. Si algo parece pedir un "rol usuario", probablemente ya es esto.
+El TPV tiene tres roles con PIN numérico de 4 dígitos: **`caja`** (venta
+rápida, turno, edita el menú, ve historial — pero NO el panel de
+ventas), **`cocina`** (solo `/cocina` y `/recogida`) y **`panel`** (solo
+`/panel`, los informes/KPIs del dueño). El kiosco público (`/`,
+`/pago/:orderId`) **no es un cuarto rol**: es el estado "sin sesión" por
+diseño — el cliente nunca necesita PIN para pedir y pagar. Si algo
+parece pedir un "rol usuario", probablemente ya es esto.
 
+- **`panel` es un PIN aparte del de `caja` a propósito**: el dueño no
+  quiere que el personal de caja (que sabe el PIN del día a día) vea
+  cuánto se factura. Antes `/panel` aceptaba rol `caja`; ya no — si se
+  pide "que caja también vea el panel", es una decisión de negocio real
+  que hay que confirmar explícitamente con el dueño, no revertirlo por
+  comodidad o por parecer más simple.
 - **Backend** (`client/api/_lib/auth.js`): token firmado con HMAC-SHA256
   (`crypto.createHmac`, sin librería nueva), sin tabla de sesiones —
   stateless. `crearToken(rol)` genera `rol.expira.firma` (12h de validez);
   `verificarToken(token, rolesPermitidos)` valida firma (con
   `timingSafeEqual`), expiración y rol permitido; `verificarPin(rol, pin)`
-  compara contra `PIN_CAJA`/`PIN_COCINA`. `exigirRol(req, res, roles)` es
-  el guard que usan los handlers: lee `Authorization: Bearer <token>`, y si
-  no es válido responde `401` él mismo y devuelve `null` — el handler debe
-  cortar con `if (!exigirRol(req, res, [...])) return;` como primera línea
-  (o dentro del bloque del método que corresponda, ver más abajo).
+  compara contra `PIN_CAJA`/`PIN_COCINA`/`PIN_PANEL`. `exigirRol(req, res,
+  roles)` es el guard que usan los handlers: lee `Authorization: Bearer
+  <token>`, y si no es válido responde `401` él mismo y devuelve `null` —
+  el handler debe cortar con `if (!exigirRol(req, res, [...])) return;`
+  como primera línea (o dentro del bloque del método que corresponda, ver
+  más abajo).
 - **Variables de entorno** (Vercel): `AUTH_SECRET`, `PIN_CAJA`,
-  `PIN_COCINA`. El código tiene valores por defecto para poder probar en
-  local, pero **`AUTH_SECRET` no es seguro dejarlo así en producción** (a
-  diferencia de la clave anon de Supabase, que sí es pública por diseño) —
-  cualquiera que lea el código fuente podría firmar tokens válidos.
-  Configura las tres antes de depender de esto en producción real.
-- **Qué está protegido y qué no, y por qué**: todo lo de `/carta`,
-  `/caja`, `/historial`, `/panel` exige rol `caja` con `exigirRol` (401
-  sin token válido). `PATCH /api/orders/[id]/estado` exige `caja` o
-  `cocina` igual (lo usa cocina y el "revertir" de historial).
+  `PIN_COCINA`, `PIN_PANEL`. El código tiene valores por defecto para
+  poder probar en local, pero **`AUTH_SECRET` no es seguro dejarlo así en
+  producción** (a diferencia de la clave anon de Supabase, que sí es
+  pública por diseño) — cualquiera que lea el código fuente podría firmar
+  tokens válidos. Configura las cuatro antes de depender de esto en
+  producción real.
+- **Qué está protegido y qué no, y por qué**: `/carta`, `/caja`,
+  `/historial` exigen rol `caja` con `exigirRol` (401 sin token válido);
+  `GET /api/informes` (lo único que usa `/panel`) exige exclusivamente
+  rol `panel`. `PATCH /api/orders/[id]/estado` exige `caja` o `cocina`
+  igual (lo usa cocina y el "revertir" de historial).
   `GET /api/orders` es distinto — no usa `exigirRol`: sin token responde
   igualmente `200` con una vista pública reducida (solo lo que necesita
   `/recogida`, ver la sección "Pantalla de recogida"), y con token de
@@ -534,23 +572,28 @@ pagar. Si algo parece pedir un "rol usuario", probablemente ya es esto.
   cliente ya no se cobra a sí mismo (ver "Cola de pedidos del kiosco
   sin cobrar" en "Venta rápida en caja"), así que este es el único de
   los endpoints de pedidos que SÍ pasó de público a protegido; no lo
-  reviertas a público sin que el dueño lo pida. Deliberadamente **sin
-  proteger en absoluto**: `GET /api/menu` (el kiosco lo necesita sin
-  login) y `GET /api/orders/[id]` (el cliente consulta su propio
-  ticket) — no le añadas `exigirRol` a estos dos sin que el dueño lo
-  pida explícitamente, porque rompería el flujo público de pedir que es
-  el corazón del kiosco.
+  reviertas a público sin que el dueño lo pida. `PATCH /api/ajustes`
+  exige rol `caja` (ver "Tiempo de espera del kiosco" más abajo).
+  Deliberadamente **sin proteger en absoluto**: `GET /api/menu` (el
+  kiosco lo necesita sin login), `GET /api/orders/[id]` (el cliente
+  consulta su propio ticket) y `GET /api/ajustes` (el kiosco necesita
+  leer el tiempo de espera sin login) — no le añadas `exigirRol` a estos
+  tres sin que el dueño lo pida explícitamente, porque rompería el flujo
+  público de pedir que es el corazón del kiosco.
 - **Frontend**: sesión en `localStorage` vía `client/src/auth.js`
   (`getSesion`/`guardarSesion`/`cerrarSesion`, más un evento
   `window` (`tpv:sesion`) para que `App.jsx` reaccione al login/logout sin
-  recargar). `client/src/api.js` adjunta `Authorization: Bearer <token>`
-  automáticamente si hay sesión, y si el backend responde `401` limpia la
-  sesión local (token caducado o revocado). `RutaProtegida.jsx`
-  (`client/src/components/RutaProtegida.jsx`) envuelve cada `<Route>` que
-  necesita rol y redirige a `/login` si no hay sesión o el rol no
-  coincide. `App.jsx` muestra el nav condicional según `sesion?.rol` — un
-  cliente sin sesión solo ve "Pedidos"; si añades una pantalla nueva
-  protegida, añade también su `NavLink` condicional ahí, no solo la ruta.
+  recargar; también exporta `NOMBRE_ROL` — el nombre legible por rol,
+  compartido por `Login.jsx` y `App.jsx` para no duplicarlo y que se
+  desincronice al añadir un rol). `client/src/api.js` adjunta
+  `Authorization: Bearer <token>` automáticamente si hay sesión, y si el
+  backend responde `401` limpia la sesión local (token caducado o
+  revocado). `RutaProtegida.jsx` (`client/src/components/
+  RutaProtegida.jsx`) envuelve cada `<Route>` que necesita rol y redirige
+  a `/login` si no hay sesión o el rol no coincide. `App.jsx` muestra el
+  nav condicional según `sesion?.rol` — un cliente sin sesión solo ve
+  "Pedidos"; si añades una pantalla nueva protegida, añade también su
+  `NavLink` condicional ahí, no solo la ruta.
 - Si se pide login "por empleado" (usuario/contraseña individual, no PIN
   compartido por rol), es un cambio de diseño real — este sistema es
   intencionalmente de PIN compartido por rol, no por persona.

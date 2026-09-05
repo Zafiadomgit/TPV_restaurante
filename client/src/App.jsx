@@ -10,7 +10,7 @@ import Recogida from "./pages/Recogida.jsx";
 import GestionMenu from "./pages/GestionMenu.jsx";
 import Login from "./pages/Login.jsx";
 import RutaProtegida from "./components/RutaProtegida.jsx";
-import { getSesion, cerrarSesion, onSesionCambio } from "./auth.js";
+import { getSesion, cerrarSesion, onSesionCambio, NOMBRE_ROL } from "./auth.js";
 
 export default function App() {
   const [sesion, setSesion] = useState(getSesion());
@@ -56,7 +56,7 @@ export default function App() {
               Carta
             </NavLink>
           )}
-          {sesion?.rol === "caja" && (
+          {sesion?.rol === "panel" && (
             <NavLink to="/panel" className={({ isActive }) => (isActive ? "active" : "")}>
               Panel
             </NavLink>
@@ -70,7 +70,7 @@ export default function App() {
         <div className="topbar-sesion">
           {sesion ? (
             <button className="btn-salir" onClick={salir}>
-              {sesion.rol === "caja" ? "Caja" : "Cocina"} · Salir
+              {NOMBRE_ROL[sesion.rol]} · Salir
             </button>
           ) : (
             <NavLink to="/login" className="btn-acceso">
@@ -120,7 +120,7 @@ export default function App() {
           <Route
             path="/panel"
             element={
-              <RutaProtegida roles={["caja"]}>
+              <RutaProtegida roles={["panel"]}>
                 <Panel />
               </RutaProtegida>
             }

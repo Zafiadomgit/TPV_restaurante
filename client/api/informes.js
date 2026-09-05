@@ -4,7 +4,8 @@ import { calcularResumen } from "./_lib/informes.js";
 import { exigirRol } from "./_lib/auth.js";
 
 export default async function handler(req, res) {
-  if (!exigirRol(req, res, ["caja"])) return;
+  // Solo rol "panel" — a propósito distinto de "caja", ver _lib/auth.js.
+  if (!exigirRol(req, res, ["panel"])) return;
 
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Método no permitido" });

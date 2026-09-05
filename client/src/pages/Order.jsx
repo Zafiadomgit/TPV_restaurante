@@ -38,6 +38,7 @@ export default function Order() {
   const [cargando, setCargando] = useState(true);
   const [productoPersonalizando, setProductoPersonalizando] = useState(null);
   const [idioma, setIdioma] = useState(() => getIdioma());
+  const [tiempoEsperaMinutos, setTiempoEsperaMinutos] = useState(null);
 
   const cambiarIdioma = (nuevo) => {
     setIdioma(nuevo);
@@ -53,6 +54,10 @@ export default function Order() {
       })
       .catch(() => setError("No se pudo cargar el menú"))
       .finally(() => setCargando(false));
+    api
+      .getAjustes()
+      .then((data) => setTiempoEsperaMinutos(data.tiempoEsperaMinutos))
+      .catch(() => {});
   }, []);
 
   const elegirTipoServicio = (tipo) => {
@@ -181,7 +186,17 @@ export default function Order() {
             </button>
           </div>
         </div>
-        <div className="kiosk-footer">{t(idioma, "cocinaAbierta")}</div>
+        <div className="kiosk-footer">
+          <span>{t(idioma, "cocinaAbierta")}</span>
+          {tiempoEsperaMinutos != null && (
+            <>
+              <span className="kiosk-footer-separador">·</span>
+              <span>
+                {t(idioma, "tiempoEsperaLabel")}: ~{tiempoEsperaMinutos} min
+              </span>
+            </>
+          )}
+        </div>
       </div>
     );
   }

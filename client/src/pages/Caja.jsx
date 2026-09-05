@@ -41,6 +41,9 @@ export default function Caja() {
   const [pedidosSinCobrar, setPedidosSinCobrar] = useState([]);
   const [cobrandoPedidoId, setCobrandoPedidoId] = useState(null);
   const enVueloSinCobrar = useRef(false);
+  const [tiempoEsperaInput, setTiempoEsperaInput] = useState("");
+  const [guardandoTiempoEspera, setGuardandoTiempoEspera] = useState(false);
+  const [tiempoEsperaGuardadoOk, setTiempoEsperaGuardadoOk] = useState(false);
 
   useEffect(() => {
     api
@@ -51,6 +54,29 @@ export default function Caja() {
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    api
+      .getAjustes()
+      .then((data) => setTiempoEsperaInput(String(data.tiempoEsperaMinutos)))
+      .catch(() => {});
+  }, []);
+
+  const guardarTiempoEspera = async (e) => {
+    e.preventDefault();
+    setError("");
+    setTiempoEsperaGuardadoOk(false);
+    setGuardandoTiempoEspera(true);
+    try {
+      const actualizado = await api.actualizarAjustes({ tiempoEsperaMinutos: tiempoEsperaInput });
+      setTiempoEsperaInput(String(actualizado.tiempoEsperaMinutos));
+      setTiempoEsperaGuardadoOk(true);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setGuardandoTiempoEspera(false);
+    }
+  };
 
   useEffect(() => {
     const cargar = async () => {
@@ -247,6 +273,26 @@ export default function Caja() {
     <div className="caja-page">
       <h2>Caja</h2>
       {error && <p className="error">{error}</p>}
+
+      <form className="tiempo-espera-form" onSubmit={guardarTiempoEspera}>
+        <label htmlFor="tiempo-espera">Tiempo de espera del kiosco (min)</label>
+        <div className="tiempo-espera-row">
+          <input
+            id="tiempo-espera"
+            type="number"
+            min="1"
+            value={tiempoEsperaInput}
+            onChange={(e) => {
+              setTiempoEsperaInput(e.target.value);
+              setTiempoEsperaGuardadoOk(false);
+            }}
+          />
+          <button type="submit" disabled={guardandoTiempoEspera || !tiempoEsperaInput}>
+            {guardandoTiempoEspera ? "Guardando..." : "Guardar"}
+          </button>
+          {tiempoEsperaGuardadoOk && <span className="tiempo-espera-ok">✔️ Guardado</span>}
+        </div>
+      </form>
 
       <ReciboImprimible venta={ultimaVenta} />
 

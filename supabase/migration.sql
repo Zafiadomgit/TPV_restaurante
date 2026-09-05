@@ -284,3 +284,14 @@ alter table menu_productos add column if not exists descripcion_en text;
 -- envía nada.
 alter table orders add column if not exists telefono_whatsapp text;
 
+-- Ajustes globales del negocio, editables desde /caja (ver GET/PATCH
+-- /api/ajustes). Tabla de una sola fila (id siempre 1) — no un almacén
+-- de clave/valor genérico, porque de momento solo hay un ajuste; si se
+-- añaden más columnas aquí en vez de crear un sistema de configuración
+-- más general, no lo conviertas en eso sin que haga falta de verdad.
+create table if not exists ajustes (
+  id smallint primary key default 1,
+  tiempo_espera_minutos integer not null default 15
+);
+insert into ajustes (id, tiempo_espera_minutos) values (1, 15) on conflict (id) do nothing;
+

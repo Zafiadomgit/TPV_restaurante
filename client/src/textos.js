@@ -47,6 +47,7 @@ const TEXTOS = {
     avisoWhatsappGuardando: "Guardando...",
     avisoWhatsappGuardado: "Te avisaremos por WhatsApp al",
     avisoWhatsappError: "Ese número no parece válido",
+    tiempoEsperaLabel: "Tiempo de espera estimado",
   },
   en: {
     cargandoMenu: "Loading menu...",
@@ -91,6 +92,7 @@ const TEXTOS = {
     avisoWhatsappGuardando: "Saving...",
     avisoWhatsappGuardado: "We'll message you on WhatsApp at",
     avisoWhatsappError: "That number doesn't look valid",
+    tiempoEsperaLabel: "Estimated wait",
   },
 };
 

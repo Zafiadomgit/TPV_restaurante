@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { api } from "../api.js";
-import { guardarSesion } from "../auth.js";
+import { guardarSesion, NOMBRE_ROL } from "../auth.js";
 
-const RUTA_INICIAL = { caja: "/caja", cocina: "/cocina" };
-const NOMBRE_ROL = { caja: "Caja", cocina: "Cocina" };
+const RUTA_INICIAL = { caja: "/caja", cocina: "/cocina", panel: "/panel" };
 
 export default function Login() {
   const [rol, setRol] = useState(null);
@@ -69,6 +68,9 @@ export default function Login() {
           </button>
           <button className="login-rol-btn" onClick={() => elegirRol("cocina")}>
             Cocina
+          </button>
+          <button className="login-rol-btn" onClick={() => elegirRol("panel")}>
+            Panel
           </button>
         </div>
       </div>

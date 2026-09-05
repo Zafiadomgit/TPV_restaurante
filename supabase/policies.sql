@@ -89,3 +89,16 @@ create policy "menu_productos_anon_update" on menu_productos
 drop policy if exists "menu_productos_anon_delete" on menu_productos;
 create policy "menu_productos_anon_delete" on menu_productos
   for delete to anon using (true);
+
+-- Políticas RLS para "ajustes". Solo select + update — es una fila fija
+-- sembrada por migration.sql (id=1), nunca se inserta ni se borra desde
+-- la app.
+alter table ajustes enable row level security;
+
+drop policy if exists "ajustes_anon_select" on ajustes;
+create policy "ajustes_anon_select" on ajustes
+  for select to anon using (true);
+
+drop policy if exists "ajustes_anon_update" on ajustes;
+create policy "ajustes_anon_update" on ajustes
+  for update to anon using (true) with check (true);

@@ -1,19 +1,28 @@
 import crypto from "crypto";
 
-// Roles con PIN: solo "caja" y "cocina" necesitan iniciar sesión. El
+// Roles con PIN: "caja", "cocina" y "panel" necesitan iniciar sesión. El
 // kiosco de pedidos (/) es público a propósito — lo usa el cliente
 // directamente, no tiene sentido pedirle un PIN de personal.
 //
+// "panel" es un PIN aparte del de "caja" a propósito: el dueño no quiere
+// que el personal de caja (que sabe el PIN_CAJA del día a día) pueda ver
+// las ventas/informes de /panel — por eso GET /api/informes exige
+// exclusivamente el rol "panel", no "caja" (ver informes.js). Si algún
+// día se pide que caja SÍ pueda ver el panel, es una decisión de negocio
+// que hay que confirmar explícitamente, no asumirla por comodidad.
+//
 // Los valores por defecto son solo para poder probar la app sin configurar
-// nada — CAMBIA PIN_CAJA, PIN_COCINA y AUTH_SECRET como variables de
-// entorno en Vercel antes de usar esto en producción de verdad. AUTH_SECRET
-// en particular no es como la clave "anon" de Supabase (esa es pública a
-// propósito, protegida por RLS): si alguien conoce este secreto puede
-// fabricar tokens de sesión válidos sin saber ningún PIN.
+// nada — CAMBIA PIN_CAJA, PIN_COCINA, PIN_PANEL y AUTH_SECRET como
+// variables de entorno en Vercel antes de usar esto en producción de
+// verdad. AUTH_SECRET en particular no es como la clave "anon" de
+// Supabase (esa es pública a propósito, protegida por RLS): si alguien
+// conoce este secreto puede fabricar tokens de sesión válidos sin saber
+// ningún PIN.
 const SECRET = process.env.AUTH_SECRET || "california-tpv-cambia-este-secreto";
 const PINES = {
   caja: process.env.PIN_CAJA || "1234",
   cocina: process.env.PIN_COCINA || "5678",
+  panel: process.env.PIN_PANEL || "9999",
 };
 const DURACION_MS = 12 * 60 * 60 * 1000; // 12h — una jornada de trabajo
 

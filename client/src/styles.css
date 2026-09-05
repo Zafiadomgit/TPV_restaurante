@@ -282,9 +282,14 @@ h4,
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0.6rem;
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.4);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.kiosk-footer-separador {
+  opacity: 0.6;
 }
 
 /* ---- Selector de idioma ES/EN ---- */
@@ -1243,6 +1248,54 @@ h4,
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   position: sticky;
   top: 1rem;
+}
+
+.tiempo-espera-form {
+  background: white;
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.tiempo-espera-form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #1f2933;
+}
+
+.tiempo-espera-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.tiempo-espera-row input {
+  width: 90px;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.tiempo-espera-row button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: #1f2933;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tiempo-espera-row button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tiempo-espera-ok {
+  color: #1f9d55;
+  font-weight: 600;
 }
 
 .pedidos-sin-cobrar {

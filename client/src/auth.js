@@ -1,6 +1,11 @@
 const STORAGE_KEY = "tpv_sesion";
 const EVENTO = "tpv:sesion";
 
+// Nombre legible por rol, compartido por Login.jsx (selector de rol) y
+// App.jsx (nav + botón de salir) para no tener el mismo mapa duplicado
+// en dos sitios y que se desincronicen al añadir un rol nuevo.
+export const NOMBRE_ROL = { caja: "Caja", cocina: "Cocina", panel: "Panel" };
+
 export function getSesion() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
