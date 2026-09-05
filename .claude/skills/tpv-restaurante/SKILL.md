@@ -350,8 +350,20 @@ un cambio de diseño real, no un ajuste trivial.
    único que resetea todo y vuelve a `inicio`. Si añades un paso nuevo al
    flujo, sigue este mismo patrón de máquina de estados por `paso`, no
    metas la lógica de otro paso dentro de un mismo `return`.
-2. `calcularTotales()` (en `client/src/totales.js`, misma fórmula que el
-   backend) computa subtotal/IVA/total en vivo. IVA fijo al 10%.
+2. `calcularTotales()` (en `client/src/totales.js`, misma fórmula que
+   `client/api/_lib/orders.js`) computa subtotal/IVA/total en vivo. IVA
+   fijo al 10%. **Los precios de `menu_productos.precio` ya llevan el
+   IVA incluido** (es el precio final que paga el cliente, el mismo que
+   el dueño cita de palabra o pone en el menú físico) — `calcularTotales`
+   SUMA los precios de línea para obtener el `total` directamente y
+   luego DESGLOSA subtotal/IVA hacia atrás (`subtotal = total / 1.10`,
+   `iva = total - subtotal`), nunca al revés. Si alguna vez ves un
+   `calcularTotales` que hace `iva = subtotal * IVA_RATE` y luego
+   `total = subtotal + iva`, es el bug antiguo (cobraba IVA dos veces
+   sobre el precio de carta) — no lo reintroduzcas. Esto aplica también
+   al precio alternativo de "quitar ingredientes" (`precioSiTodoQuitado`)
+   y a cualquier `precioExtra`: todos son precios/importes con IVA
+   incluido, se tratan igual en la suma.
 3. Un producto con `modificadores` (kebab/dürüm/lahmacum/plato, ver sección
    "El menú") NO se añade directo: abre el modal `Personalizar.jsx`. Los
    ítems del carrito usan

@@ -8,11 +8,16 @@ export const ESTADOS_VALIDOS = [
   "cancelado",
 ];
 
+// Los precios de la carta ya llevan el IVA incluido (es el precio final
+// que paga el cliente, el mismo que está impreso/mostrado en el menú) —
+// no se le suma IVA encima, se desglosa DENTRO de ese precio. Antes se
+// hacía al revés (sumar IVA sobre el precio de carta), lo que cobraba
+// IVA dos veces sobre el mismo producto.
 export function calcularTotales(items) {
-  const subtotal = items.reduce((acc, it) => acc + it.precio * it.cantidad, 0);
-  const iva = Number((subtotal * IVA_RATE).toFixed(2));
-  const total = Number((subtotal + iva).toFixed(2));
-  return { subtotal: Number(subtotal.toFixed(2)), iva, total };
+  const total = Number(items.reduce((acc, it) => acc + it.precio * it.cantidad, 0).toFixed(2));
+  const subtotal = Number((total / (1 + IVA_RATE)).toFixed(2));
+  const iva = Number((total - subtotal).toFixed(2));
+  return { subtotal, iva, total };
 }
 
 export function mapRow(row) {
