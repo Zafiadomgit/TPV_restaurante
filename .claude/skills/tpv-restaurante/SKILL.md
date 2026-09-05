@@ -239,6 +239,20 @@ un badge de texto como en el kiosco porque el botón de caja es un cuadro
 de 84px de alto pensado para toque rápido, no tiene sitio para una
 segunda línea.
 
+**"Últimos cierres" (el historial de turnos cerrados, con efectivo
+esperado/declarado/diferencia) ya NO vive en `/caja` — vive en
+`/panel`.** El dueño no quiere que el cajero vea esas cifras (mismo
+motivo que separar el PIN de `panel` del de `caja`, ver "Roles y acceso
+por PIN"). `/caja` solo muestra si HAY un turno abierto ahora mismo
+(para poder abrir/cerrar el suyo); la lista de cierres pasados es cosa
+de `Panel.jsx`, que llama a `GET /api/caja?estado=cerrado` — el mismo
+endpoint que ya usaba `/caja`, ahora también accesible en modo
+solo-lectura (GET) con rol `panel`, mientras que abrir/cerrar turno
+(POST/PATCH) sigue siendo exclusivo de `caja`. Si se pide mostrar en
+`/caja` cualquier cifra de dinero histórico o acumulado (no solo "hay
+turno abierto sí/no"), confírmalo con el dueño antes de añadirlo — es
+justo lo que se acaba de sacar de ahí a propósito.
+
 Tras cobrar, aparece un botón "Imprimir recibo" que llama a
 `window.print()` sobre `ReciboImprimible.jsx` (`client/src/components/`)
 — un ticket de 80mm oculto en pantalla (`.recibo-imprimible { display:
@@ -521,6 +535,16 @@ por hora usa una franja fija de 8h–23h (no calculada dinámicamente) para
 que el eje no salte de tamaño según haya o no ventas — no fabriques datos
 si no hay pedidos, `Panel.jsx` ya muestra "Sin ventas todavía hoy".
 
+`Panel.jsx` también muestra **"Últimos cierres"** (los últimos 5 turnos
+de caja cerrados, con efectivo esperado/declarado/diferencia) — esto NO
+sale de `GET /api/informes`, sale de `GET /api/caja?estado=cerrado` (el
+mismo endpoint de siempre de `/caja`, ver "Venta rápida en caja" más
+arriba). Se movió aquí desde `/caja` a propósito: el dueño no quiere que
+el cajero vea el histórico de cierres. Reutiliza tal cual las clases CSS
+que ya existían para esto (`.caja-historial-titulo`, `.tickets-grid`,
+`.card-caja.historial-turno`, `.caja-cierre-resumen`, etc.) — no son
+específicas de `/caja`, así que no hizo falta CSS nuevo.
+
 ### Pantalla de recogida
 `/recogida` (`Recogida.jsx`) es un tablero pensado para un monitor público
 de cara al cliente (no un formulario de trabajo del personal), tema
@@ -577,9 +601,13 @@ parece pedir un "rol usuario", probablemente ya es esto.
   producción real.
 - **Qué está protegido y qué no, y por qué**: `/carta`, `/caja`,
   `/historial` exigen rol `caja` con `exigirRol` (401 sin token válido);
-  `GET /api/informes` (lo único que usa `/panel`) exige exclusivamente
-  rol `panel`. `PATCH /api/orders/[id]/estado` exige `caja` o `cocina`
-  igual (lo usa cocina y el "revertir" de historial).
+  `GET /api/informes` exige exclusivamente rol `panel`. `GET
+  /api/caja` (turnos) es la excepción con dos roles: acepta `caja` o
+  `panel`, porque `/panel` también lo usa para "Últimos cierres" — pero
+  el `POST` (abrir turno) y `PATCH /api/caja/[id]/cerrar` (cerrar turno)
+  siguen exigiendo exclusivamente `caja`, nunca `panel`. `PATCH
+  /api/orders/[id]/estado` exige `caja` o `cocina` igual (lo usa cocina
+  y el "revertir" de historial).
   `GET /api/orders` es distinto — no usa `exigirRol`: sin token responde
   igualmente `200` con una vista pública reducida (solo lo que necesita
   `/recogida`, ver la sección "Pantalla de recogida"), y con token de

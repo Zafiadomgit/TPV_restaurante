@@ -3,9 +3,12 @@ import { mapTurnoRow } from "../_lib/caja.js";
 import { exigirRol } from "../_lib/auth.js";
 
 export default async function handler(req, res) {
-  if (!exigirRol(req, res, ["caja"])) return;
-
   if (req.method === "GET") {
+    // El panel del dueño también lee esto (para "Últimos cierres" en
+    // /panel), pero solo lectura — abrir/cerrar turno sigue siendo
+    // exclusivo de caja, ver el POST más abajo.
+    if (!exigirRol(req, res, ["caja", "panel"])) return;
+
     const { estado } = req.query;
     let query = supabase.from("turnos_caja").select("*").order("abierto_en", { ascending: false });
     if (estado) query = query.eq("estado", estado);
@@ -16,6 +19,8 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "POST") {
+    if (!exigirRol(req, res, ["caja"])) return;
+
     const { efectivoInicial } = req.body || {};
     const inicial = Number(efectivoInicial);
 

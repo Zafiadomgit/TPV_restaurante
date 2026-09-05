@@ -17,10 +17,6 @@ function formatHora(iso) {
   return iso ? new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
 }
 
-function formatFecha(iso) {
-  return iso ? new Date(iso).toLocaleDateString() : "";
-}
-
 export default function Caja() {
   const [turnos, setTurnos] = useState([]);
   const [menu, setMenu] = useState([]);
@@ -134,10 +130,6 @@ export default function Caja() {
   };
 
   const turnoAbierto = turnos.find((t) => t.estado === "abierto") || null;
-  const turnosCerrados = [...turnos]
-    .filter((t) => t.estado === "cerrado")
-    .sort((a, b) => new Date(b.cerradoEn) - new Date(a.cerradoEn))
-    .slice(0, 5);
 
   const abrirTurno = async (e) => {
     e.preventDefault();
@@ -509,47 +501,6 @@ export default function Caja() {
         </div>
       )}
 
-      {turnosCerrados.length > 0 && (
-        <>
-          <h3 className="caja-historial-titulo">Últimos cierres</h3>
-          <div className="tickets-grid">
-            {turnosCerrados.map((t) => (
-              <div
-                key={t.id}
-                className={`card-caja historial-turno ${
-                  t.diferencia === 0 ? "diferencia-ok" : "diferencia-alerta"
-                }`}
-              >
-                <span className="badge-estado badge-cerrado-caja">Cerrado</span>
-                <p className="caja-detalle">
-                  {formatFecha(t.abiertoEn)} · {formatHora(t.abiertoEn)} → {formatHora(t.cerradoEn)}
-                </p>
-                <div className="caja-cierre-resumen">
-                  <div>
-                    <span>Efectivo inicial</span>
-                    <span>{t.efectivoInicial.toFixed(2)} €</span>
-                  </div>
-                  <div>
-                    <span>Efectivo esperado</span>
-                    <span>{t.totalEfectivoEsperado.toFixed(2)} €</span>
-                  </div>
-                  <div>
-                    <span>Efectivo declarado</span>
-                    <span>{t.efectivoFinalDeclarado.toFixed(2)} €</span>
-                  </div>
-                  <div className="caja-diferencia">
-                    <span>Diferencia</span>
-                    <span>
-                      {t.diferencia > 0 ? "+" : ""}
-                      {t.diferencia.toFixed(2)} €
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
     </div>
   );
 }

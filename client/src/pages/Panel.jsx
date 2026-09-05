@@ -4,9 +4,18 @@ import { formatDuracion } from "../informes.js";
 
 const POLL_MS = 15000;
 
+function formatHora(iso) {
+  return iso ? new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
+}
+
+function formatFecha(iso) {
+  return iso ? new Date(iso).toLocaleDateString() : "";
+}
+
 export default function Panel() {
   const [resumen, setResumen] = useState(null);
   const [error, setError] = useState("");
+  const [turnosCerrados, setTurnosCerrados] = useState([]);
 
   useEffect(() => {
     let activo = true;
@@ -19,6 +28,32 @@ export default function Panel() {
         .catch(() => {
           if (activo) setError("No se pudo cargar el panel");
         });
+
+    cargar();
+    const interval = setInterval(cargar, POLL_MS);
+    return () => {
+      activo = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Control de cierres de caja: solo el dueño lo ve (no pasa por
+  // GET /api/informes, es GET /api/caja?estado=cerrado — el mismo
+  // endpoint que usaba /caja, ahora también accesible con rol "panel"
+  // en modo solo lectura).
+  useEffect(() => {
+    let activo = true;
+    const cargar = () =>
+      api
+        .getTurnos("cerrado")
+        .then((data) => {
+          if (activo) {
+            setTurnosCerrados(
+              [...data].sort((a, b) => new Date(b.cerradoEn) - new Date(a.cerradoEn)).slice(0, 5)
+            );
+          }
+        })
+        .catch(() => {});
 
     cargar();
     const interval = setInterval(cargar, POLL_MS);
@@ -100,6 +135,48 @@ export default function Panel() {
           )}
         </div>
       </div>
+
+      {turnosCerrados.length > 0 && (
+        <>
+          <h3 className="caja-historial-titulo">Últimos cierres</h3>
+          <div className="tickets-grid">
+            {turnosCerrados.map((t) => (
+              <div
+                key={t.id}
+                className={`card-caja historial-turno ${
+                  t.diferencia === 0 ? "diferencia-ok" : "diferencia-alerta"
+                }`}
+              >
+                <span className="badge-estado badge-cerrado-caja">Cerrado</span>
+                <p className="caja-detalle">
+                  {formatFecha(t.abiertoEn)} · {formatHora(t.abiertoEn)} → {formatHora(t.cerradoEn)}
+                </p>
+                <div className="caja-cierre-resumen">
+                  <div>
+                    <span>Efectivo inicial</span>
+                    <span>{t.efectivoInicial.toFixed(2)} €</span>
+                  </div>
+                  <div>
+                    <span>Efectivo esperado</span>
+                    <span>{t.totalEfectivoEsperado.toFixed(2)} €</span>
+                  </div>
+                  <div>
+                    <span>Efectivo declarado</span>
+                    <span>{t.efectivoFinalDeclarado.toFixed(2)} €</span>
+                  </div>
+                  <div className="caja-diferencia">
+                    <span>Diferencia</span>
+                    <span>
+                      {t.diferencia > 0 ? "+" : ""}
+                      {t.diferencia.toFixed(2)} €
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
