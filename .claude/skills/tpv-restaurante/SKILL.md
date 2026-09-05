@@ -294,14 +294,28 @@ finas de arriba.
     (Blanca), Salsa de tomate (Roja)" en todos los pedidos.
 
 ### Reorganización de carta (categorías nuevas + salsas + resúmenes)
-Cambio grande de datos + lógica pedido por el dueño, entregado como 8
+Cambio grande de datos + lógica pedido por el dueño, entregado como 9
 scripts SQL de un solo uso en `supabase/menu_reorg_1_categorias.sql` a
-`menu_reorg_8_bebidas.sql` (se ejecutan en ese orden — el 2 en adelante
-asume que las categorías nuevas del script 1 ya existen). Igual que los
-scripts anteriores (`traducciones_menu_en.sql`,
+`menu_reorg_9_traducciones_en.sql` (se ejecutan en ese orden — el 2 en
+adelante asume que las categorías nuevas del script 1 ya existen). Igual
+que los scripts anteriores (`traducciones_menu_en.sql`,
 `precio_alternativo_quitar_bulky.sql`, `fix_precio_solo_carne.sql`), el
 dueño los pega y ejecuta a mano en el SQL Editor de Supabase — esta
 sesión no tiene acceso de escritura directo a la BD de producción.
+
+**Ojo con las categorías/productos nuevos y el idioma inglés**: cualquier
+categoría o producto creado DESPUÉS de que corriera
+`traducciones_menu_en.sql` (el script de traducción original) nace sin
+`nombre_en`/`descripcion_en` — no es un bug, es exactamente el
+comportamiento documentado en "Idioma del kiosco" más abajo (cae a
+español), pero es fácil no darse cuenta hasta que alguien prueba el
+kiosco en inglés y ve categorías nuevas sin traducir mezcladas con
+productos viejos sí traducidos. El script 9 (`menu_reorg_9_
+traducciones_en.sql`) cubre las 7 categorías nuevas de esta
+reorganización y los productos nuevos (Pedrata XXL, las 8 bebidas) — pero
+si se añade una categoría o producto nuevo en el futuro, hay que
+rellenar su traducción a mano (o con un script nuevo de este mismo
+patrón), `traducciones_menu_en.sql` no se vuelve a ejecutar solo.
 
 - **Categorías nuevas**: Pedratas, Patatas, Complementos, Zona crujiente,
   Hamburguesas, Perrito caliente y Pollo asado. "Especialidades" y
