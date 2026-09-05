@@ -2416,8 +2416,15 @@ h4,
   border-radius: 6px;
 }
 
+.gestion-precio-todo-quitado-ayuda {
+  font-size: 0.75rem;
+  color: #888;
+  margin: -0.3rem 0 0.6rem;
+}
+
 .gestion-opcion-fila {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.4rem;

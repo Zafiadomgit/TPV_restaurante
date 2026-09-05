@@ -52,10 +52,35 @@ export default function EditarProducto({ producto, categorias, otrosProductos, o
       prev.map((p) => {
         if (p.id !== pasoId) return p;
         if (valor === null) {
-          const { precioSiTodoQuitado, ...resto } = p;
+          const { precioSiTodoQuitado, disparadoresPrecioAlternativo, ...resto } = p;
           return resto;
         }
-        return { ...p, precioSiTodoQuitado: Math.max(0, Number(valor) || 0) };
+        const activandoPorPrimeraVez = p.precioSiTodoQuitado === undefined;
+        return {
+          ...p,
+          precioSiTodoQuitado: Math.max(0, Number(valor) || 0),
+          // Al activarlo por primera vez no se marca ninguna opción como
+          // disparador todavía — el cajero elige abajo cuáles activan el
+          // precio alternativo (marcar UNA cualquiera ya lo dispara, no
+          // hace falta marcarlas todas).
+          disparadoresPrecioAlternativo: activandoPorPrimeraVez ? [] : p.disparadoresPrecioAlternativo,
+        };
+      })
+    );
+  };
+
+  const toggleDisparadorPrecioAlternativo = (pasoId, opcionId) => {
+    setModificadores((prev) =>
+      prev.map((p) => {
+        if (p.id !== pasoId) return p;
+        const actuales = p.disparadoresPrecioAlternativo || [];
+        const yaActiva = actuales.includes(opcionId);
+        return {
+          ...p,
+          disparadoresPrecioAlternativo: yaActiva
+            ? actuales.filter((id) => id !== opcionId)
+            : [...actuales, opcionId],
+        };
       })
     );
   };
@@ -96,7 +121,14 @@ export default function EditarProducto({ producto, categorias, otrosProductos, o
 
   const eliminarOpcion = (pasoId, opcionId) => {
     setModificadores((prev) =>
-      prev.map((p) => (p.id === pasoId ? { ...p, opciones: p.opciones.filter((o) => o.id !== opcionId) } : p))
+      prev.map((p) => {
+        if (p.id !== pasoId) return p;
+        return {
+          ...p,
+          opciones: p.opciones.filter((o) => o.id !== opcionId),
+          disparadoresPrecioAlternativo: p.disparadoresPrecioAlternativo?.filter((id) => id !== opcionId),
+        };
+      })
     );
   };
 
@@ -227,7 +259,7 @@ export default function EditarProducto({ producto, categorias, otrosProductos, o
                     checked={paso.precioSiTodoQuitado !== undefined}
                     onChange={(e) => cambiarPrecioSiTodoQuitado(paso.id, e.target.checked ? 0 : null)}
                   />
-                  Precio fijo si se marcan todas las opciones de este paso
+                  Precio alternativo si se marca alguna opción "activa" de este paso
                   {paso.precioSiTodoQuitado !== undefined && (
                     <input
                       type="number"
@@ -238,6 +270,12 @@ export default function EditarProducto({ producto, categorias, otrosProductos, o
                     />
                   )}
                 </label>
+                {paso.precioSiTodoQuitado !== undefined && (
+                  <p className="gestion-precio-todo-quitado-ayuda">
+                    Marca abajo qué opciones activan el precio alternativo — basta con que el cliente marque UNA
+                    cualquiera de las activas, no hace falta que marque todas.
+                  </p>
+                )}
                 {paso.opciones.map((opcion) => (
                   <div key={opcion.id} className="gestion-opcion-fila">
                     <input
@@ -263,6 +301,16 @@ export default function EditarProducto({ producto, categorias, otrosProductos, o
                       />
                       Por defecto
                     </label>
+                    {paso.precioSiTodoQuitado !== undefined && (
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={(paso.disparadoresPrecioAlternativo || []).includes(opcion.id)}
+                          onChange={() => toggleDisparadorPrecioAlternativo(paso.id, opcion.id)}
+                        />
+                        Activa precio alt.
+                      </label>
+                    )}
                     <button type="button" className="btn-remove" onClick={() => eliminarOpcion(paso.id, opcion.id)}>
                       ✕
                     </button>

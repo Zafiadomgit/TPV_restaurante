@@ -85,18 +85,29 @@ export default async function handler(req, res) {
           .filter((optId) => paso.opciones.some((o) => o.id === optId))
           .slice(0, paso.maxSeleccion ?? seleccionCliente.length);
 
-        // Si el paso trae precioSiTodoQuitado y el cliente marcó TODAS sus
-        // opciones (validadas arriba, nunca lo que mande el cliente sin
-        // comprobar), el precio base pasa a ser ese valor fijo — pensado
-        // para vender el kebab/dürüm/lahmacum "solo carne" más barato.
-        if (
-          !baseSobrescrita &&
-          typeof paso.precioSiTodoQuitado === "number" &&
-          paso.opciones.length > 0 &&
-          paso.opciones.every((o) => seleccionValida.includes(o.id))
-        ) {
-          precioBase = paso.precioSiTodoQuitado;
-          baseSobrescrita = true;
+        // Si el paso trae precioSiTodoQuitado, el precio base pasa a ser
+        // ese valor fijo — pensado para vender el kebab/dürüm/lahmacum
+        // "solo carne" más barato cuando el cliente quita "de más".
+        // Dos formas de disparar el precio alternativo (validado siempre
+        // contra seleccionValida, nunca lo que mande el cliente sin
+        // comprobar):
+        //  - Si el paso trae disparadoresPrecioAlternativo (array de ids
+        //    de opción): se dispara si el cliente marcó ALGUNA de esas
+        //    opciones — ej. quitar la lechuga SOLA ya obliga a echar más
+        //    carne, no hace falta que quite también tomate/cebolla. No es
+        //    "todas", es "cualquiera de estas".
+        //  - Si no trae ese campo (productos antiguos, sin tocar):
+        //    comportamiento de siempre — se dispara solo si se marcaron
+        //    TODAS las opciones del paso.
+        if (!baseSobrescrita && typeof paso.precioSiTodoQuitado === "number" && paso.opciones.length > 0) {
+          const disparadores = paso.disparadoresPrecioAlternativo;
+          const activa = Array.isArray(disparadores)
+            ? disparadores.some((id) => seleccionValida.includes(id))
+            : paso.opciones.every((o) => seleccionValida.includes(o.id));
+          if (activa) {
+            precioBase = paso.precioSiTodoQuitado;
+            baseSobrescrita = true;
+          }
         }
 
         for (const optId of seleccionValida) {

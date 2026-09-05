@@ -196,22 +196,52 @@ Salsas, Bebidas, Ensaladas, Pizzas, Haz tu menú).
   que ya se consigue gratis marcando las 4 opciones de "Quitar
   ingredientes". No la reintroduzcas como extra sin que el dueño lo
   pida explícitamente.
-- **Precio fijo al quitar todo un paso** (`precioSiTodoQuitado`, número
-  opcional en el propio paso, junto a `titulo`/`opciones`): si el cliente
-  marca **todas** las opciones de ese paso, el precio base del producto
-  pasa a ser ese valor fijo en vez de `producto.precio` — los `precioExtra`
-  de cualquier paso (incluidos otros "Extras") se siguen sumando encima
-  con normalidad. Pensado para vender el kebab/dürüm/lahmacum "solo
-  carne" (las 4 "Quitar ingredientes" marcadas) a un precio fijo más bajo
-  en vez de dejarlo al mismo precio de siempre. Recalculado siempre en el
-  backend a partir de la selección ya validada (`orders/index.js`), igual
-  que `precioExtra` — nunca a partir de lo que afirme el cliente. Solo
-  está activo en los 15 sabores base de Kebab/Dürüm/Lahmacum (ternera,
-  pollo, mixto, falafel, vegetal con queso gouda) a 1€ — **a propósito
-  no** en las variantes premium (doble, loco, solo carne), que se quedan
-  con su precio normal aunque se quite todo. Editable por paso desde
-  `/carta` (checkbox "Precio fijo si se marcan todas las opciones de este
-  paso" en `EditarProducto.jsx`).
+- **Precio alternativo al quitar ingredientes** (`precioSiTodoQuitado`,
+  número opcional en el propio paso, junto a `titulo`/`opciones`): si se
+  dispara, el precio base del producto pasa a ser ese valor fijo en vez
+  de `producto.precio` — los `precioExtra` de cualquier paso (incluidos
+  otros "Extras") se siguen sumando encima con normalidad. Pensado para
+  vender el kebab/dürüm/lahmacum "solo carne" a un precio fijo más alto
+  (+1€) cuando hay que echarle más carne para compensar. Recalculado
+  siempre en el backend a partir de la selección ya validada
+  (`orders/index.js`), igual que `precioExtra` — nunca a partir de lo
+  que afirme el cliente. `Personalizar.jsx` (el modal de personalizar,
+  tanto en el kiosco como en la venta rápida de caja) usa exactamente la
+  misma condición para el precio en vivo — si tocas una, toca la otra.
+  - **Cuándo se dispara** (`disparadoresPrecioAlternativo`, array
+    opcional de ids de opción, junto a `precioSiTodoQuitado`): si está
+    presente, basta con que el cliente marque **CUALQUIERA** de esas
+    opciones — no hace falta que marque todas. Ej. en los 15 sabores
+    base de Kebab/Dürüm/Lahmacum (ternera, pollo, mixto, falafel,
+    vegetal con queso gouda), el dueño explicó que lo que abulta el
+    kebab/dürüm/lahmacum es la carne + la lechuga + el repollo y
+    zanahoria — el tomate y la cebolla no abultan — así que
+    `disparadoresPrecioAlternativo: ["sin-lechuga",
+    "sin-repollo-zanahoria"]`: quitar solo la lechuga (sin tocar nada
+    más) ya dispara el precio de "solo carne", igual que quitar solo el
+    repollo y zanahoria, o quitar los dos, o quitar los cuatro — pero
+    quitar solo tomate y/o cebolla (sin tocar lechuga ni repollo y
+    zanahoria) NO lo dispara. **Si el paso NO trae este campo**
+    (productos antiguos que no se han tocado, ej. Platos combinados),
+    se mantiene el comportamiento original: hace falta marcar **TODAS**
+    las opciones del paso para disparar el precio alternativo — no lo
+    cambies a "cualquiera" para un producto sin confirmarlo antes, es un
+    comportamiento de precio real, no un detalle visual.
+  - **A propósito sin este mecanismo en absoluto**: las variantes
+    premium (doble, loco, solo carne) no tienen `precioSiTodoQuitado` —
+    se quedan con su precio normal quiten lo que quiten.
+  - Editable por paso desde `/carta` (`EditarProducto.jsx`): el checkbox
+    "Precio alternativo si se marca alguna opción 'activa' de este paso"
+    activa el campo (empieza sin ningún disparador marcado — el cajero
+    elige abajo cuáles, con un checkbox "Activa precio alt." por
+    opción); si se desactiva, se borran `precioSiTodoQuitado` y
+    `disparadoresPrecioAlternativo` juntos.
+  - `supabase/precio_alternativo_quitar_bulky.sql`: script de datos de
+    un solo uso (mismo patrón que `traducciones_menu_en.sql`) que añadió
+    `disparadoresPrecioAlternativo` a los 15 productos ya existentes de
+    Kebab/Dürüm/Lahmacum que tenían `precioSiTodoQuitado` — no se
+    ejecuta solo, ni se repite para productos nuevos creados después
+    desde `/carta` (esos se configuran a mano con el checkbox de arriba).
 - **No hay** un constructor visual de menús tipo arrastrar-y-soltar (armar
   combos desde ingredientes sueltos en una UI de slots) — se decidió no
   construirlo; `/carta` es un CRUD de categorías/productos, no un editor de

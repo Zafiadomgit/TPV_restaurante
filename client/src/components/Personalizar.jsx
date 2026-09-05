@@ -27,14 +27,18 @@ export default function Personalizar({ producto, idioma, onConfirmar, onCancelar
     });
   };
 
-  // Si un paso trae precioSiTodoQuitado y el cliente marcó TODAS sus
-  // opciones (ej. las 4 de "Quitar ingredientes"), el precio base pasa a
-  // ser ese valor en vez del precio normal del producto — pensado para
-  // vender el kebab/dürüm/lahmacum "solo carne" a un precio fijo más bajo.
+  // Mismo criterio que el backend (POST /api/orders) para no desincronizar
+  // el precio en vivo del modal con lo que realmente se va a cobrar: si el
+  // paso trae disparadoresPrecioAlternativo, basta con marcar ALGUNA de
+  // esas opciones (ej. quitar solo la lechuga ya obliga a echar más
+  // carne); si no trae ese campo (productos antiguos sin tocar), hace
+  // falta marcar TODAS las opciones del paso, como siempre.
   const pasoConPrecioBase = (producto.modificadores || []).find((paso) => {
     if (typeof paso.precioSiTodoQuitado !== "number" || paso.opciones.length === 0) return false;
     const elegidas = seleccion[paso.id] || [];
-    return paso.opciones.every((o) => elegidas.includes(o.id));
+    return Array.isArray(paso.disparadoresPrecioAlternativo)
+      ? paso.disparadoresPrecioAlternativo.some((id) => elegidas.includes(id))
+      : paso.opciones.every((o) => elegidas.includes(o.id));
   });
   const precioBase = pasoConPrecioBase ? pasoConPrecioBase.precioSiTodoQuitado : producto.precio;
 
