@@ -339,6 +339,22 @@ un cambio de diseño real, no un ajuste trivial.
    de estos dos. Es solo `/cocina` (`Recogida.jsx` tiene su propio
    marcado de ticket, no reutiliza `OrderTicket.jsx`) — si se pide lo
    mismo en recogida, hay que replicarlo ahí aparte.
+   **Modificadores/notas de línea** (`item.modificadoresTexto`/
+   `item.notas`, ej. "Sin cebolla") se muestran en `.kds-nota` como un
+   chip con fondo propio, negrita y un icono ⚠ — a propósito más
+   llamativos que el nombre del producto (`.kds-item-nombre`), no al
+   revés: es justo lo que un cocinero con prisa tiene que ver primero.
+   Si se añade otro sitio que muestre modificadores en cocina, sigue
+   este mismo patrón de chip, no un simple color de texto como había
+   antes. **Pantallas grandes**: `/cocina` tiene un `@media (min-width:
+   1600px)` que sube explícitamente el tamaño de cada pieza de texto del
+   ticket (título, contador, cabecera de columna, ticket id, tiempo,
+   origen, nombre, nota, botón) — todos los valores de `.kds-*` están en
+   `rem` (se miden contra la raíz del documento), así que **no sirve**
+   con subir un solo `font-size` en `.kds-page` y esperar que se
+   propague; si se añade una pieza de texto nueva al ticket, añade
+   también su override ahí dentro del media query, o se quedará
+   pequeña en un monitor grande mientras todo lo demás escala.
 6. `Checkout.jsx` (`/pago/:orderId`): muestra el ticket y el estado en
    vivo, pero **ya no deja pagar desde ahí** — no hay datáfono
    integrado en el kiosco, así que el cliente no puede cobrarse a sí

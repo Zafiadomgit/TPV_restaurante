@@ -1088,16 +1088,41 @@ h4,
 .kds-item-texto {
   display: flex;
   flex-direction: column;
+  gap: 0.2rem;
 }
 
+.kds-item-nombre {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+/* Modificadores/notas ("sin cebolla", "extra queso"...) tienen que
+   destacar sobre el nombre del producto, no al revés — es lo que un
+   cocinero con prisa puede pasar por alto si va en letra pequeña y
+   apagada. Por eso van en un chip con fondo propio, más grandes y en
+   negrita, no solo en un color distinto como antes. */
 .kds-nota {
-  font-size: 0.8rem;
-  color: #f5a3a3;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  align-self: flex-start;
+  padding: 0.15rem 0.55rem;
+  border-radius: 6px;
+  background: rgba(255, 107, 107, 0.18);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ff8f8f;
+}
+
+.kds-nota::before {
+  content: "⚠";
+  font-size: 0.85rem;
 }
 
 .kds-nota-general {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
   font-style: italic;
   margin: 0 0 0.6rem 0;
 }
@@ -1112,6 +1137,68 @@ h4,
   font-weight: 600;
   cursor: pointer;
   font-size: 1rem;
+}
+
+/* En un monitor grande montado en cocina (TV/pantalla de pared), sin
+   esto el KDS solo dejaría más aire alrededor de tickets del mismo
+   tamaño de siempre — no se leería mejor de lejos, que es justo para lo
+   que sirve una pantalla más grande. Sube explícitamente el tamaño de
+   cada pieza de texto del ticket (los valores de aquí están en rem, que
+   se miden siempre contra la raíz del documento, no contra `.kds-page`
+   — por eso no basta con subir un solo font-size aquí arriba y dejar
+   que "caiga" al resto). */
+@media (min-width: 1600px) {
+  .kds-titulo {
+    font-size: 1.6rem;
+  }
+
+  .kds-contador {
+    font-size: 1.15rem;
+  }
+
+  .kds-columna-header {
+    font-size: 1.3rem;
+    padding: 0.9rem 1.2rem;
+  }
+
+  .kds-ticket {
+    padding: 1.3rem;
+  }
+
+  .kds-columna-body {
+    padding: 1.1rem;
+    gap: 1.1rem;
+  }
+
+  .kds-ticket-id {
+    font-size: 1.9rem;
+  }
+
+  .kds-ticket-tiempo {
+    font-size: 1.15rem;
+  }
+
+  .kds-ticket-origen {
+    font-size: 1rem;
+  }
+
+  .kds-item-nombre {
+    font-size: 1.35rem;
+  }
+
+  .kds-nota {
+    font-size: 1.15rem;
+    padding: 0.25rem 0.7rem;
+  }
+
+  .kds-nota-general {
+    font-size: 1.15rem;
+  }
+
+  .kds-btn-avanzar {
+    padding: 0.9rem;
+    font-size: 1.2rem;
+  }
 }
 
 /* ---- Historial ---- */

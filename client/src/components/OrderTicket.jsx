@@ -46,10 +46,10 @@ export default function OrderTicket({ order, onAvanzar }) {
           <li key={item.productId}>
             <span className="kds-cantidad">{item.cantidad}x</span>
             <div className="kds-item-texto">
-              <span>{item.nombre}</span>
+              <span className="kds-item-nombre">{item.nombre}</span>
               {(item.modificadoresTexto || item.notas) && (
                 <span className="kds-nota">
-                  ↳ {[item.modificadoresTexto, item.notas].filter(Boolean).join(" · ")}
+                  {[item.modificadoresTexto, item.notas].filter(Boolean).join(" · ")}
                 </span>
               )}
             </div>
