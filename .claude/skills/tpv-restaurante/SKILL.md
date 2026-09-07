@@ -324,6 +324,16 @@ finas de arriba.
       precio) en vez de corromper el precio, pero no hace lo que un
       cajero esperaría, así que evita añadir opciones a este paso desde
       `/carta` hasta que tenga su propia UI.
+  - `siempreEnTexto` (boolean, a nivel de paso): igual que
+    `esSelectorTamano`, la opción elegida SIEMPRE aparece en el ticket de
+    cocina aunque sea la de por defecto — pero sin tocar el precio (sigue
+    sumando `precioExtra` normal, nunca sustituye el precio base). Pensado
+    para pasos de "elige uno obligatorio" que no cambian el precio (elegir
+    carne, tipo de patatas, sabor de pizza, bebida en "Haz tu menú" — ver
+    más abajo). En el texto, el modo "siempre mostrar" se comprueba con
+    `paso.esSelectorTamano || paso.siempreEnTexto` — si añades un paso
+    nuevo de "elige uno obligatorio" en el futuro, usa `siempreEnTexto`,
+    no reintroduzcas una condición nueva.
   - **Fix de "selección única" en `Personalizar.jsx`**: un paso con
     `maxSeleccion: 1` (elegir carne en Pedratas, elegir tamaño en
     Pizzas) NO se comporta como un radio button de verdad — antes, tocar
@@ -468,6 +478,45 @@ patrón), `traducciones_menu_en.sql` no se vuelve a ejecutar solo.
   (`primerosGratis: 3`) además del paso de tamaño nuevo. Esto es lo que
   volvió obsoleta la nota de "Pizzas es una matriz de precio" en El
   menú — ver la nota actualizada ahí.
+- **"Haz tu menú" personalizado** (`menu_reorg_11_haz_tu_menu.sql`): los
+  12 productos de menú (más "Menú Nuggets de pollo", producto nuevo, mismo
+  patrón que "Menú Alitas de pollo") pasaron de ser genéricos/sin
+  modificadores a tener las mismas opciones que su versión suelta — elegir
+  carne (donde aplica), el sistema de salsas en dos niveles, extras, y
+  algunos casos concretos: el trío kebab/dürüm/lahmacum y el plato con
+  ensalada ganan el mecanismo de "solo carne +1€" (`precioSiTodoQuitado`
+  sobre el precio DEL MENÚ, no del producto suelto) más la opción de
+  patatas deluxe (+1,50€); "Menú Hamburguesa" deja elegir vacuno/pollo
+  crispy (+1€); "Menú Pizza variada" (pequeña/mediana) deja elegir el
+  sabor entre los 13 de la sección Pizzas. **Todos** los 13 productos de
+  "Haz tu menú" ganan además un paso "Elige tu bebida" (8 opciones, sin
+  coste — a petición explícita del dueño, "en todas las secciones de menu
+  añadir selección de bebida").
+  - Este script SÍ depende de código nuevo (`siempreEnTexto`, ver arriba)
+    — a diferencia del resto de scripts de esta reorganización, que solo
+    necesitaban datos porque el motor de modificadores ya soportaba todo.
+    No lo ejecutes sin confirmar antes que ese commit ya está desplegado
+    en producción (aprendido del incidente de precio de Pizzas: ejecutar
+    el SQL antes de que el código correspondiente esté desplegado deja el
+    sitio cobrando mal hasta que se despliega — ver más abajo).
+
+### Reorganización de carta — orden de despliegue (dato vs. código)
+El incidente real que motiva esta nota: se ejecutó el SQL de consolidar
+Pizzas en Supabase antes de hacer fast-forward del commit correspondiente
+a producción. Durante esos minutos, producción tenía los 13 productos
+nuevos con `esSelectorTamano` pero el código desplegado todavía no sabía
+leer ese campo — el precio se quedaba siempre en el de "pequeña" sin
+importar el tamaño elegido (cobro real de menos a clientes reales). Se
+detectó y desplegó el fix en caliente sin esperar confirmación, por
+tratarse de un bug de cobro activo.
+**Regla derivada para cualquier cambio futuro que combine SQL de datos +
+código nuevo de modificadores**: cuando un script de datos usa un campo
+que el código de producción todavía no entiende, despliega el código a
+producción PRIMERO (es seguro — un campo nuevo que nada usa todavía no
+cambia el comportamiento de nada) y solo entonces entrega el script SQL
+al dueño para que lo ejecute. Si el dueño ya ejecutó un script de datos
+antes de que el código estuviera desplegable, prioriza desplegar el fix
+de inmediato (no esperes confirmación para eso) y avisa después.
 
 ### Venta rápida en caja
 `Caja.jsx` no es solo apertura/cierre de turno: con un turno abierto
@@ -568,9 +617,15 @@ un cambio de diseño real, no un ajuste trivial.
    lateral, con las píldoras de categoría de siempre para cambiar rápido
    sin volver a la pantalla de categorías, más un enlace "◀ Categorías"
    que sí vuelve a ella sin vaciar el carrito). "Cancelar pedido" es lo
-   único que resetea todo y vuelve a `inicio`. Si añades un paso nuevo al
-   flujo, sigue este mismo patrón de máquina de estados por `paso`, no
-   metas la lógica de otro paso dentro de un mismo `return`.
+   único que resetea todo y vuelve a `inicio` — **pide confirmación
+   primero** (`confirmandoCancelar` + `confirmarCancelarModal`, mismo
+   patrón visual que `Personalizar`/`UpsellComplementos`): a petición del
+   dueño, un toque accidental no debe borrar el carrito sin avisar. El
+   botón seguro ("No, seguir con mi pedido") es el visualmente prominente
+   (naranja de marca); el destructivo ("Sí, cancelar") es texto plano —
+   no lo inviertas. Si añades un paso nuevo al flujo, sigue este mismo
+   patrón de máquina de estados por `paso`, no metas la lógica de otro
+   paso dentro de un mismo `return`.
 2. `calcularTotales()` (en `client/src/totales.js`, misma fórmula que
    `client/api/_lib/orders.js`) computa subtotal/IVA/total en vivo. IVA
    fijo al 10%. **Los precios de `menu_productos.precio` ya llevan el
@@ -759,12 +814,17 @@ Piezas:
   sigue funcionando normal, simplemente no se manda ningún WhatsApp.
 
 ### Tiempo de espera del kiosco
-En la pantalla de inicio del kiosco (`.kiosk-footer`, junto a "Cocina
-abierta") se muestra un tiempo de espera estimado ("Tiempo de espera
-estimado: ~15 min"). Es un ajuste global editable **siempre**, no algo
-que se fija una sola vez — desde `/caja` (arriba del todo, visible con o
-sin turno abierto) hay un campo numérico + botón "Guardar" que lo
-actualiza en cualquier momento.
+Se muestra como una píldora con el color de marca (`.tiempo-espera-badge`,
+naranja `#d1622f` sobre fondo blanco o sobre el fondo oscuro de
+`.kiosk-inicio`) en tres sitios: la pantalla de inicio del kiosco
+(`.kiosk-footer`, junto a "Cocina abierta") Y, a petición del dueño
+("destacar un poco más el tiempo de espera"), también en la cabecera de
+las pantallas de "categorías" y "menú" (`.kiosk-menu-header`, junto a
+"Tu pedido · Comer aquí/Para llevar") — antes solo se veía en la
+bienvenida y desaparecía en cuanto el cliente empezaba a pedir. Es un
+ajuste global editable **siempre**, no algo que se fija una sola vez —
+desde `/caja` (arriba del todo, visible con o sin turno abierto) hay un
+campo numérico + botón "Guardar" que lo actualiza en cualquier momento.
 
 - `ajustes` (tabla de una sola fila, `id` siempre `1`) guarda
   `tiempo_espera_minutos`. **No la conviertas en un almacén de

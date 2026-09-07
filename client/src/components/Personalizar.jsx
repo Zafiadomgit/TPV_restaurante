@@ -97,15 +97,16 @@ export default function Personalizar({ producto, idioma, onConfirmar, onCancelar
     }
 
     // Texto para cocina — mismos cuatro modos que el backend, en el mismo
-    // orden: esSelectorTamano (el tamaño elegido SIEMPRE se muestra,
-    // incluso si es el de por defecto — cocina necesita saber qué tamaño
-    // preparar), resumenQuitarMuchos (a partir de `umbral` quitados,
-    // resume en vez de listar cada "Sin X"), textoSiVacio (si no queda
-    // nada seleccionado), o por defecto solo los CAMBIOS respecto a lo
-    // marcado por defecto.
+    // orden: esSelectorTamano o siempreEnTexto (la opción elegida SIEMPRE
+    // se muestra, incluso si es la de por defecto — para "elige uno
+    // obligatorio" tipo tamaño/carne/bebida/sabor, cocina necesita saber
+    // qué preparar pase lo que pase), resumenQuitarMuchos (a partir de
+    // `umbral` quitados, resume en vez de listar cada "Sin X"),
+    // textoSiVacio (si no queda nada seleccionado), o por defecto solo
+    // los CAMBIOS respecto a lo marcado por defecto.
     const textos = [];
     const umbral = paso.resumenQuitarMuchos?.umbral;
-    if (paso.esSelectorTamano) {
+    if (paso.esSelectorTamano || paso.siempreEnTexto) {
       const opcionElegida = paso.opciones.find((o) => elegidas.includes(o.id)) || paso.opciones.find((o) => o.porDefecto);
       if (opcionElegida) textos.push(opcionElegida.nombre);
     } else if (typeof umbral === "number" && seleccionadas.length >= umbral) {

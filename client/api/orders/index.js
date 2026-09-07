@@ -152,10 +152,17 @@ export default async function handler(req, res) {
         }
 
         // Texto para cocina. Cuatro modos, en este orden:
-        //  1. esSelectorTamano: el tamaño elegido SIEMPRE se muestra (a
-        //     diferencia de los demás modos, incluso si es la opción por
-        //     defecto) — cocina necesita saber qué tamaño preparar, no es
-        //     un extra opcional que se pueda omitir del ticket.
+        //  1. esSelectorTamano O siempreEnTexto: la opción elegida SIEMPRE
+        //     se muestra (a diferencia de los demás modos, incluso si es
+        //     la opción por defecto) — para pasos de "elige uno
+        //     obligatorio" (tamaño de pizza, elegir carne, elegir bebida,
+        //     elegir sabor...) donde cocina necesita saber qué preparar
+        //     pase lo que pase, no es un extra opcional que se pueda
+        //     omitir del ticket si coincide con el valor por defecto.
+        //     esSelectorTamano siempre implica esto (no hace falta
+        //     poner también siempreEnTexto en ese paso); siempreEnTexto
+        //     es para pasos de "elige uno" que NO cambian el precio base
+        //     (usan precioExtra normal, no precioBase absoluto).
         //  2. resumenQuitarMuchos (paso "quitar ingredientes" tipo kebab/
         //     dürüm/lahmacum): si se quitan `umbral` o más, en vez de
         //     listar cada "Sin X" se resume lo que SÍ queda ("Solo con
@@ -173,7 +180,7 @@ export default async function handler(req, res) {
         //     cuenta como "añadida" si se marca, así que este modo
         //     reproduce el comportamiento de siempre para esos pasos.
         const umbral = paso.resumenQuitarMuchos?.umbral;
-        if (paso.esSelectorTamano) {
+        if (paso.esSelectorTamano || paso.siempreEnTexto) {
           const opcionElegida =
             paso.opciones.find((o) => seleccionValida.includes(o.id)) ||
             paso.opciones.find((o) => o.porDefecto);

@@ -51,6 +51,10 @@ const TEXTOS = {
     upsellTitulo: "¿Añadimos algo más a tu pedido?",
     upsellSubtitulo: "Aros de cebolla, samosas, cheese bites, falafel...",
     upsellFinalizar: "Finalizar pedido",
+    confirmarCancelarTitulo: "¿Seguro que quieres cancelar?",
+    confirmarCancelarTexto: "Se borrará todo lo que llevas añadido al pedido.",
+    confirmarCancelarSi: "Sí, cancelar",
+    confirmarCancelarNo: "No, seguir con mi pedido",
   },
   en: {
     cargandoMenu: "Loading menu...",
@@ -99,6 +103,10 @@ const TEXTOS = {
     upsellTitulo: "Want to add anything else?",
     upsellSubtitulo: "Onion rings, samosas, cheese bites, falafel...",
     upsellFinalizar: "Finish order",
+    confirmarCancelarTitulo: "Are you sure you want to cancel?",
+    confirmarCancelarTexto: "Everything you've added to your order will be lost.",
+    confirmarCancelarSi: "Yes, cancel",
+    confirmarCancelarNo: "No, keep my order",
   },
 };
 

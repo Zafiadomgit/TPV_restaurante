@@ -44,6 +44,7 @@ export default function Order() {
   const [tiempoEsperaMinutos, setTiempoEsperaMinutos] = useState(null);
   const [mostrarUpsell, setMostrarUpsell] = useState(false);
   const [upsellVisto, setUpsellVisto] = useState(false);
+  const [confirmandoCancelar, setConfirmandoCancelar] = useState(false);
 
   const cambiarIdioma = (nuevo) => {
     setIdioma(nuevo);
@@ -75,12 +76,18 @@ export default function Order() {
     setPaso("menu");
   };
 
-  const cancelarPedido = () => {
+  // Pide confirmación antes de tirar el pedido — un toque accidental en
+  // "Cancelar pedido" no debe borrar sin avisar lo que el cliente ya
+  // había añadido al carrito.
+  const pedirConfirmacionCancelar = () => setConfirmandoCancelar(true);
+
+  const confirmarCancelar = () => {
     setItems([]);
     setNotasGenerales("");
     setTipoServicio(null);
     setPaso("inicio");
     setUpsellVisto(false);
+    setConfirmandoCancelar(false);
   };
 
   const onAddProducto = (producto) => {
@@ -219,7 +226,7 @@ export default function Order() {
           {tiempoEsperaMinutos != null && (
             <>
               <span className="kiosk-footer-separador">·</span>
-              <span>
+              <span className="tiempo-espera-badge">
                 {t(idioma, "tiempoEsperaLabel")}: ~{tiempoEsperaMinutos} min
               </span>
             </>
@@ -231,16 +238,45 @@ export default function Order() {
 
   const tipoServicioDisplay = TIPO_SERVICIO_DISPLAY[idioma]?.[tipoServicio];
 
+  // Chip del tiempo de espera — a petición del dueño, más visible que
+  // antes (antes solo salía en gris tenue en el pie de la pantalla de
+  // inicio) y ahora también visible mientras el cliente está pidiendo,
+  // no solo en la pantalla de bienvenida.
+  const tiempoEsperaBadge = tiempoEsperaMinutos != null && (
+    <span className="tiempo-espera-badge">
+      {t(idioma, "tiempoEsperaLabel")}: ~{tiempoEsperaMinutos} min
+    </span>
+  );
+
+  const confirmarCancelarModal = confirmandoCancelar && (
+    <div className="personalizar-overlay" onClick={() => setConfirmandoCancelar(false)}>
+      <div className="confirmar-cancelar-modal" onClick={(e) => e.stopPropagation()}>
+        <h3>{t(idioma, "confirmarCancelarTitulo")}</h3>
+        <p>{t(idioma, "confirmarCancelarTexto")}</p>
+        <div className="confirmar-cancelar-acciones">
+          <button className="confirmar-cancelar-no" onClick={() => setConfirmandoCancelar(false)}>
+            {t(idioma, "confirmarCancelarNo")}
+          </button>
+          <button className="confirmar-cancelar-si" onClick={confirmarCancelar}>
+            {t(idioma, "confirmarCancelarSi")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   if (paso === "categorias") {
     return (
       <div className="kiosk-categorias-page">
+        {confirmarCancelarModal}
         <div className="kiosk-menu-header">
           <span>
             {t(idioma, "tuPedido")} · <strong>{tipoServicioDisplay}</strong>
+            {tiempoEsperaBadge}
           </span>
           <div className="kiosk-menu-header-acciones">
             <SelectorIdioma idioma={idioma} onCambiar={cambiarIdioma} />
-            <button className="kiosk-cancelar" onClick={cancelarPedido}>
+            <button className="kiosk-cancelar" onClick={pedirConfirmacionCancelar}>
               {t(idioma, "cancelarPedido")}
             </button>
           </div>
@@ -271,6 +307,8 @@ export default function Order() {
 
   return (
     <div className="order-page">
+      {confirmarCancelarModal}
+
       {mostrarUpsell && categoriaComplementos && (
         <UpsellComplementos
           productos={categoriaComplementos.productos}
@@ -293,13 +331,14 @@ export default function Order() {
         <div className="kiosk-menu-header">
           <span>
             {t(idioma, "tuPedido")} · <strong>{tipoServicioDisplay}</strong>
+            {tiempoEsperaBadge}
           </span>
           <div className="kiosk-menu-header-acciones">
             <SelectorIdioma idioma={idioma} onCambiar={cambiarIdioma} />
             <button className="kiosk-ver-categorias" onClick={() => setPaso("categorias")}>
               {t(idioma, "volverCategorias")}
             </button>
-            <button className="kiosk-cancelar" onClick={cancelarPedido}>
+            <button className="kiosk-cancelar" onClick={pedirConfirmacionCancelar}>
               {t(idioma, "cancelarPedido")}
             </button>
           </div>

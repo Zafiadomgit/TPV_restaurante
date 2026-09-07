@@ -369,6 +369,74 @@ h4,
   gap: 1.2rem;
 }
 
+/* Chip del tiempo de espera — antes era texto gris tenue casi invisible en
+   el pie de la pantalla de inicio; ahora es una píldora con el color de
+   marca, visible tanto ahí como en la cabecera de las pantallas de pedido
+   (categorías/menú), para que el cliente lo vea mientras pide, no solo al
+   principio. */
+.tiempo-espera-badge {
+  display: inline-block;
+  margin-left: 0.6rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: #d1622f;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.kiosk-footer .tiempo-espera-badge {
+  margin-left: 0;
+}
+
+/* ---- Confirmación al cancelar pedido ---- */
+.confirmar-cancelar-modal {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.6rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  text-align: center;
+}
+
+.confirmar-cancelar-modal h3 {
+  margin: 0 0 0.6rem 0;
+  font-size: 1.2rem;
+}
+
+.confirmar-cancelar-modal p {
+  margin: 0 0 1.4rem 0;
+  color: rgba(31, 41, 51, 0.65);
+}
+
+.confirmar-cancelar-acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.confirmar-cancelar-si,
+.confirmar-cancelar-no {
+  border: none;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.confirmar-cancelar-no {
+  background: #d1622f;
+  color: #fff;
+}
+
+.confirmar-cancelar-si {
+  background: none;
+  color: #c0392b;
+}
+
 .kiosk-ver-categorias {
   border: none;
   background: none;
