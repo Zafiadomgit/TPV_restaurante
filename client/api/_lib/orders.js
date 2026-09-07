@@ -8,6 +8,15 @@ export const ESTADOS_VALIDOS = [
   "cancelado",
 ];
 
+// Los dos locales físicos del negocio — mismo id que usa el frontend en
+// client/src/sede.js (SEDES). Duplicado aquí por el motivo de siempre:
+// el backend serverless no comparte bundle con el frontend. `orders.local`
+// y `turnos_caja.local` son NULLABLE a propósito: los pedidos/turnos de
+// antes de esta función se quedan sin sede conocida (no se puede inventar
+// cuál era), y el código que no envíe `local` (rollout en progreso) no
+// debe romperse.
+export const LOCALES_VALIDOS = ["villarcayo", "medina-de-pomar"];
+
 // Los precios de la carta ya llevan el IVA incluido (es el precio final
 // que paga el cliente, el mismo que está impreso/mostrado en el menú) —
 // no se le suma IVA encima, se desglosa DENTRO de ese precio. Antes se
@@ -25,6 +34,7 @@ export function mapRow(row) {
     id: row.id,
     ticketNumero: row.ticket_numero,
     mesa: row.mesa,
+    local: row.local || null,
     items: row.items,
     notasGenerales: row.notas_generales || "",
     estado: row.estado,

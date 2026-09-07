@@ -2,8 +2,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../api.js";
 import { calcularTotales } from "../totales.js";
 import { formatTicket } from "../format.js";
+import { getSede, guardarSede, borrarSede, SEDES } from "../sede.js";
 import ReciboImprimible from "../components/ReciboImprimible.jsx";
 import Personalizar from "../components/Personalizar.jsx";
+import SelectorSede from "../components/SelectorSede.jsx";
 
 const POLL_MS = 3000;
 
@@ -40,6 +42,7 @@ export default function Caja() {
   const [tiempoEsperaInput, setTiempoEsperaInput] = useState("");
   const [guardandoTiempoEspera, setGuardandoTiempoEspera] = useState(false);
   const [tiempoEsperaGuardadoOk, setTiempoEsperaGuardadoOk] = useState(false);
+  const [sede, setSede] = useState(() => getSede());
 
   useEffect(() => {
     api
@@ -75,11 +78,12 @@ export default function Caja() {
   };
 
   useEffect(() => {
+    if (!sede) return;
     const cargar = async () => {
       if (enVuelo.current) return;
       enVuelo.current = true;
       try {
-        const data = await api.getTurnos();
+        const data = await api.getTurnos(undefined, sede);
         setTurnos(data);
         setCargado(true);
       } catch {
@@ -92,14 +96,15 @@ export default function Caja() {
     cargar();
     const interval = setInterval(cargar, POLL_MS);
     return () => clearInterval(interval);
-  }, []);
+  }, [sede]);
 
   useEffect(() => {
+    if (!sede) return;
     const cargar = async () => {
       if (enVueloSinCobrar.current) return;
       enVueloSinCobrar.current = true;
       try {
-        const data = await api.getPedidosSinCobrar();
+        const data = await api.getPedidosSinCobrar(sede);
         // Un pedido cancelado antes de cobrarse no debe aparecer aquí —
         // no hay nada que cobrar por él.
         setPedidosSinCobrar(data.filter((o) => o.estado !== "cancelado"));
@@ -113,7 +118,7 @@ export default function Caja() {
     cargar();
     const interval = setInterval(cargar, POLL_MS);
     return () => clearInterval(interval);
-  }, []);
+  }, [sede]);
 
   const cobrarPedidoKiosco = async (pedido, metodoPago) => {
     setError("");
@@ -143,7 +148,7 @@ export default function Caja() {
 
     setAbriendo(true);
     try {
-      const turno = await api.abrirTurno(valor);
+      const turno = await api.abrirTurno(valor, sede);
       setTurnos((prev) => [turno, ...prev]);
       setEfectivoInicial("");
     } catch (e) {
@@ -240,6 +245,7 @@ export default function Caja() {
     try {
       const nuevoPedido = await api.createOrder({
         mesa: "Mostrador",
+        local: sede,
         notasGenerales: "",
         items: items.map((i) => ({
           productId: i.productId,
@@ -259,11 +265,36 @@ export default function Caja() {
     }
   };
 
+  // Igual que el kiosco: caja necesita saber su sede antes de nada —
+  // pedidos, turnos y la cola de "sin cobrar" se filtran por ella.
+  if (!sede) {
+    return (
+      <SelectorSede
+        onElegir={(elegida) => {
+          guardarSede(elegida);
+          setSede(elegida);
+        }}
+      />
+    );
+  }
+
   if (!cargado) return <p className="loading">Cargando caja...</p>;
 
   return (
     <div className="caja-page">
-      <h2>Caja</h2>
+      <div className="caja-titulo-row">
+        <h2>Caja · {SEDES[sede].nombre}</h2>
+        <button
+          type="button"
+          className="caja-cambiar-sede"
+          onClick={() => {
+            borrarSede();
+            setSede(null);
+          }}
+        >
+          Cambiar sede
+        </button>
+      </div>
       {error && <p className="error">{error}</p>}
 
       <form className="tiempo-espera-form" onSubmit={guardarTiempoEspera}>

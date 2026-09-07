@@ -4,6 +4,7 @@ export function mapTurnoRow(row) {
   return {
     id: row.id,
     estado: row.estado,
+    local: row.local || null,
     efectivoInicial: Number(row.efectivo_inicial),
     efectivoFinalDeclarado:
       row.efectivo_final_declarado != null ? Number(row.efectivo_final_declarado) : null,

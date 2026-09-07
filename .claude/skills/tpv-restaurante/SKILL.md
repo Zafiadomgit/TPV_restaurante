@@ -518,6 +518,24 @@ al dueño para que lo ejecute. Si el dueño ya ejecutó un script de datos
 antes de que el código estuviera desplegable, prioriza desplegar el fix
 de inmediato (no esperes confirmación para eso) y avisa después.
 
+**Ojo — esta regla es específica de `modificadores` (jsonb flexible) y NO
+se generaliza a cambios de esquema SQL rígido** (columnas nuevas, índices
+nuevos). Con jsonb, código viejo delante de un dato nuevo simplemente
+ignora el campo que no entiende (falla "en silencio", con un precio o
+texto incorrecto pero sin romper nada). Con una columna SQL nueva es AL
+REVÉS: si el código nuevo ya hace `.eq("local", ...)` o inserta
+`local: ...` contra una tabla que todavía no tiene esa columna, Supabase
+devuelve un error duro en cada petición — se cae la creación de pedidos/
+turnos por completo, no es un bug silencioso, es una caída total. Por eso
+un `alter table add column` (nullable, sin default que dependa de datos
+inventados) se entrega y se pide ejecutar ANTES de desplegar el código
+que lo usa — al revés que con los campos de modificadores. Antes de
+decidir el orden en un cambio nuevo, pregúntate: "si despliego el código
+antes que el dato, ¿el código nuevo asume que existe algo en la BD que
+todavía no está (columna, índice) — o solo interpreta un campo jsonb que
+puede no estar y ya sabe ignorar?". Lo primero → SQL primero. Lo segundo
+→ código primero.
+
 ### Venta rápida en caja
 `Caja.jsx` no es solo apertura/cierre de turno: con un turno abierto
 muestra un panel de venta directa (botones grandes por categoría del menú
@@ -888,6 +906,61 @@ tocas este endpoint, mantén esa rama pública — quitarla rompe
 `/recogida` en cualquier pantalla donde la sesión no esté activa (fue
 justo el bug que se coló al añadir el login por PIN: se protegió esta
 ruta entera por error y dejó el tablero sin datos).
+
+### Multi-sede (Villarcayo y Medina de Pomar)
+El negocio opera en 2 locales físicos con **la misma carta** (el dueño lo
+confirmó explícitamente — si algún día quieren cartas o precios
+distintos por local, es un rediseño, no una extensión de esto). Lo que
+se separa entre locales son los PEDIDOS y los TURNOS DE CAJA, para que
+cocina/caja de un local no vean ni cobren nada del otro.
+
+- **La sede es un dato del DISPOSITIVO, no de la sesión ni del usuario**
+  (`client/src/sede.js`, localStorage, mismo patrón que `idioma.js`) —
+  un cajero que entra con su PIN en la tablet de Villarcayo debe quedar
+  en Villarcayo sin elegir nada, y el kiosco/recogida (sin login) también
+  necesitan saberlo. `SEDES` en `sede.js` es la fuente de verdad de los 2
+  ids (`villarcayo`, `medina-de-pomar`) y sus nombres/direcciones —
+  duplicado en el backend como `LOCALES_VALIDOS`
+  (`client/api/_lib/orders.js`) por el motivo de siempre (el backend
+  serverless no comparte bundle con el frontend). Si se abre un tercer
+  local, se añade una entrada en los dos sitios, no se rediseña el
+  mecanismo.
+- **`SelectorSede.jsx`**: pantalla de bloqueo que se muestra una vez por
+  dispositivo (`if (!sede) return <SelectorSede onElegir={...} />`) en
+  Order.jsx (kiosco), Recogida.jsx, Kitchen.jsx y Caja.jsx — las 4
+  pantallas que crean pedidos/turnos o necesitan filtrar por sede antes
+  de mostrar nada. `Historial.jsx` NO bloquea (es de solo lectura; si el
+  dispositivo aún no tiene sede configurada, se ve sin filtrar). `Caja.jsx`
+  tiene además un enlace "Cambiar sede" (borra el valor guardado y vuelve
+  a mostrar el selector) por si hay que reconfigurar un dispositivo.
+- **`orders.local` y `turnos_caja.local`** (columna `text`, NULLABLE):
+  nunca se rellena con un valor inventado — los pedidos/turnos de antes
+  de esta función se quedan con `local = null` para siempre (no se puede
+  saber a qué sede pertenecían). El frontend manda `local` en
+  `POST /api/orders` y `POST /api/caja`; los `GET` (`/api/orders`,
+  `/api/caja`, `/api/informes`) aceptan `?local=` para filtrar — sin ese
+  parámetro se ve TODO combinado (usado a propósito por
+  `Panel.jsx`, que tiene un desplegable "Las dos sedes / Villarcayo /
+  Medina de Pomar" en vez de estar atado a un dispositivo).
+- **Bug real que corrigió esta función**: "solo puede haber un turno de
+  caja abierto a la vez" (`turnos_caja_unico_abierto_idx`) era una regla
+  GLOBAL, pensada para un solo local — con 2 sedes operando en paralelo
+  bloqueaba al segundo local que intentara abrir turno mientras el
+  primero ya tenía uno abierto. Ahora es "un turno abierto POR SEDE"
+  (`turnos_caja_unico_abierto_por_local_idx`, índice único parcial sobre
+  `(local) where estado='abierto'` — los NULL no compiten entre sí en un
+  índice único de Postgres, así que turnos sin sede tampoco quedan
+  bloqueados). Por esto mismo, `POST /api/caja` (abrir turno) exige
+  `local` — a diferencia de `POST /api/orders`, donde es opcional.
+- **Orden de despliegue: la migración SQL (`supabase/multi_sede.sql`) va
+  ANTES que el código**, al revés que la regla de "Reorganización de
+  carta" de más arriba — ver la nota ahí sobre por qué un `alter table
+  add column` se comporta distinto a un campo nuevo dentro de
+  `modificadores` (jsonb).
+- Checkout.jsx (`/pago/:orderId`) y GestionMenu.jsx (`/carta`) **no
+  cambiaron** — el primero ya está identificado por el id del pedido
+  (no necesita saber la sede), y la carta es compartida entre las 2
+  sedes a propósito.
 
 ### Roles y acceso por PIN
 El TPV tiene tres roles con PIN numérico de 4 dígitos: **`caja`** (venta

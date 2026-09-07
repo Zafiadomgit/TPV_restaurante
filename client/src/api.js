@@ -19,8 +19,20 @@ async function request(path, options = {}) {
 export const api = {
   login: (rol, pin) => request("/login", { method: "POST", body: JSON.stringify({ rol, pin }) }),
   getMenu: () => request("/menu"),
-  getOrders: (estado) => request(`/orders${estado ? `?estado=${estado}` : ""}`),
-  getPedidosSinCobrar: () => request("/orders?pagado=false"),
+  // `local` filtra por sede (ver client/src/sede.js) — se omite el
+  // parámetro cuando no aplica (ej. el panel viendo "todas las sedes").
+  getOrders: (estado, local) => {
+    const params = new URLSearchParams();
+    if (estado) params.set("estado", estado);
+    if (local) params.set("local", local);
+    const qs = params.toString();
+    return request(`/orders${qs ? `?${qs}` : ""}`);
+  },
+  getPedidosSinCobrar: (local) => {
+    const params = new URLSearchParams({ pagado: "false" });
+    if (local) params.set("local", local);
+    return request(`/orders?${params.toString()}`);
+  },
   getOrder: (id) => request(`/orders/${id}`),
   guardarTelefonoWhatsapp: (id, telefonoWhatsapp) =>
     request(`/orders/${id}`, { method: "PATCH", body: JSON.stringify({ telefonoWhatsapp }) }),
@@ -36,15 +48,21 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify({ metodoPago }),
     }),
-  getTurnos: (estado) => request(`/caja${estado ? `?estado=${estado}` : ""}`),
-  abrirTurno: (efectivoInicial) =>
-    request("/caja", { method: "POST", body: JSON.stringify({ efectivoInicial }) }),
+  getTurnos: (estado, local) => {
+    const params = new URLSearchParams();
+    if (estado) params.set("estado", estado);
+    if (local) params.set("local", local);
+    const qs = params.toString();
+    return request(`/caja${qs ? `?${qs}` : ""}`);
+  },
+  abrirTurno: (efectivoInicial, local) =>
+    request("/caja", { method: "POST", body: JSON.stringify({ efectivoInicial, local }) }),
   cerrarTurno: (id, efectivoFinalDeclarado) =>
     request(`/caja/${id}/cerrar`, {
       method: "PATCH",
       body: JSON.stringify({ efectivoFinalDeclarado }),
     }),
-  getResumen: () => request("/informes"),
+  getResumen: (local) => request(`/informes${local ? `?local=${local}` : ""}`),
   getCategorias: () => request("/menu-categorias"),
   crearCategoria: (nombre, nombreEn) =>
     request("/menu-categorias", { method: "POST", body: JSON.stringify({ nombre, nombreEn }) }),

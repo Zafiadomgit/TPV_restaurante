@@ -1,20 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../api.js";
 import { formatTicket } from "../format.js";
+import { getSede, guardarSede } from "../sede.js";
+import SelectorSede from "../components/SelectorSede.jsx";
 
 const POLL_MS = 3000;
 
 export default function Recogida() {
   const [orders, setOrders] = useState([]);
   const [hora, setHora] = useState(new Date());
+  const [sede, setSede] = useState(() => getSede());
   const enVuelo = useRef(false);
 
   useEffect(() => {
+    if (!sede) return;
     const cargar = async () => {
       if (enVuelo.current) return;
       enVuelo.current = true;
       try {
-        const data = await api.getOrders();
+        const data = await api.getOrders(undefined, sede);
         setOrders(data.filter((o) => o.estado === "en_preparacion" || o.estado === "listo"));
       } catch {
         // se reintenta en el siguiente ciclo
@@ -30,7 +34,20 @@ export default function Recogida() {
       clearInterval(interval);
       clearInterval(relojInterval);
     };
-  }, []);
+  }, [sede]);
+
+  // Igual que en el kiosco: este monitor necesita saber su sede para no
+  // mezclar los tickets "Listo"/"Preparando" de los dos locales.
+  if (!sede) {
+    return (
+      <SelectorSede
+        onElegir={(elegida) => {
+          guardarSede(elegida);
+          setSede(elegida);
+        }}
+      />
+    );
+  }
 
   const preparando = orders.filter((o) => o.estado === "en_preparacion");
   const listos = orders.filter((o) => o.estado === "listo");

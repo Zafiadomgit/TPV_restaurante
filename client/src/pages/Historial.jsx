@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api.js";
+import { getSede } from "../sede.js";
 import HistorialTicket from "../components/HistorialTicket.jsx";
 
 const POLL_MS = 5000;
@@ -21,9 +22,12 @@ export default function Historial() {
   useEffect(() => {
     let activo = true;
 
+    // Filtra por la sede de este dispositivo (ver client/src/sede.js) —
+    // sin ella (dispositivo todavía sin configurar) se ve todo, igual que
+    // antes de que existiera el concepto de sede.
     const cargar = () =>
       api
-        .getOrders()
+        .getOrders(undefined, getSede())
         .then((data) => {
           if (activo) setOrders(data);
         })

@@ -11,6 +11,7 @@ import GestionMenu from "./pages/GestionMenu.jsx";
 import Login from "./pages/Login.jsx";
 import RutaProtegida from "./components/RutaProtegida.jsx";
 import { getSesion, cerrarSesion, onSesionCambio, NOMBRE_ROL } from "./auth.js";
+import { getSede, SEDES } from "./sede.js";
 
 export default function App() {
   const [sesion, setSesion] = useState(getSesion());
@@ -69,9 +70,18 @@ export default function App() {
         </nav>
         <div className="topbar-sesion">
           {sesion ? (
-            <button className="btn-salir" onClick={salir}>
-              {NOMBRE_ROL[sesion.rol]} · Salir
-            </button>
+            <>
+              {/* Sede del DISPOSITIVO (ver sede.js), no de la sesión — solo
+                  tiene sentido para caja/cocina, que están atadas a un
+                  local físico; el panel ve las dos sedes desde cualquier
+                  sitio. */}
+              {(sesion.rol === "caja" || sesion.rol === "cocina") && getSede() && (
+                <span className="topbar-sede">{SEDES[getSede()].nombre}</span>
+              )}
+              <button className="btn-salir" onClick={salir}>
+                {NOMBRE_ROL[sesion.rol]} · Salir
+              </button>
+            </>
           ) : (
             <NavLink to="/login" className="btn-acceso">
               Acceso personal

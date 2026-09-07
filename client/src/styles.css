@@ -2561,3 +2561,116 @@ h4,
   font-weight: 600;
   cursor: pointer;
 }
+
+/* ---- Selector de sede (kiosco/caja/cocina/recogida, ver sede.js) ---- */
+.selector-sede-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+.selector-sede-page h2 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.selector-sede-page > p {
+  margin: 0 0 1.2rem 0;
+  color: rgba(31, 41, 51, 0.55);
+}
+
+.selector-sede-opciones {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.selector-sede-boton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 220px;
+  border: 2px solid #e4e7eb;
+  background: #fff;
+  border-radius: 14px;
+  padding: 1.4rem 1.6rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.selector-sede-boton:hover {
+  border-color: #d1622f;
+}
+
+.selector-sede-nombre {
+  font-family: "Barlow Condensed", "Segoe UI", sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+}
+
+.selector-sede-direccion {
+  color: rgba(31, 41, 51, 0.55);
+  font-size: 0.85rem;
+}
+
+/* ---- Indicador de sede en la barra superior (caja/cocina) ---- */
+.topbar-sede {
+  background: rgba(255, 255, 255, 0.1);
+  color: #cbd2d9;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ---- Caja: título + cambiar sede ---- */
+.caja-titulo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.caja-titulo-row h2 {
+  margin: 0;
+}
+
+.caja-cambiar-sede {
+  border: none;
+  background: none;
+  color: rgba(31, 41, 51, 0.5);
+  font-size: 0.85rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* ---- Panel: filtro de sede ---- */
+.panel-titulo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.panel-titulo-row h2 {
+  margin: 0;
+}
+
+.panel-selector-sede {
+  border: 1px solid #e4e7eb;
+  border-radius: 8px;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: #fff;
+  color: #222;
+}

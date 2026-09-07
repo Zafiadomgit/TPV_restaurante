@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../api.js";
 import OrderTicket from "../components/OrderTicket.jsx";
+import { getSede, guardarSede, SEDES } from "../sede.js";
+import SelectorSede from "../components/SelectorSede.jsx";
 
 const POLL_MS = 3000;
 
@@ -12,14 +14,16 @@ const COLUMNAS = [
 
 export default function Kitchen() {
   const [orders, setOrders] = useState([]);
+  const [sede, setSede] = useState(() => getSede());
   const enVuelo = useRef(false);
 
   useEffect(() => {
+    if (!sede) return;
     const cargar = async () => {
       if (enVuelo.current) return;
       enVuelo.current = true;
       try {
-        const data = await api.getOrders();
+        const data = await api.getOrders(undefined, sede);
         setOrders(data.filter((o) => COLUMNAS.some((c) => c.estado === o.estado)));
       } catch {
         // se reintenta en el siguiente ciclo
@@ -31,7 +35,7 @@ export default function Kitchen() {
     cargar();
     const interval = setInterval(cargar, POLL_MS);
     return () => clearInterval(interval);
-  }, []);
+  }, [sede]);
 
   const avanzarEstado = async (id, estado) => {
     setOrders((prev) =>
@@ -46,12 +50,25 @@ export default function Kitchen() {
     }
   };
 
+  // Igual que el kiosco: la pantalla de cocina necesita saber su sede
+  // para no mezclar comandas de los dos locales en la misma cola.
+  if (!sede) {
+    return (
+      <SelectorSede
+        onElegir={(elegida) => {
+          guardarSede(elegida);
+          setSede(elegida);
+        }}
+      />
+    );
+  }
+
   const ordenadas = [...orders].sort((a, b) => new Date(a.creadoEn) - new Date(b.creadoEn));
 
   return (
     <div className="kds-page">
       <div className="kds-header">
-        <span className="kds-titulo">COCINA · CALIFORNIA</span>
+        <span className="kds-titulo">COCINA · CALIFORNIA · {SEDES[sede].nombre}</span>
         <span className="kds-contador">{ordenadas.length} comandas activas</span>
       </div>
       <div className="kds-columnas">

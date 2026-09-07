@@ -14,11 +14,13 @@ export default async function handler(req, res) {
   const inicioHoy = new Date();
   inicioHoy.setUTCHours(0, 0, 0, 0);
 
-  const { data, error } = await supabase
-    .from("orders")
-    .select("*")
-    .gte("creado_en", inicioHoy.toISOString());
+  // `local`: el dueño puede filtrar el panel a una sede concreta; sin
+  // este parámetro se ven las dos combinadas (comportamiento de siempre).
+  const { local } = req.query;
+  let query = supabase.from("orders").select("*").gte("creado_en", inicioHoy.toISOString());
+  if (local) query = query.eq("local", local);
 
+  const { data, error } = await query;
   if (error) return res.status(500).json({ error: error.message });
 
   const resumen = calcularResumen(data.map(mapRow));

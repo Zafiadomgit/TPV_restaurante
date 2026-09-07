@@ -1,6 +1,6 @@
 import { supabase } from "../_lib/supabaseClient.js";
 import { findProducts } from "../_lib/menu.js";
-import { calcularTotales, mapRow } from "../_lib/orders.js";
+import { calcularTotales, mapRow, LOCALES_VALIDOS } from "../_lib/orders.js";
 import { verificarToken } from "../_lib/auth.js";
 
 export default async function handler(req, res) {
@@ -16,12 +16,21 @@ export default async function handler(req, res) {
     const token = header.startsWith("Bearer ") ? header.slice(7) : null;
     const rol = verificarToken(token, ["cocina", "caja"]);
 
+    // `local`: cada dispositivo (kiosco/recogida/cocina/caja) filtra por
+    // su propia sede (ver client/src/sede.js) para que cocina/caja de un
+    // local no vean ni mezclen pedidos del otro. Sin `local` en la
+    // petición se sirven todos — pasa durante el despliegue, mientras
+    // algún cliente todavía no envíe el parámetro.
+    const { local } = req.query;
+
     if (!rol) {
-      const { data, error } = await supabase
+      let queryPublica = supabase
         .from("orders")
         .select("id, ticket_numero, estado")
         .in("estado", ["en_preparacion", "listo"])
         .order("creado_en", { ascending: true });
+      if (local) queryPublica = queryPublica.eq("local", local);
+      const { data, error } = await queryPublica;
       if (error) return res.status(500).json({ error: error.message });
       return res.status(200).json(
         data.map((row) => ({ id: row.id, ticketNumero: row.ticket_numero, estado: row.estado }))
@@ -31,6 +40,7 @@ export default async function handler(req, res) {
     const { estado, pagado } = req.query;
     let query = supabase.from("orders").select("*").order("creado_en", { ascending: true });
     if (estado) query = query.eq("estado", estado);
+    if (local) query = query.eq("local", local);
     // Usado por la cola de "pedidos del kiosco sin cobrar" en /caja —
     // pagado=false (los pedidos de venta rápida de caja nunca aparecen
     // aquí porque se crean y se cobran en el mismo paso, nunca quedan
@@ -43,13 +53,20 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "POST") {
-    const { mesa, items, notasGenerales } = req.body || {};
+    const { mesa, items, notasGenerales, local } = req.body || {};
 
     if (!mesa || typeof mesa !== "string" || !mesa.trim()) {
       return res.status(400).json({ error: "La mesa es obligatoria" });
     }
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: "El pedido debe tener al menos un producto" });
+    }
+    // `local` es opcional a propósito (no todos los clientes lo mandan
+    // todavía mientras se despliega esta función), pero si se manda tiene
+    // que ser una de las sedes reales — nunca un valor inventado por el
+    // cliente que luego contamine los filtros por local.
+    if (local !== undefined && local !== null && !LOCALES_VALIDOS.includes(local)) {
+      return res.status(400).json({ error: "Sede no válida" });
     }
 
     let productosPorId;
@@ -223,6 +240,7 @@ export default async function handler(req, res) {
       .from("orders")
       .insert({
         mesa: mesa.trim(),
+        local: local || null,
         items: itemsResueltos,
         notas_generales: notasGenerales || "",
         estado: "pendiente",

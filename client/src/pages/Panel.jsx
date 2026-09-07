@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api.js";
 import { formatDuracion } from "../informes.js";
+import { SEDES } from "../sede.js";
 
 const POLL_MS = 15000;
 
@@ -16,12 +17,16 @@ export default function Panel() {
   const [resumen, setResumen] = useState(null);
   const [error, setError] = useState("");
   const [turnosCerrados, setTurnosCerrados] = useState([]);
+  // "" = las dos sedes combinadas — el panel no está atado al dispositivo
+  // como caja/cocina, el dueño puede filtrar aquí mismo a la sede que
+  // quiera ver, sin que eso guarde nada en localStorage.
+  const [sedeFiltro, setSedeFiltro] = useState("");
 
   useEffect(() => {
     let activo = true;
     const cargar = () =>
       api
-        .getResumen()
+        .getResumen(sedeFiltro || undefined)
         .then((data) => {
           if (activo) setResumen(data);
         })
@@ -35,7 +40,7 @@ export default function Panel() {
       activo = false;
       clearInterval(interval);
     };
-  }, []);
+  }, [sedeFiltro]);
 
   // Control de cierres de caja: solo el dueño lo ve (no pasa por
   // GET /api/informes, es GET /api/caja?estado=cerrado — el mismo
@@ -45,7 +50,7 @@ export default function Panel() {
     let activo = true;
     const cargar = () =>
       api
-        .getTurnos("cerrado")
+        .getTurnos("cerrado", sedeFiltro || undefined)
         .then((data) => {
           if (activo) {
             setTurnosCerrados(
@@ -61,7 +66,7 @@ export default function Panel() {
       activo = false;
       clearInterval(interval);
     };
-  }, []);
+  }, [sedeFiltro]);
 
   if (error) return <p className="error">{error}</p>;
   if (!resumen) return <p className="loading">Cargando panel...</p>;
@@ -71,7 +76,21 @@ export default function Panel() {
 
   return (
     <div className="panel-page">
-      <h2>Panel del dueño</h2>
+      <div className="panel-titulo-row">
+        <h2>Panel del dueño</h2>
+        <select
+          className="panel-selector-sede"
+          value={sedeFiltro}
+          onChange={(e) => setSedeFiltro(e.target.value)}
+        >
+          <option value="">Las dos sedes</option>
+          {Object.entries(SEDES).map(([id, sede]) => (
+            <option key={id} value={id}>
+              {sede.nombre}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <div className="panel-kpis">
         <div className="panel-kpi">

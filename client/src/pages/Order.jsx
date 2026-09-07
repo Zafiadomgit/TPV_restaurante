@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../api.js";
 import { calcularTotales } from "../totales.js";
 import { getIdioma, guardarIdioma } from "../idioma.js";
+import { getSede, guardarSede } from "../sede.js";
 import { t, TIPO_SERVICIO_DISPLAY, conIdioma } from "../textos.js";
 import MenuItemCard from "../components/MenuItemCard.jsx";
 import CartSidebar from "../components/CartSidebar.jsx";
 import Personalizar from "../components/Personalizar.jsx";
 import SelectorIdioma from "../components/SelectorIdioma.jsx";
 import UpsellComplementos from "../components/UpsellComplementos.jsx";
+import SelectorSede from "../components/SelectorSede.jsx";
 
 const CATEGORIA_UPSELL = "Complementos";
 
@@ -45,6 +47,7 @@ export default function Order() {
   const [mostrarUpsell, setMostrarUpsell] = useState(false);
   const [upsellVisto, setUpsellVisto] = useState(false);
   const [confirmandoCancelar, setConfirmandoCancelar] = useState(false);
+  const [sede, setSede] = useState(() => getSede());
 
   const cambiarIdioma = (nuevo) => {
     setIdioma(nuevo);
@@ -181,6 +184,7 @@ export default function Order() {
     try {
       const order = await api.createOrder({
         mesa: TIPO_SERVICIO_LABEL[tipoServicio],
+        local: sede,
         notasGenerales,
         items: items.map((i) => ({
           productId: i.productId,
@@ -198,6 +202,21 @@ export default function Order() {
       setEnviando(false);
     }
   };
+
+  // Antes de cualquier otra cosa: este dispositivo necesita saber en qué
+  // local está (ver client/src/sede.js) — sin eso, los pedidos no se
+  // podrían separar entre Villarcayo y Medina de Pomar. Se pregunta una
+  // sola vez por dispositivo (queda guardado en localStorage).
+  if (!sede) {
+    return (
+      <SelectorSede
+        onElegir={(elegida) => {
+          guardarSede(elegida);
+          setSede(elegida);
+        }}
+      />
+    );
+  }
 
   if (cargando) return <p className="loading">{t(idioma, "cargandoMenu")}</p>;
 
