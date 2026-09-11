@@ -35,6 +35,7 @@ export async function getMenu() {
     .map((cat) => ({
       categoria: cat.nombre,
       categoriaEn: cat.nombre_en || null,
+      imagenUrl: cat.imagen_url || null,
       productos: productos.filter((p) => p.categoria_id === cat.id).map(mapProducto),
     }))
     .filter((cat) => cat.productos.length > 0);

@@ -466,7 +466,7 @@ h4,
 }
 
 .kiosk-categoria-tile {
-  height: 160px;
+  min-height: 160px;
   border: none;
   border-radius: 16px;
   background: white;
@@ -476,14 +476,35 @@ h4,
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
+  padding: 0.8rem 0.5rem;
   cursor: pointer;
   color: #1f2933;
+  overflow: hidden;
 }
 
 .kiosk-categoria-tile:hover,
 .kiosk-categoria-tile:active {
   background: #d1622f;
   color: white;
+}
+
+/* Igual que .menu-card-imagen: bleed al borde superior de la ficha,
+   fondo neutro (las fotos son recortes con transparencia) y
+   object-fit: contain para no recortar el producto. */
+.kiosk-categoria-imagen {
+  width: calc(100% + 1rem);
+  margin: -0.8rem -0.5rem 0 -0.5rem;
+  border-radius: 16px 16px 0 0;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  background: #f2f3f5;
+}
+
+.kiosk-categoria-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 .kiosk-categoria-nombre {

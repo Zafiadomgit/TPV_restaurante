@@ -949,6 +949,20 @@ este campo, no hay hueco vacío ni placeholder roto.
   se entrega y se pide ejecutar ANTES de desplegar el commit que lee/
   escribe `imagen_url`.
 
+**Fotos a nivel de categoría** — el cliente no mandó fotos suficientes
+para cubrir todos los productos 1x1, así que además de `imagen_url` por
+producto existe `menu_categorias.imagen_url` (mismo patrón: text
+nullable, expuesto por `mapRow()` en `menu-categorias/index.js` y por
+`getMenu()` en `_lib/menu.js`, mostrado en la rejilla de categorías del
+kiosco en `Order.jsx` con la clase `.kiosk-categoria-imagen`). Reutiliza
+las mismas fotos ya subidas para `client/public/menu/` — no son fotos
+nuevas, es la misma foto de un producto representativo usada como
+portada de toda su categoría. Es aditivo: las fotos por producto no
+desaparecen, ambas conviven. Categorías sin foto disponible se quedan
+como antes (solo texto). Ver `supabase/menu_categorias_imagenes.sql`
+para el mapeo categoría → foto y su criterio editorial — mismo orden de
+despliegue (columna SQL nueva, va antes que el código).
+
 ### Multi-sede (Villarcayo y Medina de Pomar)
 El negocio opera en 2 locales físicos con **la misma carta** (el dueño lo
 confirmó explícitamente — si algún día quieren cartas o precios

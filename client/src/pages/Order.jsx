@@ -307,6 +307,11 @@ export default function Order() {
         <div className="kiosk-categorias-grid">
           {menu.map((cat) => (
             <button key={cat.categoria} className="kiosk-categoria-tile" onClick={() => elegirCategoria(cat.categoria)}>
+              {cat.imagenUrl && (
+                <div className="kiosk-categoria-imagen">
+                  <img src={cat.imagenUrl} alt="" loading="lazy" />
+                </div>
+              )}
               <span className="kiosk-categoria-nombre">{conIdioma(cat.categoria, cat.categoriaEn, idioma)}</span>
               <span className="kiosk-categoria-cantidad">
                 {cat.productos.length} {t(idioma, "productos")}

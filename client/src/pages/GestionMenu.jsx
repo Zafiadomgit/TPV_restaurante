@@ -15,6 +15,7 @@ export default function GestionMenu() {
   const [editandoCategoria, setEditandoCategoria] = useState(null); // categoría cuyo nombre ES/EN se está editando
   const [nombreCategoriaEdit, setNombreCategoriaEdit] = useState("");
   const [nombreCategoriaEnEdit, setNombreCategoriaEnEdit] = useState("");
+  const [imagenUrlCategoriaEdit, setImagenUrlCategoriaEdit] = useState("");
   const [guardandoCategoria, setGuardandoCategoria] = useState(false);
 
   const cargar = () =>
@@ -51,6 +52,7 @@ export default function GestionMenu() {
     setEditandoCategoria(categoria.id);
     setNombreCategoriaEdit(categoria.nombre);
     setNombreCategoriaEnEdit(categoria.nombreEn || "");
+    setImagenUrlCategoriaEdit(categoria.imagenUrl || "");
   };
 
   const guardarNombreCategoria = async (categoria) => {
@@ -60,6 +62,7 @@ export default function GestionMenu() {
       const actualizada = await api.actualizarCategoria(categoria.id, {
         nombre: nombreCategoriaEdit.trim(),
         nombreEn: nombreCategoriaEnEdit.trim() || null,
+        imagenUrl: imagenUrlCategoriaEdit.trim() || null,
       });
       setCategorias((prev) => prev.map((c) => (c.id === actualizada.id ? actualizada : c)));
       setEditandoCategoria(null);
@@ -167,6 +170,12 @@ export default function GestionMenu() {
                   value={nombreCategoriaEnEdit}
                   onChange={(e) => setNombreCategoriaEnEdit(e.target.value)}
                   placeholder="Nombre en inglés (opcional)"
+                />
+                <input
+                  type="text"
+                  value={imagenUrlCategoriaEdit}
+                  onChange={(e) => setImagenUrlCategoriaEdit(e.target.value)}
+                  placeholder="URL de imagen (opcional, /menu/archivo.webp)"
                 />
                 <button
                   type="button"
