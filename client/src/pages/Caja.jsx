@@ -55,11 +55,12 @@ export default function Caja() {
   }, []);
 
   useEffect(() => {
+    if (!sede) return;
     api
-      .getAjustes()
+      .getAjustes(sede)
       .then((data) => setTiempoEsperaInput(String(data.tiempoEsperaMinutos)))
       .catch(() => {});
-  }, []);
+  }, [sede]);
 
   const guardarTiempoEspera = async (e) => {
     e.preventDefault();
@@ -67,7 +68,7 @@ export default function Caja() {
     setTiempoEsperaGuardadoOk(false);
     setGuardandoTiempoEspera(true);
     try {
-      const actualizado = await api.actualizarAjustes({ tiempoEsperaMinutos: tiempoEsperaInput });
+      const actualizado = await api.actualizarAjustes({ tiempoEsperaMinutos: tiempoEsperaInput, local: sede });
       setTiempoEsperaInput(String(actualizado.tiempoEsperaMinutos));
       setTiempoEsperaGuardadoOk(true);
     } catch (e) {

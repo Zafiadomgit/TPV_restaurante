@@ -86,9 +86,10 @@ export default function Order() {
       .catch(() => setError("No se pudo cargar el menú"))
       .finally(() => setCargando(false));
     api
-      .getAjustes()
+      .getAjustes(sede)
       .then((data) => setTiempoEsperaMinutos(data.tiempoEsperaMinutos))
       .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const elegirTipoServicio = (tipo) => {

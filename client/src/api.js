@@ -75,6 +75,6 @@ export const api = {
   actualizarProducto: (id, cambios) =>
     request(`/menu-productos?id=${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(cambios) }),
   eliminarProducto: (id) => request(`/menu-productos?id=${encodeURIComponent(id)}`, { method: "DELETE" }),
-  getAjustes: () => request("/ajustes"),
+  getAjustes: (local) => request(`/ajustes${local ? `?local=${encodeURIComponent(local)}` : ""}`),
   actualizarAjustes: (cambios) => request("/ajustes", { method: "PATCH", body: JSON.stringify(cambios) }),
 };

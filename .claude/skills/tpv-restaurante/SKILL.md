@@ -844,16 +844,25 @@ ajuste global editable **siempre**, no algo que se fija una sola vez —
 desde `/caja` (arriba del todo, visible con o sin turno abierto) hay un
 campo numérico + botón "Guardar" que lo actualiza en cualquier momento.
 
-- `ajustes` (tabla de una sola fila, `id` siempre `1`) guarda
-  `tiempo_espera_minutos`. **No la conviertas en un almacén de
+- `ajustes` guarda `tiempo_espera_minutos`, **por sede** (columna
+  `local`, una fila por sede — `id` 2 = villarcayo, `id` 3 =
+  medina-de-pomar, ver `supabase/ajustes_por_sede.sql`). Antes era una
+  única fila global (`id=1`) y los cajeros de las 2 sedes se pisaban el
+  valor sin darse cuenta ("se siguen cruzando los tiempos puestos por
+  las cajas de diferentes sedes") — la fila `id=1` (`local` null) se
+  deja de fallback para una pantalla vieja en caché, no se usa en
+  condiciones normales. **No conviertas esta tabla en un almacén de
   clave/valor genérico** aunque parezca "más preparado para el futuro"
   — de momento solo hay un ajuste; si se pide otro, se añade como
-  columna nueva a esta misma fila, no se rediseña el esquema sin que
-  haga falta.
+  columna nueva, no se rediseña el esquema sin que haga falta.
 - `GET/PATCH /api/ajustes` (`client/api/ajustes.js`): GET es público a
-  propósito (el kiosco lo lee sin sesión, igual que `GET /api/menu`);
-  PATCH exige rol `caja` (se edita desde `/caja`, como pidió el dueño —
-  no `panel`, que es para ver informes, no para configurar el kiosco).
+  propósito (el kiosco lo lee sin sesión, igual que `GET /api/menu`) y
+  acepta `?local=` opcional (si falta o no hay fila para esa sede, cae a
+  la fila legado `id=1`); PATCH exige rol `caja` (se edita desde
+  `/caja`, como pidió el dueño — no `panel`, que es para ver informes,
+  no para configurar el kiosco) y `local` es OBLIGATORIO en el body —
+  igual que `POST /api/caja` (abrir turno), sin sede conocida no se
+  puede saber en qué fila escribir.
 - **Límite de funciones de Vercel ya alcanzado**: este endpoint dejó el
   proyecto en 12 funciones serverless — el máximo del plan Hobby. Si se
   pide un endpoint nuevo, la única forma de añadirlo sin subir de plan
@@ -976,12 +985,14 @@ despliegue (columna SQL nueva, va antes que el código).
 El negocio opera en 2 locales físicos con **la misma carta** (el dueño lo
 confirmó explícitamente — si algún día quieren cartas o precios
 distintos por local, es un rediseño, no una extensión de esto). Lo que
-se separa entre locales son los PEDIDOS y los TURNOS DE CAJA, para que
-cocina/caja de un local no vean ni cobren nada del otro. El tiempo de
-espera estimado (`ajustes.tiempo_espera_minutos`, ver `api/ajustes.js`)
-es la EXCEPCIÓN — el cliente confirmó que se queda como un ajuste global
-compartido entre las 2 sedes, no por local, así que esa tabla no lleva
-columna `local` a propósito.
+se separa entre locales son los PEDIDOS, los TURNOS DE CAJA y el TIEMPO
+DE ESPERA ESTIMADO (`ajustes.tiempo_espera_minutos`, ver
+`api/ajustes.js` y `supabase/ajustes_por_sede.sql`) — este último tuvo
+un bug real al principio: se entendió mal un mensaje del cliente como
+"que se quede compartido" cuando en realidad describía el problema (los
+cajeros de las 2 sedes se lo pisaban el uno al otro). Si un mensaje del
+cliente es ambiguo entre "así lo quiero" y "así está fallando", más vale
+preguntar que asumir.
 
 - **La sede es un dato del DISPOSITIVO, no de la sesión ni del usuario**
   (`client/src/sede.js`, localStorage, mismo patrón que `idioma.js`) —
