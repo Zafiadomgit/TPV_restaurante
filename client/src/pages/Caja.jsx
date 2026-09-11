@@ -121,6 +121,26 @@ export default function Caja() {
     return () => clearInterval(interval);
   }, [sede]);
 
+  // Anular la última venta cobrada, sin salir de /caja — el motivo es
+  // obligatorio (ver client/api/orders/[id]/pagar.js). El pedido no se
+  // borra: sigue existiendo en /historial, solo deja de contar como
+  // venta/efectivo esperado.
+  const anularUltimaVenta = async () => {
+    const motivo = window.prompt("Motivo de la anulación (obligatorio):");
+    if (motivo === null) return;
+    if (!motivo.trim()) {
+      setError("El motivo de la anulación es obligatorio");
+      return;
+    }
+    setError("");
+    try {
+      const actualizada = await api.anularOrder(ultimaVenta.id, motivo.trim());
+      setUltimaVenta(actualizada);
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+
   const cobrarPedidoKiosco = async (pedido, metodoPago) => {
     setError("");
     setCobrandoPedidoId(pedido.id);
@@ -322,12 +342,24 @@ export default function Caja() {
 
       {ultimaVenta && (
         <div className="caja-venta-ok">
-          <p>
-            Cobrado {formatTicket(ultimaVenta.ticketNumero)} · {ultimaVenta.total.toFixed(2)} €
-          </p>
-          <button type="button" className="btn-imprimir-recibo" onClick={() => window.print()}>
-            Imprimir recibo
-          </button>
+          {ultimaVenta.anulado ? (
+            <p className="historial-anulado">
+              ⛔ {formatTicket(ultimaVenta.ticketNumero)} anulado
+              {ultimaVenta.anuladoMotivo ? `: ${ultimaVenta.anuladoMotivo}` : ""}
+            </p>
+          ) : (
+            <>
+              <p>
+                Cobrado {formatTicket(ultimaVenta.ticketNumero)} · {ultimaVenta.total.toFixed(2)} €
+              </p>
+              <button type="button" className="btn-imprimir-recibo" onClick={() => window.print()}>
+                Imprimir recibo
+              </button>
+              <button type="button" className="btn-anular" onClick={anularUltimaVenta}>
+                Anular pedido
+              </button>
+            </>
+          )}
         </div>
       )}
 

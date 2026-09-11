@@ -920,11 +920,20 @@ deja de contar como venta o efectivo esperado.
   - `calcularResumen()` (`_lib/informes.js`): `pagado && !anulado`.
   - Cierre de turno (`caja/[id]/cerrar.js`): el efectivo esperado
     excluye `anulado = true` al sumar pedidos del turno.
-- UI: botón "Anular pedido" en `HistorialTicket.jsx` (solo si `pagado &&
-  !anulado`), pide motivo con `window.prompt` (pantalla de personal, no
-  del kiosco — no hace falta un modal a medida) y llama a
-  `api.anularOrder(id, motivo)`. `Historial.jsx` tiene un filtro
-  "Anulados" aparte de los de `estado`.
+- UI, en DOS sitios (el cliente pidió "desde caja" explícitamente, así
+  que no basta con `/historial`):
+  - `HistorialTicket.jsx`/`Historial.jsx`: botón "Anular pedido" en
+    cualquier ticket con `pagado && !anulado`, para anular pedidos
+    pasados. Filtro "Anulados" aparte de los de `estado`.
+  - `Caja.jsx`, junto al aviso "Cobrado #A-N · X,XX €" que aparece justo
+    después de cobrar (`ultimaVenta`): botón "Anular pedido" ahí mismo,
+    para corregir el cobro que se acaba de hacer sin salir de `/caja` ni
+    navegar a `/historial`. Solo cubre la ÚLTIMA venta de esta sesión de
+    caja (`ultimaVenta` se limpia al añadir un producto nuevo a la venta
+    rápida) — para anular algo de antes, es `/historial`.
+  - Ambos sitios piden motivo con `window.prompt` (pantalla de personal,
+    no del kiosco — no hace falta un modal a medida) y llaman a
+    `api.anularOrder(id, motivo)`.
 - Ver `supabase/anular_pedido.sql` para las columnas nuevas — mismo
   orden de despliegue de siempre (SQL antes que el código).
 
