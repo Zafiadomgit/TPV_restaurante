@@ -949,6 +949,15 @@ este campo, no hay hueco vacío ni placeholder roto.
   se entrega y se pide ejecutar ANTES de desplegar el commit que lee/
   escribe `imagen_url`.
 
+**Pantalla de bienvenida del kiosco** (`Order.jsx`, paso `"bienvenida"`,
+primer paso antes de `"inicio"`) — collage de fotos de producto (mismas
+fotos de `client/public/menu/`, constante `FOTOS_BIENVENIDA`) de fondo +
+elegir idioma. A petición del cliente, elegir idioma AHÍ es lo que lleva
+a la pantalla de empezar pedido (antes "inicio" con comer aquí/para
+llevar) — no hay botón "continuar" aparte. No depende de que el menú
+haya terminado de cargar (se muestra antes del `if (cargando)`), para
+que no haya un parpadeo en blanco al arrancar el kiosco.
+
 **Fotos a nivel de categoría** — el cliente no mandó fotos suficientes
 para cubrir todos los productos 1x1, así que además de `imagen_url` por
 producto existe `menu_categorias.imagen_url` (mismo patrón: text
@@ -968,7 +977,11 @@ El negocio opera en 2 locales físicos con **la misma carta** (el dueño lo
 confirmó explícitamente — si algún día quieren cartas o precios
 distintos por local, es un rediseño, no una extensión de esto). Lo que
 se separa entre locales son los PEDIDOS y los TURNOS DE CAJA, para que
-cocina/caja de un local no vean ni cobren nada del otro.
+cocina/caja de un local no vean ni cobren nada del otro. El tiempo de
+espera estimado (`ajustes.tiempo_espera_minutos`, ver `api/ajustes.js`)
+es la EXCEPCIÓN — el cliente confirmó que se queda como un ajuste global
+compartido entre las 2 sedes, no por local, así que esa tabla no lleva
+columna `local` a propósito.
 
 - **La sede es un dato del DISPOSITIVO, no de la sesión ni del usuario**
   (`client/src/sede.js`, localStorage, mismo patrón que `idioma.js`) —

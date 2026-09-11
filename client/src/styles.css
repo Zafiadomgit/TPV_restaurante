@@ -200,6 +200,87 @@ h4,
   font-size: 1.1rem !important;
 }
 
+/* ---- Kiosco: pantalla de bienvenida (fotos + elegir idioma) ---- */
+.kiosk-bienvenida {
+  position: relative;
+  margin: -1.5rem;
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  background: #2c2e35;
+}
+
+.kiosk-bienvenida-fotos {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+}
+
+.kiosk-bienvenida-foto {
+  overflow: hidden;
+}
+
+.kiosk-bienvenida-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.kiosk-bienvenida-overlay {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  padding: 2.5rem;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(20, 21, 26, 0.75), rgba(20, 21, 26, 0.85));
+}
+
+.kiosk-bienvenida-overlay .kiosk-logo-img {
+  width: min(420px, 80vw);
+  height: auto;
+}
+
+.kiosk-bienvenida-titulo {
+  margin: 0;
+  color: #fff;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 1.6rem;
+}
+
+.kiosk-bienvenida-idiomas {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.kiosk-bienvenida-idiomas button {
+  width: 220px;
+  height: 90px;
+  border: none;
+  border-radius: 16px;
+  background: #fff;
+  color: #1f2933;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+.kiosk-bienvenida-idiomas button:first-child {
+  background: #d1622f;
+  color: #fff;
+}
+
 /* ---- Kiosco: pantalla de inicio ---- */
 .kiosk-inicio {
   position: relative;

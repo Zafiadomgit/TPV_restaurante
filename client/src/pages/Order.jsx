@@ -14,6 +14,20 @@ import SelectorSede from "../components/SelectorSede.jsx";
 
 const CATEGORIA_UPSELL = "Complementos";
 
+// Collage de fotos para la pantalla de bienvenida — reutiliza las mismas
+// fotos ya subidas para las fichas de producto/categoría (ver
+// menu_imagenes.sql), no son fotos nuevas.
+const FOTOS_BIENVENIDA = [
+  "/menu/hamburguesa-xxl.webp",
+  "/menu/pollo-asado.webp",
+  "/menu/pedratas.webp",
+  "/menu/ensalada-cocktail.webp",
+  "/menu/perrito-caliente.webp",
+  "/menu/alitas-pollo.webp",
+  "/menu/durum-loco.webp",
+  "/menu/patatas-deluxe.webp",
+];
+
 // Lo que ve el personal (cocina/historial/caja) en order.mesa se guarda
 // SIEMPRE en español, sin importar el idioma que elija el cliente en
 // pantalla — de esto depende también el color por origen en /cocina
@@ -32,7 +46,7 @@ function nuevoLineId() {
 
 export default function Order() {
   const navigate = useNavigate();
-  const [paso, setPaso] = useState("inicio");
+  const [paso, setPaso] = useState("bienvenida");
   const [tipoServicio, setTipoServicio] = useState(null);
   const [menu, setMenu] = useState([]);
   const [categoriaActiva, setCategoriaActiva] = useState("");
@@ -52,6 +66,14 @@ export default function Order() {
   const cambiarIdioma = (nuevo) => {
     setIdioma(nuevo);
     guardarIdioma(nuevo);
+  };
+
+  // Elegir idioma en la pantalla de bienvenida es lo que lleva a la
+  // sección de empezar el pedido (a petición del cliente) — no hace
+  // falta un botón "continuar" aparte.
+  const elegirIdiomaInicial = (nuevo) => {
+    cambiarIdioma(nuevo);
+    setPaso("inicio");
   };
 
   useEffect(() => {
@@ -215,6 +237,40 @@ export default function Order() {
           setSede(elegida);
         }}
       />
+    );
+  }
+
+  // Pantalla de bienvenida: fotos del menú + elegir idioma, antes de
+  // cargar nada — a petición del cliente, elegir idioma aquí es lo que
+  // lleva directo a la pantalla de empezar el pedido (no hace falta
+  // esperar a que el menú termine de cargar para ver esto).
+  if (paso === "bienvenida") {
+    return (
+      <div className="kiosk-bienvenida">
+        <div className="kiosk-bienvenida-fotos">
+          {FOTOS_BIENVENIDA.map((src) => (
+            <div className="kiosk-bienvenida-foto" key={src}>
+              <img src={src} alt="" />
+            </div>
+          ))}
+        </div>
+        <div className="kiosk-bienvenida-overlay">
+          <img
+            src="/brand/svg/logo-horizontal-color.svg"
+            alt="California — Kebab, Hamburguesería, Pizzería"
+            className="kiosk-logo-img"
+          />
+          <p className="kiosk-bienvenida-titulo">Elige tu idioma · Choose your language</p>
+          <div className="kiosk-bienvenida-idiomas">
+            <button type="button" onClick={() => elegirIdiomaInicial("es")}>
+              Español
+            </button>
+            <button type="button" onClick={() => elegirIdiomaInicial("en")}>
+              English
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
