@@ -1020,8 +1020,11 @@ nuevas, es la misma foto de un producto representativo usada como
 portada de toda su categoría. Es aditivo: las fotos por producto no
 desaparecen, ambas conviven. Categorías sin foto disponible se quedan
 como antes (solo texto). Ver `supabase/menu_categorias_imagenes.sql`
-para el mapeo categoría → foto y su criterio editorial — mismo orden de
-despliegue (columna SQL nueva, va antes que el código).
+para el mapeo categoría → foto original y su criterio editorial — mismo
+orden de despliegue (columna SQL nueva, va antes que el código). Rondas
+siguientes (ej. `menu_categorias_imagenes_2.sql`, cuando llegan fotos
+nuevas que cubren una categoría antes pendiente) son scripts de datos
+normales — la columna ya existe, no hace falta ese orden estricto.
 
 ### Multi-sede (Villarcayo y Medina de Pomar)
 El negocio opera en 2 locales físicos con **la misma carta** (el dueño lo
