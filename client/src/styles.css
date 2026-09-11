@@ -1445,6 +1445,17 @@ h4,
   background: #b9770e;
 }
 
+.btn-anular {
+  background: #c0392b;
+}
+
+.historial-anulado {
+  color: #c0392b;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin: 0.3rem 0 0 0;
+}
+
 /* ---- Caja ---- */
 .card-caja-form {
   max-width: 560px;
@@ -2028,9 +2039,13 @@ h4,
 }
 
 /* .personalizar-modal ya tiene overflow:hidden y border-radius, así que
-   esta imagen queda recortada a las esquinas redondeadas sin más ajuste. */
+   esta imagen queda recortada a las esquinas redondeadas sin más ajuste.
+   Altura FIJA (no aspect-ratio) y baja a propósito — a 16:9 tapaba casi
+   toda la pantalla en el modal y dejaba los pasos de personalización
+   (lo importante: elegir carne/salsas/extras) fuera de la vista sin
+   hacer scroll, a veces incluso el botón "Añadir" quedaba oculto. */
 .personalizar-imagen {
-  aspect-ratio: 16 / 9;
+  height: 140px;
   background: #f2f3f5;
   flex-shrink: 0;
 }

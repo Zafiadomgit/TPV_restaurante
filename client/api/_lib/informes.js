@@ -8,7 +8,10 @@ const HORAS_PANEL = Array.from({ length: 16 }, (_, i) => i + 8); // 8..23
 // resumen del panel del dueño. Separado del handler HTTP para poder
 // probarlo con datos de ejemplo sin depender de Supabase.
 export function calcularResumen(orders) {
-  const pagados = orders.filter((o) => o.pagado);
+  // Un pedido anulado no cuenta como venta aunque siga marcado como
+  // pagado (pagado = fue cobrado alguna vez; anulado = ya no cuenta) —
+  // ver client/api/orders/[id]/pagar.js.
+  const pagados = orders.filter((o) => o.pagado && !o.anulado);
 
   const ventasHoy = Number(pagados.reduce((acc, o) => acc + o.total, 0).toFixed(2));
   const tickets = pagados.length;

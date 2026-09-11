@@ -48,6 +48,11 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify({ metodoPago }),
     }),
+  anularOrder: (id, motivo) =>
+    request(`/orders/${id}/pagar`, {
+      method: "PATCH",
+      body: JSON.stringify({ anular: true, motivo }),
+    }),
   getTurnos: (estado, local) => {
     const params = new URLSearchParams();
     if (estado) params.set("estado", estado);

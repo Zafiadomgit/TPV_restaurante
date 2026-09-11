@@ -12,6 +12,10 @@ const FILTROS = [
   { valor: "listo", etiqueta: "Listos" },
   { valor: "entregado", etiqueta: "Entregados" },
   { valor: "cancelado", etiqueta: "Cancelados" },
+  // Aparte de "estado" (el ciclo de vida del pedido en cocina) — un
+  // pedido anulado conserva su estado original (ej. "entregado"), esto
+  // es una anulación posterior al cobro, no una etapa más del pedido.
+  { valor: "anulados", etiqueta: "Anulados" },
 ];
 
 export default function Historial() {
@@ -52,8 +56,29 @@ export default function Historial() {
     }
   };
 
+  // Pide motivo obligatorio — la anulación queda registrada para
+  // siempre en el historial, no es un borrado (ver client/api/orders/[id]/pagar.js).
+  const anular = async (id) => {
+    const motivo = window.prompt("Motivo de la anulación (obligatorio):");
+    if (motivo === null) return;
+    if (!motivo.trim()) {
+      setError("El motivo de la anulación es obligatorio");
+      return;
+    }
+    try {
+      const actualizado = await api.anularOrder(id, motivo.trim());
+      setOrders((prev) => prev.map((o) => (o.id === id ? actualizado : o)));
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+
   const visibles = orders
-    .filter((o) => filtro === "todos" || o.estado === filtro)
+    .filter((o) => {
+      if (filtro === "todos") return true;
+      if (filtro === "anulados") return o.anulado;
+      return o.estado === filtro;
+    })
     .sort((a, b) => new Date(b.creadoEn) - new Date(a.creadoEn));
 
   return (
@@ -79,7 +104,7 @@ export default function Historial() {
       ) : (
         <div className="tickets-grid">
           {visibles.map((order) => (
-            <HistorialTicket key={order.id} order={order} onRevertir={revertir} />
+            <HistorialTicket key={order.id} order={order} onRevertir={revertir} onAnular={anular} />
           ))}
         </div>
       )}

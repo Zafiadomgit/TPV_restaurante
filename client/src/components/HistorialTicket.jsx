@@ -18,7 +18,7 @@ const REVERTIR_LABEL = {
   cancelado: "↺ Revertir a Pendiente",
 };
 
-export default function HistorialTicket({ order, onRevertir }) {
+export default function HistorialTicket({ order, onRevertir, onAnular }) {
   const estadoAnterior = REVERTIR_A[order.estado];
 
   return (
@@ -40,6 +40,11 @@ export default function HistorialTicket({ order, onRevertir }) {
       <span className={`badge-estado badge-${order.estado}`}>
         {ESTADOS_LABEL[order.estado] || order.estado}
       </span>
+      {order.anulado && (
+        <p className="historial-anulado">
+          ⛔ Anulado{order.anuladoMotivo ? `: ${order.anuladoMotivo}` : ""}
+        </p>
+      )}
       <ul>
         {order.items.map((item) => (
           <li key={item.productId}>
@@ -58,6 +63,11 @@ export default function HistorialTicket({ order, onRevertir }) {
       {estadoAnterior && (
         <button className="btn-avanzar btn-revertir" onClick={() => onRevertir(order.id, estadoAnterior)}>
           {REVERTIR_LABEL[order.estado]}
+        </button>
+      )}
+      {order.pagado && !order.anulado && (
+        <button className="btn-avanzar btn-anular" onClick={() => onAnular(order.id)}>
+          Anular pedido
         </button>
       )}
     </div>

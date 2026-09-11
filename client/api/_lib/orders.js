@@ -49,6 +49,9 @@ export function mapRow(row) {
     turnoCajaId: row.turno_caja_id || null,
     listoEn: row.listo_en || null,
     telefonoWhatsapp: row.telefono_whatsapp || null,
+    anulado: row.anulado || false,
+    anuladoMotivo: row.anulado_motivo || null,
+    anuladoEn: row.anulado_en || null,
   };
 }
 

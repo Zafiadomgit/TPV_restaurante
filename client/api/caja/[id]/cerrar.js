@@ -33,12 +33,15 @@ export default async function handler(req, res) {
 
   // Pedidos cobrados en efectivo durante este turno (vinculados vía
   // turno_caja_id, asignado por el backend al cobrar en /orders/[id]/pagar).
+  // Un pedido anulado después de cobrarse ya no cuenta como efectivo en
+  // caja (ver _lib/informes.js).
   const { data: pedidosEfectivo, error: errorPedidos } = await supabase
     .from("orders")
     .select("total")
     .eq("turno_caja_id", id)
     .eq("metodo_pago", "efectivo")
-    .eq("pagado", true);
+    .eq("pagado", true)
+    .eq("anulado", false);
 
   if (errorPedidos) return res.status(500).json({ error: errorPedidos.message });
 

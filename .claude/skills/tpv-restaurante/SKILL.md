@@ -895,6 +895,39 @@ que ya existían para esto (`.caja-historial-titulo`, `.tickets-grid`,
 `.card-caja.historial-turno`, `.caja-cierre-resumen`, etc.) — no son
 específicas de `/caja`, así que no hizo falta CSS nuevo.
 
+### Anulación de pedidos ya cobrados
+El cliente pidió poder "borrar el pedido desde caja para que no quede
+registrado el cobro" — eso es ocultar una venta ya cobrada de cara a
+declarar impuestos, así que **no se implementó tal cual, ni se
+implementará si se vuelve a pedir**: no hay ningún endpoint que borre un
+pedido pagado. En su lugar existe una ANULACIÓN con motivo obligatorio:
+el pedido se queda para siempre en `/historial` (nunca se borra), pero
+deja de contar como venta o efectivo esperado.
+
+- `orders.anulado` (boolean), `anulado_motivo` (text), `anulado_en`
+  (timestamptz) — independientes de `estado`/`ESTADOS_VALIDOS`: un
+  pedido anulado conserva su estado original (ej. "entregado"), esto es
+  ortogonal al ciclo de vida en cocina, no una etapa más.
+- La acción vive en `PATCH /api/orders/[id]/pagar` (`body: {anular:
+  true, motivo}`), NO en un endpoint nuevo — por el límite de 12
+  funciones del plan Hobby (ver arriba). Encaja ahí porque es otra
+  acción financiera sobre el pedido, exclusiva de rol `caja`, igual que
+  cobrar. Solo se puede anular un pedido con `pagado = true` y que no
+  estuviera ya anulado; el motivo es obligatorio (400 si falta).
+- **Todo sitio que sume "ventas" a partir de `pagado` tiene que excluir
+  también `anulado`** — si se añade una métrica nueva a partir de
+  pedidos pagados, replica este filtro:
+  - `calcularResumen()` (`_lib/informes.js`): `pagado && !anulado`.
+  - Cierre de turno (`caja/[id]/cerrar.js`): el efectivo esperado
+    excluye `anulado = true` al sumar pedidos del turno.
+- UI: botón "Anular pedido" en `HistorialTicket.jsx` (solo si `pagado &&
+  !anulado`), pide motivo con `window.prompt` (pantalla de personal, no
+  del kiosco — no hace falta un modal a medida) y llama a
+  `api.anularOrder(id, motivo)`. `Historial.jsx` tiene un filtro
+  "Anulados" aparte de los de `estado`.
+- Ver `supabase/anular_pedido.sql` para las columnas nuevas — mismo
+  orden de despliegue de siempre (SQL antes que el código).
+
 ### Pantalla de recogida
 `/recogida` (`Recogida.jsx`) es un tablero pensado para un monitor público
 de cara al cliente (no un formulario de trabajo del personal), tema
