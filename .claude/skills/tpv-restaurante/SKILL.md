@@ -907,6 +907,48 @@ tocas este endpoint, mantén esa rama pública — quitarla rompe
 justo el bug que se coló al añadir el login por PIN: se protegió esta
 ruta entera por error y dejó el tablero sin datos).
 
+### Fotos de producto
+`menu_productos.imagen_url` (text, nullable) — la mayoría de productos NO
+tiene foto (el cliente las manda por lotes conforme las va teniendo, no
+todas de golpe). `mapProducto()` en `_lib/menu.js` expone esto como
+`producto.imagen`; `MenuItemCard.jsx` (tarjeta del kiosco) y
+`Personalizar.jsx` (modal de personalizar) la muestran solo si existe —
+un producto sin foto se ve exactamente igual que antes de que existiera
+este campo, no hay hueco vacío ni placeholder roto.
+
+- **Las imágenes viven en `client/public/menu/` como estáticos de
+  Vercel**, no en Supabase Storage — son un puñado de fotos fijas que
+  sube el desarrollador, no contenido que suba el cliente desde una UI,
+  así que no hace falta infraestructura de subida/almacenamiento. Si el
+  negocio pide subir fotos él mismo desde `/carta`, eso sí es una pieza
+  nueva (upload real), no una extensión de este mecanismo.
+- **Siempre optimiza antes de subir la imagen al repo** — los archivos
+  que manda el cliente son fotos de producto a resolución completa
+  (1,5-3MB cada una, ~1500px de ancho). Redimensiona a ~600px de ancho y
+  conviértelas a WebP (`Pillow`, `quality=82`) antes de guardarlas en
+  `client/public/menu/` — en la práctica esto reduce el peso total en
+  más de 30 veces (un lote de 23 fotos pasó de 47MB a 1,5MB) sin pérdida
+  de calidad visible en el tamaño en que se muestran. Si las fotos tienen
+  fondo transparente (product shots aislados, el estilo que ha mandado el
+  cliente hasta ahora), consérvalo — WebP soporta transparencia igual que
+  PNG pero pesa mucho menos.
+- `EditarProducto.jsx` tiene un campo de texto plano "URL de imagen"
+  (`/menu/<archivo>.webp`) — no hay selector de archivos ni subida desde
+  el navegador, el cajero escribe la ruta a mano. Es suficiente porque
+  quien añade productos nuevos es la misma persona (vía Claude Code) que
+  sube las imágenes al repo, no un flujo self-service para el dueño.
+- **Un archivo de imagen se puede reutilizar en varios productos** (ej.
+  una sola foto de "patatas fritas" para pequeña/mediana/grande) —
+  `imagen_url` no es único, varias filas de `menu_productos` pueden
+  apuntar al mismo archivo.
+- `supabase/menu_imagenes.sql`: script de datos de un solo uso (mismo
+  patrón que `traducciones_menu_en.sql`) con el primer lote de 23 fotos
+  del cliente. Como añade una columna SQL nueva (no un campo dentro de
+  `modificadores`), sigue la regla de "SQL primero, código después" (ver
+  "Reorganización de carta — orden de despliegue" más abajo) — el script
+  se entrega y se pide ejecutar ANTES de desplegar el commit que lee/
+  escribe `imagen_url`.
+
 ### Multi-sede (Villarcayo y Medina de Pomar)
 El negocio opera en 2 locales físicos con **la misma carta** (el dueño lo
 confirmó explícitamente — si algún día quieren cartas o precios

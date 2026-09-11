@@ -151,6 +151,11 @@ export default function Personalizar({ producto, idioma, onConfirmar, onCancelar
   return (
     <div className="personalizar-overlay" onClick={onCancelar}>
       <div className="personalizar-modal" onClick={(e) => e.stopPropagation()}>
+        {producto.imagen && (
+          <div className="personalizar-imagen">
+            <img src={producto.imagen} alt="" />
+          </div>
+        )}
         <div className="personalizar-header">
           <div>
             <h3>{conIdioma(producto.nombre, producto.nombreEn, idioma).toUpperCase()}</h3>

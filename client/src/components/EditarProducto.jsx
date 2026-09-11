@@ -23,6 +23,7 @@ export default function EditarProducto({ producto, categorias, otrosProductos, o
   const [descripcion, setDescripcion] = useState(producto.descripcion || "");
   const [descripcionEn, setDescripcionEn] = useState(producto.descripcionEn || "");
   const [precio, setPrecio] = useState(producto.precio ?? "");
+  const [imagenUrl, setImagenUrl] = useState(producto.imagenUrl || "");
   const [categoriaId, setCategoriaId] = useState(producto.categoriaId || categorias[0]?.id || "");
   const [activo, setActivo] = useState(producto.activo ?? true);
   const [modificadores, setModificadores] = useState(producto.modificadores || []);
@@ -156,6 +157,7 @@ export default function EditarProducto({ producto, categorias, otrosProductos, o
         descripcion: descripcion.trim(),
         descripcionEn: descripcionEn.trim() || null,
         precio: precioNumero,
+        imagenUrl: imagenUrl.trim() || null,
         categoriaId,
         activo,
         modificadores: modificadores.length > 0 ? modificadores : null,
@@ -206,6 +208,15 @@ export default function EditarProducto({ producto, categorias, otrosProductos, o
             <label className="gestion-campo gestion-campo-ancho">
               Descripción en inglés (opcional)
               <input type="text" value={descripcionEn} onChange={(e) => setDescripcionEn(e.target.value)} />
+            </label>
+            <label className="gestion-campo gestion-campo-ancho">
+              URL de imagen (opcional)
+              <input
+                type="text"
+                value={imagenUrl}
+                onChange={(e) => setImagenUrl(e.target.value)}
+                placeholder="/menu/nombre-del-archivo.webp"
+              />
             </label>
             <label className="gestion-campo">
               Categoría

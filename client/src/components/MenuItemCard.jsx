@@ -5,6 +5,11 @@ export default function MenuItemCard({ producto, idioma, onAdd }) {
   const descripcion = conIdioma(producto.descripcion, producto.descripcionEn, idioma);
   return (
     <div className="menu-card">
+      {producto.imagen && (
+        <div className="menu-card-imagen">
+          <img src={producto.imagen} alt="" loading="lazy" />
+        </div>
+      )}
       <div className="menu-card-info">
         <h4>{nombre}</h4>
         {descripcion && <p>{descripcion}</p>}

@@ -11,6 +11,7 @@ function mapRow(row) {
     descripcionEn: row.descripcion_en || null,
     precio: Number(row.precio),
     modificadores: row.modificadores || null,
+    imagenUrl: row.imagen_url || null,
     activo: row.activo,
     orden: row.orden,
   };
@@ -67,7 +68,8 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "POST") {
-      const { categoriaId, nombre, nombreEn, descripcion, descripcionEn, precio, modificadores } = req.body || {};
+      const { categoriaId, nombre, nombreEn, descripcion, descripcionEn, precio, modificadores, imagenUrl } =
+        req.body || {};
 
       if (!categoriaId) {
         return res.status(400).json({ error: "La categoría es obligatoria" });
@@ -119,6 +121,7 @@ export default async function handler(req, res) {
           descripcion_en: descripcionEn || null,
           precio: precioNumero,
           modificadores: modificadores || null,
+          imagen_url: imagenUrl?.trim() || null,
           orden: count ?? 0,
         })
         .select()
@@ -152,6 +155,7 @@ export default async function handler(req, res) {
       cambios.precio = precioNumero;
     }
     if (body.categoriaId !== undefined) cambios.categoria_id = body.categoriaId;
+    if (body.imagenUrl !== undefined) cambios.imagen_url = body.imagenUrl?.trim() || null;
     if (body.modificadores !== undefined) {
       if (!modificadoresValidos(body.modificadores)) {
         return res.status(400).json({ error: "Ninguna opción de personalización puede tener un precio negativo" });

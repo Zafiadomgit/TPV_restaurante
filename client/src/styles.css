@@ -564,6 +564,25 @@ h4,
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
+/* Bleed al borde de la tarjeta (el padding lo pone .menu-card) — fondo
+   neutro detrás porque las fotos son recortes con transparencia, no
+   fotos a sangre completa, y object-fit: contain para no recortar el
+   producto (cover cortaría comida por los bordes). */
+.menu-card-imagen {
+  margin: -1rem -1rem 0.6rem -1rem;
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: #f2f3f5;
+}
+
+.menu-card-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
 .menu-card h4 {
   margin: 0 0 0.3rem 0;
 }
@@ -1904,6 +1923,21 @@ h4,
    así que necesita más ancho que el modal de personalizar estándar. */
 .upsell-modal {
   max-width: 900px;
+}
+
+/* .personalizar-modal ya tiene overflow:hidden y border-radius, así que
+   esta imagen queda recortada a las esquinas redondeadas sin más ajuste. */
+.personalizar-imagen {
+  aspect-ratio: 16 / 9;
+  background: #f2f3f5;
+  flex-shrink: 0;
+}
+
+.personalizar-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 .personalizar-header {

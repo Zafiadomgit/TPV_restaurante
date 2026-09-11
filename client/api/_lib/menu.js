@@ -8,6 +8,7 @@ function mapProducto(row) {
     precio: Number(row.precio),
     descripcion: row.descripcion || "",
     descripcionEn: row.descripcion_en || null,
+    imagen: row.imagen_url || null,
     ...(row.modificadores ? { modificadores: row.modificadores } : {}),
   };
 }
