@@ -538,6 +538,16 @@ cambio 100% de presentación en el frontend.
   futuro, no hace falta tocar `MenuWizard.jsx` — recorre
   `producto.modificadores` igual que `Personalizar.jsx`, cualquier paso
   nuevo aparece automáticamente como una pantalla más.
+- **Estilo visual = igual que las categorías** (a petición del cliente,
+  después del primer despliegue): tanto la rejilla de productos de "Haz
+  tu menú" (`Order.jsx`) como las opciones de cada paso del asistente
+  (`.menu-wizard-opcion` en `styles.css`) usan las mismas clases visuales
+  que las fichas reales de categoría (`.kiosk-categoria-tile` y
+  derivadas) — ficha blanca, `min-height: 160px`, texto Barlow Condensed
+  en negrita, y se ponen naranjas con `:hover`/`:active` o al quedar
+  elegidas (clase `.elegida`). Si se toca el estilo de
+  `.kiosk-categoria-tile` más adelante, revisar si `.menu-wizard-opcion`
+  debe cambiar igual para seguir pareciendo lo mismo.
 
 ### Reorganización de carta — orden de despliegue (dato vs. código)
 El incidente real que motiva esta nota: se ejecutó el SQL de consolidar

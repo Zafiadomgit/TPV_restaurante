@@ -2293,45 +2293,54 @@ h4,
   margin-top: 1.5rem;
 }
 
+/* A petición del cliente: las opciones del asistente se ven igual que
+   las fichas de categoría (.kiosk-categoria-tile) — mismo tamaño,
+   tipografía y comportamiento al tocar (se ponen naranjas), para que
+   cada paso se sienta como elegir una categoría más, no como marcar una
+   opción de formulario. */
 .menu-wizard-opciones {
   width: 100%;
   max-width: 720px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
+  gap: 1.2rem;
 }
 
 .menu-wizard-opcion {
-  min-height: 90px;
-  border: 2px solid rgba(31, 41, 51, 0.12);
-  border-radius: 14px;
+  min-height: 160px;
+  border: none;
+  border-radius: 16px;
   background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  padding: 0.8rem;
+  gap: 0.6rem;
+  padding: 0.8rem 0.5rem;
   cursor: pointer;
+  color: #1f2933;
   font-family: inherit;
 }
 
+.menu-wizard-opcion:hover,
 .menu-wizard-opcion.elegida {
-  border-color: #d1622f;
-  background: #fdf1ea;
+  background: #d1622f;
+  color: #fff;
 }
 
 .menu-wizard-opcion-nombre {
-  font-weight: 600;
-  font-size: 1.05rem;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
   text-align: center;
-  color: #1f2933;
+  padding: 0 0.5rem;
 }
 
 .menu-wizard-opcion-precio {
   font-size: 0.85rem;
-  color: #d1622f;
   font-weight: 600;
+  opacity: 0.8;
 }
 
 .menu-wizard-resumen {

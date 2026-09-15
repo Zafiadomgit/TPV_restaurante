@@ -485,18 +485,41 @@ export default function Order() {
 
         {error && <p className="error">{error}</p>}
 
-        <div className="menu-grid">
-          {menu
-            .find((cat) => cat.categoria === categoriaActiva)
-            ?.productos.map((producto) => (
-              <MenuItemCard
-                key={producto.id}
-                producto={producto}
-                idioma={idioma}
-                onAdd={categoriaActiva === CATEGORIA_MENU_PASO_A_PASO ? onAddProductoMenu : onAddProducto}
-              />
-            ))}
-        </div>
+        {categoriaActiva === CATEGORIA_MENU_PASO_A_PASO ? (
+          // A petición del cliente, se ve igual que la rejilla de
+          // categorías (paso "categorias" más arriba) — mismas clases
+          // .kiosk-categoria-*, no un tile nuevo — para que elegir tu
+          // menú se sienta como elegir una categoría más.
+          <div className="kiosk-categorias-grid">
+            {menu
+              .find((cat) => cat.categoria === categoriaActiva)
+              ?.productos.map((producto) => (
+                <button
+                  key={producto.id}
+                  className="kiosk-categoria-tile"
+                  onClick={() => onAddProductoMenu(producto)}
+                >
+                  {producto.imagen && (
+                    <div className="kiosk-categoria-imagen">
+                      <img src={producto.imagen} alt="" loading="lazy" />
+                    </div>
+                  )}
+                  <span className="kiosk-categoria-nombre">
+                    {conIdioma(producto.nombre, producto.nombreEn, idioma)}
+                  </span>
+                  <span className="kiosk-categoria-cantidad">{producto.precio.toFixed(2)} €</span>
+                </button>
+              ))}
+          </div>
+        ) : (
+          <div className="menu-grid">
+            {menu
+              .find((cat) => cat.categoria === categoriaActiva)
+              ?.productos.map((producto) => (
+                <MenuItemCard key={producto.id} producto={producto} idioma={idioma} onAdd={onAddProducto} />
+              ))}
+          </div>
+        )}
       </div>
 
       <CartSidebar
