@@ -2208,6 +2208,193 @@ h4,
   cursor: pointer;
 }
 
+/* ---- "Haz tu menú" a pantalla completa (MenuWizard.jsx) ---- */
+.menu-wizard {
+  position: relative;
+  margin: -1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #f2f3f5;
+}
+
+.menu-wizard-header {
+  height: 56px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1rem;
+  background: #fff;
+  border-bottom: 1px solid rgba(31, 41, 51, 0.1);
+}
+
+.menu-wizard-atras {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border: none;
+  border-radius: 8px;
+  background: #f2f3f5;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #1f2933;
+}
+
+.menu-wizard-progreso {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.menu-wizard-punto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(31, 41, 51, 0.15);
+}
+
+.menu-wizard-punto.activo {
+  background: #d1622f;
+}
+
+.menu-wizard-precio-parcial {
+  flex: none;
+  font-weight: 700;
+  color: #d1622f;
+  min-width: 60px;
+  text-align: right;
+}
+
+.menu-wizard-paso {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.menu-wizard-titulo {
+  margin: 0 0 0.3rem 0;
+  text-align: center;
+  font-size: 1.6rem;
+}
+
+.menu-wizard-nota {
+  margin: 0 0 1.5rem 0;
+  color: rgba(31, 41, 51, 0.55);
+  text-align: center;
+}
+
+.menu-wizard-titulo + .menu-wizard-opciones {
+  margin-top: 1.5rem;
+}
+
+.menu-wizard-opciones {
+  width: 100%;
+  max-width: 720px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.menu-wizard-opcion {
+  min-height: 90px;
+  border: 2px solid rgba(31, 41, 51, 0.12);
+  border-radius: 14px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.8rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.menu-wizard-opcion.elegida {
+  border-color: #d1622f;
+  background: #fdf1ea;
+}
+
+.menu-wizard-opcion-nombre {
+  font-weight: 600;
+  font-size: 1.05rem;
+  text-align: center;
+  color: #1f2933;
+}
+
+.menu-wizard-opcion-precio {
+  font-size: 0.85rem;
+  color: #d1622f;
+  font-weight: 600;
+}
+
+.menu-wizard-resumen {
+  align-items: stretch;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.menu-wizard-resumen-lista {
+  list-style: none;
+  margin: 0 0 1.5rem 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.menu-wizard-resumen-lista li {
+  background: #fff;
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.9rem;
+}
+
+.menu-wizard-resumen .qty-controls {
+  align-self: center;
+  gap: 1rem;
+}
+
+.menu-wizard-resumen .qty-controls button {
+  width: 36px;
+  height: 36px;
+  font-size: 1.1rem;
+}
+
+.menu-wizard-footer {
+  flex: none;
+  padding: 1rem 1.5rem;
+  background: #fff;
+  border-top: 1px solid rgba(31, 41, 51, 0.1);
+  display: flex;
+}
+
+.menu-wizard-siguiente,
+.menu-wizard-confirmar {
+  flex: 1;
+  height: 52px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #fff;
+}
+
+.menu-wizard-siguiente {
+  background: #d1622f;
+}
+
+.menu-wizard-confirmar {
+  background: #1f9d55;
+}
+
 /* ---- Panel del dueño ---- */
 .panel-kpis {
   display: flex;

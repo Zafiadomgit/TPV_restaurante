@@ -8,11 +8,18 @@ import { t, TIPO_SERVICIO_DISPLAY, conIdioma } from "../textos.js";
 import MenuItemCard from "../components/MenuItemCard.jsx";
 import CartSidebar from "../components/CartSidebar.jsx";
 import Personalizar from "../components/Personalizar.jsx";
+import MenuWizard from "../components/MenuWizard.jsx";
 import SelectorIdioma from "../components/SelectorIdioma.jsx";
 import UpsellComplementos from "../components/UpsellComplementos.jsx";
 import SelectorSede from "../components/SelectorSede.jsx";
 
 const CATEGORIA_UPSELL = "Complementos";
+
+// "Haz tu menú" no abre el modal normal de Personalizar — a petición del
+// cliente, se recorre a pantalla completa, un paso por pantalla (ver
+// MenuWizard.jsx), para que se sienta como navegar la carta (tu plato,
+// tus patatas, tu bebida) en vez de un formulario largo.
+const CATEGORIA_MENU_PASO_A_PASO = "Haz tu menú";
 
 // Collage de fotos para la pantalla de bienvenida — reutiliza las mismas
 // fotos ya subidas para las fichas de producto/categoría (ver
@@ -56,6 +63,7 @@ export default function Order() {
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(true);
   const [productoPersonalizando, setProductoPersonalizando] = useState(null);
+  const [productoEnWizard, setProductoEnWizard] = useState(null);
   const [idioma, setIdioma] = useState(() => getIdioma());
   const [tiempoEsperaMinutos, setTiempoEsperaMinutos] = useState(null);
   const [mostrarUpsell, setMostrarUpsell] = useState(false);
@@ -162,6 +170,30 @@ export default function Order() {
       },
     ]);
     setProductoPersonalizando(null);
+  };
+
+  // "Haz tu menú" (ver CATEGORIA_MENU_PASO_A_PASO más arriba): mismo
+  // producto/precio/formato de línea que el modal normal, solo cambia
+  // qué componente lo recoge (MenuWizard en vez de Personalizar).
+  const onAddProductoMenu = (producto) => setProductoEnWizard(producto);
+
+  const confirmarMenuWizard = ({ seleccion, cantidad, precioUnidad, modificadoresTexto }) => {
+    const producto = productoEnWizard;
+    setItems((prev) => [
+      ...prev,
+      {
+        lineId: nuevoLineId(),
+        productId: producto.id,
+        nombre: producto.nombre,
+        nombreEn: producto.nombreEn,
+        precio: precioUnidad,
+        cantidad,
+        notas: "",
+        modificadores: seleccion,
+        modificadoresTexto,
+      },
+    ]);
+    setProductoEnWizard(null);
   };
 
   const increase = (lineId) =>
@@ -386,6 +418,20 @@ export default function Order() {
     );
   }
 
+  // Pantalla completa, no overlay — reemplaza toda la vista mientras
+  // dura (igual que "bienvenida"/"inicio"), no se apila encima del menú
+  // como el modal de Personalizar.
+  if (productoEnWizard) {
+    return (
+      <MenuWizard
+        producto={productoEnWizard}
+        idioma={idioma}
+        onConfirmar={confirmarMenuWizard}
+        onCancelar={() => setProductoEnWizard(null)}
+      />
+    );
+  }
+
   return (
     <div className="order-page">
       {confirmarCancelarModal}
@@ -443,7 +489,12 @@ export default function Order() {
           {menu
             .find((cat) => cat.categoria === categoriaActiva)
             ?.productos.map((producto) => (
-              <MenuItemCard key={producto.id} producto={producto} idioma={idioma} onAdd={onAddProducto} />
+              <MenuItemCard
+                key={producto.id}
+                producto={producto}
+                idioma={idioma}
+                onAdd={categoriaActiva === CATEGORIA_MENU_PASO_A_PASO ? onAddProductoMenu : onAddProducto}
+              />
             ))}
         </div>
       </div>

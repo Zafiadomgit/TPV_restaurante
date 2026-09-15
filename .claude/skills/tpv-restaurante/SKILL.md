@@ -500,6 +500,45 @@ patrón), `traducciones_menu_en.sql` no se vuelve a ejecutar solo.
     el SQL antes de que el código correspondiente esté desplegado deja el
     sitio cobrando mal hasta que se despliega — ver más abajo).
 
+### "Haz tu menú" a pantalla completa (`MenuWizard.jsx`)
+A petición del cliente: los 13 productos de "Haz tu menú" NO abren el
+modal `Personalizar.jsx` — abren `MenuWizard.jsx`, un flujo a pantalla
+completa que recorre cada paso de `modificadores` (carne, quitar
+ingredientes, patatas, salsas, extras, bebida) como su propia pantalla,
+para que se sienta como navegar la carta (tu plato → tus patatas → tu
+bebida) en vez de rellenar un formulario largo con todo apilado. El
+**precio y el texto de cocina son exactamente los mismos de siempre** —
+no se tocó ni `menu_reorg_11_haz_tu_menu.sql` ni el backend, es un
+cambio 100% de presentación en el frontend.
+
+- **`client/src/personalizarCalculo.js`** (nuevo): la lógica de
+  `seleccionInicial()`, `toggleOpcionEnSeleccion()` y
+  `calcularPersonalizacion()` (precio + texto de cocina por paso) se
+  extrajo de `Personalizar.jsx` a este módulo compartido, para que
+  `Personalizar.jsx` (el resto de la carta) y `MenuWizard.jsx` ("Haz tu
+  menú") calculen exactamente lo mismo sin duplicar la lógica dos veces
+  en el frontend — y sigan mirando al mismo sitio si hay que tocarla.
+  Sigue reflejando el mismo criterio que el backend
+  (`client/api/orders/index.js`) — un cambio aquí también va ahí.
+- Qué decide la categoría "Haz tu menú" en `Order.jsx`
+  (`CATEGORIA_MENU_PASO_A_PASO`): al pulsar "Personalizar" en esa
+  categoría, en vez de `setProductoPersonalizando` (abre el modal) se
+  llama `onAddProductoMenu` → `setProductoEnWizard` (abre
+  `MenuWizard.jsx` a pantalla completa, reemplazando toda la vista como
+  "bienvenida"/"inicio", no como un overlay apilado encima). El resto de
+  la carta sigue usando `Personalizar.jsx` sin cambios.
+- En pasos de "elige uno" (`maxSeleccion: 1` — carne, patatas, bebida,
+  tamaño...) tocar una opción avanza solo al siguiente paso, como si se
+  hubiera entrado a la sección siguiente de la carta; en pasos de varios
+  (quitar ingredientes, extras) hace falta tocar "Siguiente" abajo. Al
+  llegar al final se muestra un resumen (solo los pasos con texto, igual
+  criterio que `modificadoresTexto`) + selector de cantidad + el total,
+  antes de añadir al carrito.
+- Si se añade un paso nuevo de personalización a "Haz tu menú" en el
+  futuro, no hace falta tocar `MenuWizard.jsx` — recorre
+  `producto.modificadores` igual que `Personalizar.jsx`, cualquier paso
+  nuevo aparece automáticamente como una pantalla más.
+
 ### Reorganización de carta — orden de despliegue (dato vs. código)
 El incidente real que motiva esta nota: se ejecutó el SQL de consolidar
 Pizzas en Supabase antes de hacer fast-forward del commit correspondiente
@@ -659,8 +698,11 @@ un cambio de diseño real, no un ajuste trivial.
    y a cualquier `precioExtra`: todos son precios/importes con IVA
    incluido, se tratan igual en la suma.
 3. Un producto con `modificadores` (kebab/dürüm/lahmacum/plato, ver sección
-   "El menú") NO se añade directo: abre el modal `Personalizar.jsx`. Los
-   ítems del carrito usan
+   "El menú") NO se añade directo: abre el modal `Personalizar.jsx` —
+   EXCEPTO la categoría "Haz tu menú", que abre `MenuWizard.jsx` a
+   pantalla completa en su lugar (ver "'Haz tu menú' a pantalla
+   completa" más abajo); mismo precio y mismo texto de cocina en los dos
+   casos. Los ítems del carrito usan
    `lineId` (no `productId`) como clave de operación porque el mismo
    producto puede aparecer en varias líneas con personalizaciones
    distintas — no vuelvas a usar `productId` como key en
