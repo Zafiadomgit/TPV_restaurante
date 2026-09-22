@@ -91,7 +91,14 @@ export default async function handler(req, res) {
       // siempre aquí a partir de la definición del menú — nunca se confía
       // en el precio ni el recargo que mande el cliente.
       let extra = 0;
+      // precioBase lo decide como mucho UN paso esSelectorTamano (tamaño
+      // de pizza, o "menu" en Kebab/Dürüm/Lahmacum: Solo/En menú) — precio
+      // ABSOLUTO. precioSiTodoQuitadoDelta es la diferencia que añade
+      // "quitar todo" (ej. "Kebab solo carne" sube +1€) — se SUMA al
+      // precioBase que haya en vez de competir por sustituirlo, así el
+      // recargo de "solo carne" se aplica igual en "Solo" o "En menú".
       let precioBase = producto.precio;
+      let precioSiTodoQuitadoDelta = 0;
       let baseSobrescrita = false;
       const nombresSeleccionados = [];
 
@@ -126,12 +133,14 @@ export default async function handler(req, res) {
           .map((optId) => paso.opciones.find((o) => o.id === optId))
           .filter(Boolean);
 
-        // Si el paso trae precioSiTodoQuitado, el precio base pasa a ser
-        // ese valor fijo — pensado para vender el kebab/dürüm/lahmacum
-        // "solo carne" más barato cuando el cliente quita "de más".
-        // Dos formas de disparar el precio alternativo (validado siempre
-        // contra seleccionValida, nunca lo que mande el cliente sin
-        // comprobar):
+        // Si el paso trae precioSiTodoQuitado, se SUMA la diferencia
+        // sobre el precio base del producto (no lo sustituye) — pensado
+        // para vender el kebab/dürüm/lahmacum "solo carne" más caro
+        // cuando el cliente quita "de más", se aplique o no también el
+        // paso "menu" (Solo/En menú): quitar todo cuesta lo mismo de más
+        // en los dos casos. Dos formas de disparar el precio alternativo
+        // (validado siempre contra seleccionValida, nunca lo que mande
+        // el cliente sin comprobar):
         //  - Si el paso trae disparadoresPrecioAlternativo (array de ids
         //    de opción): se dispara si el cliente marcó ALGUNA de esas
         //    opciones — ej. quitar la lechuga SOLA ya obliga a echar más
@@ -140,33 +149,30 @@ export default async function handler(req, res) {
         //  - Si no trae ese campo (productos antiguos, sin tocar):
         //    comportamiento de siempre — se dispara solo si se marcaron
         //    TODAS las opciones del paso.
-        if (!baseSobrescrita && typeof paso.precioSiTodoQuitado === "number" && paso.opciones.length > 0) {
+        if (typeof paso.precioSiTodoQuitado === "number" && paso.opciones.length > 0) {
           const disparadores = paso.disparadoresPrecioAlternativo;
           const activa = Array.isArray(disparadores)
             ? disparadores.some((id) => seleccionValida.includes(id))
             : paso.opciones.every((o) => seleccionValida.includes(o.id));
           if (activa) {
-            precioBase = paso.precioSiTodoQuitado;
-            baseSobrescrita = true;
+            precioSiTodoQuitadoDelta = paso.precioSiTodoQuitado - producto.precio;
           }
         }
 
         // esSelectorTamano (ej. pizzas: un producto por sabor con un paso
-        // "Tamaño" en vez de una fila por tamaño en menu_productos): la
-        // opción elegida trae su propio precioBase ABSOLUTO (no un
-        // precioExtra que se suma) — sustituye el precio base del
-        // producto, igual que precioSiTodoQuitado pero elegido por el
-        // cliente en vez de disparado por quitar ingredientes. Si por lo
-        // que sea no hay ninguna opción válida seleccionada (cliente sin
-        // marcar nada todavía, o un dato corrupto), cae a la opción
-        // porDefecto — nunca se deja sin tamaño resuelto.
-        if (!baseSobrescrita && paso.esSelectorTamano) {
+        // "Tamaño" en vez de una fila por tamaño en menu_productos; o
+        // "menu" en Kebab/Dürüm/Lahmacum: Solo/En menú): la opción
+        // elegida trae su propio precioBase ABSOLUTO (no un precioExtra
+        // que se suma) — sustituye el precio base del producto. Si por
+        // lo que sea no hay ninguna opción válida seleccionada (cliente
+        // sin marcar nada todavía, o un dato corrupto), cae a la opción
+        // porDefecto — nunca se deja sin resolver.
+        if (paso.esSelectorTamano) {
           const opcionTamano =
             paso.opciones.find((o) => seleccionValida.includes(o.id)) ||
             paso.opciones.find((o) => o.porDefecto);
           if (opcionTamano && typeof opcionTamano.precioBase === "number") {
             precioBase = opcionTamano.precioBase;
-            baseSobrescrita = true;
           }
         }
 
@@ -244,6 +250,7 @@ export default async function handler(req, res) {
           }
         }
       }
+      precioBase += precioSiTodoQuitadoDelta;
 
       itemsResueltos.push({
         productId: producto.id,

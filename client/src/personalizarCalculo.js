@@ -65,7 +65,16 @@ export function toggleOpcionEnSeleccion(seleccion, paso, opcionId) {
 // listar cada "Sin X"), textoSiVacio (si no queda nada seleccionado), o
 // por defecto solo los CAMBIOS respecto a lo marcado por defecto.
 export function calcularPersonalizacion(producto, seleccion) {
+  // precioBase lo decide como mucho UN paso esSelectorTamano (ej. tamaño
+  // de pizza, o "menu" en Kebab/Dürüm/Lahmacum: Solo/En menú) — precio
+  // ABSOLUTO, sustituye el del producto. precioSiTodoQuitadoDelta es la
+  // diferencia (no un valor absoluto) que añade "quitar todo" (ej.
+  // "Kebab solo carne" sube +1€ al quitar pan y verduras) — se SUMA al
+  // precioBase que haya, en vez de competir con esSelectorTamano por
+  // ganar el precio: da igual si el cliente pidió "Solo" o "En menú",
+  // pedir "solo carne" añade su recargo igual en los dos casos.
   let precioBase = producto.precio;
+  let precioSiTodoQuitadoDelta = 0;
   for (const paso of producto.modificadores || []) {
     if (!pasoVisible(paso, seleccion)) continue;
     const elegidas = seleccion[paso.id] || [];
@@ -75,18 +84,17 @@ export function calcularPersonalizacion(producto, seleccion) {
         ? disparadores.some((id) => elegidas.includes(id))
         : paso.opciones.every((o) => elegidas.includes(o.id));
       if (activa) {
-        precioBase = paso.precioSiTodoQuitado;
-        break;
+        precioSiTodoQuitadoDelta = paso.precioSiTodoQuitado - producto.precio;
       }
     }
     if (paso.esSelectorTamano) {
       const opcionTamano = paso.opciones.find((o) => elegidas.includes(o.id)) || paso.opciones.find((o) => o.porDefecto);
       if (opcionTamano && typeof opcionTamano.precioBase === "number") {
         precioBase = opcionTamano.precioBase;
-        break;
       }
     }
   }
+  precioBase += precioSiTodoQuitadoDelta;
 
   const detallePasos = (producto.modificadores || []).map((paso) => {
     // Un paso oculto (ej. "Tus patatas" cuando se eligió "Solo" en vez de
