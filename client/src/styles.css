@@ -2343,6 +2343,53 @@ h4,
   opacity: 0.8;
 }
 
+/* Paso "Quitar ingredientes" al estilo del kiosco de KFC: icono
+   tachado en rojo cuando se marca ese ingrediente para quitar, gris y
+   apagado mientras el ingrediente sigue incluido. */
+.menu-wizard-opcion--quitar .menu-wizard-quitar-icono {
+  font-size: 2.2rem;
+  line-height: 1;
+  opacity: 0.25;
+  filter: grayscale(1);
+  transition: opacity 0.15s ease, filter 0.15s ease;
+}
+
+.menu-wizard-opcion--quitar:hover,
+.menu-wizard-opcion--quitar.elegida {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+.menu-wizard-opcion--quitar.elegida .menu-wizard-quitar-icono {
+  opacity: 1;
+  filter: none;
+}
+
+/* Paso "Extras" al estilo del kiosco de KFC: botón redondo "+" que
+   pasa a "✓" naranja al añadir el extra. */
+.menu-wizard-opcion--extra {
+  padding-bottom: 1rem;
+}
+
+.menu-wizard-extra-boton {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  background: #1f2933;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.menu-wizard-opcion--extra.elegida .menu-wizard-extra-boton {
+  background: #fff;
+  color: #d1622f;
+}
+
 .menu-wizard-resumen {
   align-items: stretch;
   max-width: 480px;

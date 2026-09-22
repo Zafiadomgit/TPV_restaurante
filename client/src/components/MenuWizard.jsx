@@ -76,6 +76,47 @@ export default function MenuWizard({ producto, idioma, onConfirmar, onCancelar }
               // absoluto de esa opción, no un recargo — los demás pasos
               // muestran el recargo de precioExtra, y nada si es gratis.
               const precioMostrado = pasoActual.esSelectorTamano ? opcion.precioBase : opcion.precioExtra || null;
+
+              // A petición del cliente: en "Quitar ingredientes" y
+              // "Extras" la ficha se ve como en el kiosco de KFC —
+              // icono tachado en rojo para quitar, botón "+" redondo
+              // para añadir — en vez de la ficha genérica que se usa en
+              // el resto de pasos (carne, patatas, salsas, bebida).
+              if (pasoActual.id === "quitar") {
+                return (
+                  <button
+                    key={opcion.id}
+                    type="button"
+                    className={`menu-wizard-opcion menu-wizard-opcion--quitar ${elegida ? "elegida" : ""}`}
+                    onClick={() => elegirOpcion(pasoActual, opcion.id)}
+                  >
+                    <span className="menu-wizard-quitar-icono" aria-hidden="true">
+                      🚫
+                    </span>
+                    <span className="menu-wizard-opcion-nombre">{opcion.nombre}</span>
+                  </button>
+                );
+              }
+
+              if (pasoActual.id === "extras") {
+                return (
+                  <button
+                    key={opcion.id}
+                    type="button"
+                    className={`menu-wizard-opcion menu-wizard-opcion--extra ${elegida ? "elegida" : ""}`}
+                    onClick={() => elegirOpcion(pasoActual, opcion.id)}
+                  >
+                    <span className="menu-wizard-opcion-nombre">{opcion.nombre}</span>
+                    {precioMostrado > 0 && (
+                      <span className="menu-wizard-opcion-precio">+{precioMostrado.toFixed(2)} €</span>
+                    )}
+                    <span className="menu-wizard-extra-boton" aria-hidden="true">
+                      {elegida ? "✓" : "+"}
+                    </span>
+                  </button>
+                );
+              }
+
               return (
                 <button
                   key={opcion.id}

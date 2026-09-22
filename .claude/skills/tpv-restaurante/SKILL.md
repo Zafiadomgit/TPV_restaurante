@@ -548,6 +548,28 @@ cambio 100% de presentación en el frontend.
   elegidas (clase `.elegida`). Si se toca el estilo de
   `.kiosk-categoria-tile` más adelante, revisar si `.menu-wizard-opcion`
   debe cambiar igual para seguir pareciendo lo mismo.
+- **Pasos "Quitar ingredientes" y "Extras" = estilo del kiosco de KFC**
+  (a petición del cliente, que mandó un vídeo del kiosco de KFC como
+  referencia): dentro de `MenuWizard.jsx`, el `.map()` de opciones
+  distingue por `pasoActual.id` y renderiza estos dos pasos distinto del
+  resto (carne/patatas/salsas/bebida, que siguen con la ficha genérica
+  de arriba):
+  - `"quitar"` → `.menu-wizard-opcion--quitar`: icono 🚫 gris y apagado
+    por defecto (el ingrediente sigue incluido); al marcarlo se pone
+    rojo y a color (`.elegida`), con la ficha en rojo claro — no
+    naranja, para no confundir "quitar" con "elegir".
+  - `"extras"` → `.menu-wizard-opcion--extra`: botón redondo negro con
+    "+"; al añadir el extra pasa a blanco con "✓" sobre la ficha
+    naranja (`.elegida`), igual que el resto de fichas seleccionadas.
+  - Ningún otro paso cambia — si se añade un producto nuevo con pasos
+    de id distinto (`"quitar"`/`"extras"`), automáticamente entra en
+    este estilo; cualquier otro id nuevo cae en la ficha genérica salvo
+    que se añada aquí un caso explícito.
+  - Solo toca `MenuWizard.jsx` — `Personalizar.jsx` (el resto de la
+    carta) no se tocó, sigue con su propio estilo de lista con ✓/+.
+  - El upsell "¿algo más?" de `UpsellComplementos.jsx` (a nivel de todo
+    el pedido) ya cubre lo que el cliente pedía como paso final del
+    vídeo de KFC — no se duplicó dentro del asistente.
 
 ### Reorganización de carta — orden de despliegue (dato vs. código)
 El incidente real que motiva esta nota: se ejecutó el SQL de consolidar
