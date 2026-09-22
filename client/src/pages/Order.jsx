@@ -15,12 +15,6 @@ import SelectorSede from "../components/SelectorSede.jsx";
 
 const CATEGORIA_UPSELL = "Complementos";
 
-// "Haz tu menú" no abre el modal normal de Personalizar — a petición del
-// cliente, se recorre a pantalla completa, un paso por pantalla (ver
-// MenuWizard.jsx), para que se sienta como navegar la carta (tu plato,
-// tus patatas, tu bebida) en vez de un formulario largo.
-const CATEGORIA_MENU_PASO_A_PASO = "Haz tu menú";
-
 // Collage de fotos para la pantalla de bienvenida — reutiliza las mismas
 // fotos ya subidas para las fichas de producto/categoría (ver
 // menu_imagenes.sql), no son fotos nuevas.
@@ -126,6 +120,17 @@ export default function Order() {
 
   const onAddProducto = (producto) => {
     if (producto.modificadores) {
+      // "¿En menú o no?" (Kebab, Dürüm, Lahmacum...): un producto con un
+      // paso "menu" en sus modificadores abre el asistente a pantalla
+      // completa (MenuWizard.jsx) en vez del modal normal — se detecta
+      // por el propio producto, no por la categoría que se esté
+      // mirando, para que funcione igual venga de donde venga (rejilla
+      // de categoría, upsell de Complementos...).
+      const tieneOpcionMenu = producto.modificadores.some((paso) => paso.id === "menu");
+      if (tieneOpcionMenu) {
+        setProductoEnWizard(producto);
+        return;
+      }
       setProductoPersonalizando(producto);
       return;
     }
@@ -171,11 +176,6 @@ export default function Order() {
     ]);
     setProductoPersonalizando(null);
   };
-
-  // "Haz tu menú" (ver CATEGORIA_MENU_PASO_A_PASO más arriba): mismo
-  // producto/precio/formato de línea que el modal normal, solo cambia
-  // qué componente lo recoge (MenuWizard en vez de Personalizar).
-  const onAddProductoMenu = (producto) => setProductoEnWizard(producto);
 
   const confirmarMenuWizard = ({ seleccion, cantidad, precioUnidad, modificadoresTexto }) => {
     const producto = productoEnWizard;
@@ -485,41 +485,13 @@ export default function Order() {
 
         {error && <p className="error">{error}</p>}
 
-        {categoriaActiva === CATEGORIA_MENU_PASO_A_PASO ? (
-          // A petición del cliente, se ve igual que la rejilla de
-          // categorías (paso "categorias" más arriba) — mismas clases
-          // .kiosk-categoria-*, no un tile nuevo — para que elegir tu
-          // menú se sienta como elegir una categoría más.
-          <div className="kiosk-categorias-grid">
-            {menu
-              .find((cat) => cat.categoria === categoriaActiva)
-              ?.productos.map((producto) => (
-                <button
-                  key={producto.id}
-                  className="kiosk-categoria-tile"
-                  onClick={() => onAddProductoMenu(producto)}
-                >
-                  {producto.imagen && (
-                    <div className="kiosk-categoria-imagen">
-                      <img src={producto.imagen} alt="" loading="lazy" />
-                    </div>
-                  )}
-                  <span className="kiosk-categoria-nombre">
-                    {conIdioma(producto.nombre, producto.nombreEn, idioma)}
-                  </span>
-                  <span className="kiosk-categoria-cantidad">{producto.precio.toFixed(2)} €</span>
-                </button>
-              ))}
-          </div>
-        ) : (
-          <div className="menu-grid">
-            {menu
-              .find((cat) => cat.categoria === categoriaActiva)
-              ?.productos.map((producto) => (
-                <MenuItemCard key={producto.id} producto={producto} idioma={idioma} onAdd={onAddProducto} />
-              ))}
-          </div>
-        )}
+        <div className="menu-grid">
+          {menu
+            .find((cat) => cat.categoria === categoriaActiva)
+            ?.productos.map((producto) => (
+              <MenuItemCard key={producto.id} producto={producto} idioma={idioma} onAdd={onAddProducto} />
+            ))}
+        </div>
       </div>
 
       <CartSidebar

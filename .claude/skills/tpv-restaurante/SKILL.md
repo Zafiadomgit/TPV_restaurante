@@ -500,73 +500,82 @@ patrón), `traducciones_menu_en.sql` no se vuelve a ejecutar solo.
     el SQL antes de que el código correspondiente esté desplegado deja el
     sitio cobrando mal hasta que se despliega — ver más abajo).
 
-### "Haz tu menú" a pantalla completa (`MenuWizard.jsx`)
-A petición del cliente: los 13 productos de "Haz tu menú" NO abren el
-modal `Personalizar.jsx` — abren `MenuWizard.jsx`, un flujo a pantalla
-completa que recorre cada paso de `modificadores` (carne, quitar
-ingredientes, patatas, salsas, extras, bebida) como su propia pantalla,
-para que se sienta como navegar la carta (tu plato → tus patatas → tu
-bebida) en vez de rellenar un formulario largo con todo apilado. El
-**precio y el texto de cocina son exactamente los mismos de siempre** —
-no se tocó ni `menu_reorg_11_haz_tu_menu.sql` ni el backend, es un
-cambio 100% de presentación en el frontend.
+### Asistente a pantalla completa (`MenuWizard.jsx`) y "¿En menú o no?"
+**"Haz tu menú" ya NO existe como categoría** — se eliminó (categoría +
+sus 13 productos, ver `supabase/eliminar_haz_tu_menu.sql`) a petición
+del cliente. En su lugar, cualquier producto normal de Kebab, Dürüm,
+Lahmacum, Platos combinados, Zona crujiente, Hamburguesas, Perrito
+caliente, Pollo asado o Ensaladas puede en su propio flujo de
+personalización preguntar "¿Cómo lo quieres?" — Solo (precio de
+siempre) o En menú (patatas + bebida, precio fijo más alto) — ver
+`supabase/menu_en_menu_o_no.sql`. Pizzas queda fuera por ahora (ya
+tiene su propio selector de tamaño, combinarlo con "en menú" necesita
+más diseño).
 
-- **`client/src/personalizarCalculo.js`** (nuevo): la lógica de
-  `seleccionInicial()`, `toggleOpcionEnSeleccion()` y
-  `calcularPersonalizacion()` (precio + texto de cocina por paso) se
-  extrajo de `Personalizar.jsx` a este módulo compartido, para que
-  `Personalizar.jsx` (el resto de la carta) y `MenuWizard.jsx` ("Haz tu
-  menú") calculen exactamente lo mismo sin duplicar la lógica dos veces
-  en el frontend — y sigan mirando al mismo sitio si hay que tocarla.
-  Sigue reflejando el mismo criterio que el backend
-  (`client/api/orders/index.js`) — un cambio aquí también va ahí.
-- Qué decide la categoría "Haz tu menú" en `Order.jsx`
-  (`CATEGORIA_MENU_PASO_A_PASO`): al pulsar "Personalizar" en esa
-  categoría, en vez de `setProductoPersonalizando` (abre el modal) se
-  llama `onAddProductoMenu` → `setProductoEnWizard` (abre
-  `MenuWizard.jsx` a pantalla completa, reemplazando toda la vista como
-  "bienvenida"/"inicio", no como un overlay apilado encima). El resto de
-  la carta sigue usando `Personalizar.jsx` sin cambios.
-- En pasos de "elige uno" (`maxSeleccion: 1` — carne, patatas, bebida,
-  tamaño...) tocar una opción avanza solo al siguiente paso, como si se
-  hubiera entrado a la sección siguiente de la carta; en pasos de varios
-  (quitar ingredientes, extras) hace falta tocar "Siguiente" abajo. Al
-  llegar al final se muestra un resumen (solo los pasos con texto, igual
-  criterio que `modificadoresTexto`) + selector de cantidad + el total,
-  antes de añadir al carrito.
-- Si se añade un paso nuevo de personalización a "Haz tu menú" en el
-  futuro, no hace falta tocar `MenuWizard.jsx` — recorre
-  `producto.modificadores` igual que `Personalizar.jsx`, cualquier paso
-  nuevo aparece automáticamente como una pantalla más.
-- **Estilo visual = igual que las categorías** (a petición del cliente,
-  después del primer despliegue): tanto la rejilla de productos de "Haz
-  tu menú" (`Order.jsx`) como las opciones de cada paso del asistente
-  (`.menu-wizard-opcion` en `styles.css`) usan las mismas clases visuales
-  que las fichas reales de categoría (`.kiosk-categoria-tile` y
-  derivadas) — ficha blanca, `min-height: 160px`, texto Barlow Condensed
-  en negrita, y se ponen naranjas con `:hover`/`:active` o al quedar
-  elegidas (clase `.elegida`). Si se toca el estilo de
-  `.kiosk-categoria-tile` más adelante, revisar si `.menu-wizard-opcion`
-  debe cambiar igual para seguir pareciendo lo mismo.
-- **Pasos "Quitar ingredientes" y "Extras" = estilo del kiosco de KFC**
-  (a petición del cliente, que mandó un vídeo del kiosco de KFC como
-  referencia): dentro de `MenuWizard.jsx`, el `.map()` de opciones
-  distingue por `pasoActual.id` y renderiza estos dos pasos distinto del
-  resto (carne/patatas/salsas/bebida, que siguen con la ficha genérica
-  de arriba):
+- **Qué decide si un producto abre el asistente en vez del modal**: en
+  `Order.jsx`, `onAddProducto()` mira si `producto.modificadores`
+  incluye un paso con `id: "menu"` — si lo tiene, abre `MenuWizard.jsx`
+  a pantalla completa (`setProductoEnWizard`); si no, el modal de
+  siempre (`Personalizar.jsx`, `setProductoPersonalizando`). Se decide
+  por el PRODUCTO, no por la categoría que se esté mirando — funciona
+  igual venga de la rejilla de categoría o del upsell de Complementos.
+- **`client/src/personalizarCalculo.js`**: `seleccionInicial()`,
+  `toggleOpcionEnSeleccion()`, `calcularPersonalizacion()` (precio +
+  texto de cocina) y `pasoVisible()`, compartidas por `Personalizar.jsx`
+  y `MenuWizard.jsx` para que calculen exactamente lo mismo. Mismo
+  criterio que el backend (`client/api/orders/index.js`, que nunca
+  confía en el precio que mande el cliente) — un cambio aquí también va
+  ahí.
+- **Pasos condicionales (`mostrarSi`)**: un paso puede depender de la
+  opción elegida en OTRO paso anterior — `{"mostrarSi":{"paso":"menu","opcion":"en-menu"}}`.
+  `pasoVisible(paso, seleccion)` decide si se muestra; un paso oculto no
+  cuenta ni para el precio ni para el ticket de cocina, aunque tenga una
+  opción marcada por defecto en la selección (`calcularPersonalizacion()`
+  lo salta explícitamente). El paso "menu" (`esSelectorTamano`, opciones
+  "solo"/"en-menu") va primero en el array; "Tus patatas"
+  (`tipo-patatas`) y "Elige tu bebida" (`bebida`) van al final con
+  `mostrarSi` apuntando a él — solo aparecen si se eligió "en-menu".
+  `MenuWizard.jsx` recalcula la lista de pasos a recorrer EN CADA RENDER
+  a partir de la selección actual (no una copia fija al montar), así el
+  recorrido crece o encoge según lo que se vaya eligiendo; el resumen
+  final se indexa contra la lista COMPLETA de `producto.modificadores`
+  (no la filtrada), para no desalinear textos.
+- **El recargo de "quitar todo" (`precioSiTodoQuitado`) se SUMA, no
+  compite con "menu"**: varios kebab/dürüm/lahmacum ya usaban
+  `precioSiTodoQuitado` (ej. "Kebab solo carne" sube +1€ al quitar pan y
+  verduras) antes de que existiera el paso "menu". El precio final es
+  `precioBase (decidido por el paso esSelectorTamano) + delta de
+  precioSiTodoQuitado (si se dispara)` — así el recargo de "solo carne"
+  se aplica igual en "Solo" y en "En menú", en vez de que el primero que
+  dispare gane y el otro quede ignorado (bug real encontrado y corregido
+  en este cambio — antes había un `break` que hacía mutuamente
+  excluyentes ambos mecanismos).
+- Precios de "en menú" (`supabase/menu_en_menu_o_no.sql`): Kebab 7,50€ /
+  Dürüm 8,50€ / Lahmacum 9,50€ / Zona crujiente 9,50€ / Ensaladas 9,50€
+  — fijo, cualquier sabor de esa categoría. Hamburguesa clásica/crispy
+  6,50€, XXL 8,50€. Perrito caliente 6€. Pollo asado 14,50€. Platos
+  combinados: ternera/pollo/mixto/falafel 9,50€, arroz-carne 10€,
+  carne-queso/solo-carne 10,50€, solo-carne-queso 11,50€, doble 13,50€
+  — varios precios agrupados, no uno solo (a petición del cliente,
+  mantiene la estructura que ya tenía "Haz tu menú" para estos platos).
+  Si se añade un producto nuevo a estas categorías, hay que decidirle un
+  precio de menú a mano (no hay fórmula automática) — mirar el patrón de
+  precios de sabores similares en la misma categoría.
+- **Estilo visual = igual que las categorías**, y **pasos "Quitar
+  ingredientes"/"Extras" = estilo del kiosco de KFC** (a petición del
+  cliente, que mandó primero fotos de las fichas de categoría y luego un
+  vídeo del kiosco de KFC como referencia): las opciones del asistente
+  (`.menu-wizard-opcion` en `styles.css`) usan las mismas clases
+  visuales que `.kiosk-categoria-tile` — ficha blanca, Barlow Condensed
+  bold, naranja al elegir — EXCEPTO estos dos pasos, que `MenuWizard.jsx`
+  distingue por `pasoActual.id`:
   - `"quitar"` → `.menu-wizard-opcion--quitar`: icono 🚫 gris y apagado
-    por defecto (el ingrediente sigue incluido); al marcarlo se pone
-    rojo y a color (`.elegida`), con la ficha en rojo claro — no
-    naranja, para no confundir "quitar" con "elegir".
+    por defecto; al marcarlo se pone rojo (`.elegida`), ficha en rojo
+    claro — no naranja, para no confundir "quitar" con "elegir".
   - `"extras"` → `.menu-wizard-opcion--extra`: botón redondo negro con
-    "+"; al añadir el extra pasa a blanco con "✓" sobre la ficha
-    naranja (`.elegida`), igual que el resto de fichas seleccionadas.
-  - Ningún otro paso cambia — si se añade un producto nuevo con pasos
-    de id distinto (`"quitar"`/`"extras"`), automáticamente entra en
-    este estilo; cualquier otro id nuevo cae en la ficha genérica salvo
-    que se añada aquí un caso explícito.
-  - Solo toca `MenuWizard.jsx` — `Personalizar.jsx` (el resto de la
-    carta) no se tocó, sigue con su propio estilo de lista con ✓/+.
+    "+"; al añadir pasa a blanco con "✓" sobre ficha naranja.
+  - Cualquier otro id de paso cae en la ficha genérica salvo que se
+    añada aquí un caso explícito.
   - El upsell "¿algo más?" de `UpsellComplementos.jsx` (a nivel de todo
     el pedido) ya cubre lo que el cliente pedía como paso final del
     vídeo de KFC — no se duplicó dentro del asistente.
