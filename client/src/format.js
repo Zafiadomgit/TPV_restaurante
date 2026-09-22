@@ -5,3 +5,9 @@
 export function formatTicket(ticketNumero) {
   return `#A-${ticketNumero}`;
 }
+
+// Importe con coma decimal, como se escribe en España ("24,20 €") — lo usa
+// la pantalla de cliente (kiosco); caja/cocina siguen con toFixed(2).
+export function formatEuros(importe) {
+  return `${importe.toFixed(2).replace(".", ",")} €`;
+}

@@ -53,31 +53,35 @@ export default function Recogida() {
   const listos = orders.filter((o) => o.estado === "listo");
 
   return (
-    <div className="recogida-page">
-      <div className="recogida-header">
-        <span>TU PEDIDO · YOUR ORDER</span>
-        <span className="recogida-reloj">
+    <div className="kiosco k-recogida">
+      <div className="k-recogida-cabecera">
+        <div className="k-recogida-marca">
+          <img src="/brand/svg/logo-monocromo-blanco.svg" alt="California" className="k-recogida-logo" />
+          <span className="k-recogida-titulo">TU PEDIDO · YOUR ORDER</span>
+        </div>
+        <span className="k-recogida-reloj">
           {hora.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
         </span>
       </div>
-      <div className="recogida-columnas">
-        <div className="recogida-columna">
-          <span className="recogida-titulo titulo-preparando">PREPARANDO · IN PROGRESS</span>
-          <div className="recogida-tickets">
+      <div className="k-recogida-columnas">
+        <div className="k-recogida-col k-recogida-col--preparando">
+          <span className="k-recogida-etiqueta k-recogida-etiqueta--preparando">PREPARANDO · IN PROGRESS</span>
+          <div className="k-recogida-lista">
             {preparando.map((o) => (
-              <span key={o.id} className="recogida-ticket ticket-preparando">
-                {formatTicket(o.ticketNumero)}
-              </span>
+              <div key={o.id} className="k-recogida-fila">
+                <span className="k-recogida-num">{formatTicket(o.ticketNumero)}</span>
+                <span className="k-recogida-estado">EN COCINA</span>
+              </div>
             ))}
           </div>
         </div>
-        <div className="recogida-columna">
-          <span className="recogida-titulo titulo-listo">LISTO · READY</span>
-          <div className="recogida-tickets">
+        <div className="k-recogida-col">
+          <span className="k-recogida-etiqueta k-recogida-etiqueta--listo">LISTO · READY</span>
+          <div className="k-recogida-listos">
             {listos.map((o) => (
-              <span key={o.id} className="recogida-ticket ticket-listo">
+              <div key={o.id} className="k-recogida-listo">
                 {formatTicket(o.ticketNumero)}
-              </span>
+              </div>
             ))}
           </div>
         </div>

@@ -8,28 +8,28 @@ import MenuItemCard from "./MenuItemCard.jsx";
 // cliente navegue hasta esa categoría por su cuenta.
 export default function UpsellComplementos({ productos, idioma, onAdd, onFinalizar }) {
   return (
-    <div className="personalizar-overlay" onClick={onFinalizar}>
-      <div className="personalizar-modal upsell-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="personalizar-header">
+    <div className="k-overlay" onClick={onFinalizar}>
+      <div className="k-modal k-upsell" onClick={(e) => e.stopPropagation()}>
+        <div className="k-modal-cabecera">
           <div>
-            <h3>{t(idioma, "upsellTitulo")}</h3>
-            <p>{t(idioma, "upsellSubtitulo")}</p>
+            <h3 className="k-modal-titulo">{t(idioma, "upsellTitulo")}</h3>
+            <p className="k-modal-sub">{t(idioma, "upsellSubtitulo")}</p>
           </div>
-          <button className="personalizar-cerrar" onClick={onFinalizar}>
+          <button type="button" className="k-cerrar" onClick={onFinalizar} aria-label="Cerrar">
             ✕
           </button>
         </div>
 
-        <div className="personalizar-body">
-          <div className="menu-grid">
+        <div className="k-upsell-cuerpo">
+          <div className="k-productos">
             {productos.map((producto) => (
               <MenuItemCard key={producto.id} producto={producto} idioma={idioma} onAdd={onAdd} />
             ))}
           </div>
         </div>
 
-        <div className="personalizar-footer">
-          <button className="personalizar-confirmar" onClick={onFinalizar}>
+        <div className="k-modal-pie">
+          <button type="button" className="k-boton-confirmar" onClick={onFinalizar}>
             {t(idioma, "upsellFinalizar")}
           </button>
         </div>

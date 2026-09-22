@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NavLink, Route, Routes, useNavigate } from "react-router-dom";
+import { NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import Order from "./pages/Order.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import Kitchen from "./pages/Kitchen.jsx";
@@ -16,6 +16,16 @@ import { getSede, SEDES } from "./sede.js";
 export default function App() {
   const [sesion, setSesion] = useState(getSesion());
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  // Kiosco y monitor de recogida: pantallas de cliente a pantalla
+  // completa (tema oscuro, ver "Kiosco" en styles.css). Sin sesión no se
+  // muestra la barra del personal — el cliente no debe ver "Acceso
+  // personal" ni la nav; el personal entra desde el enlace discreto de
+  // la bienvenida o directamente en /login. Con sesión (caja usando el
+  // kiosco) la barra se queda para poder navegar.
+  const pantallaCliente = pathname === "/" || pathname === "/recogida";
+  const mostrarTopbar = !pantallaCliente || !!sesion;
 
   useEffect(() => onSesionCambio(() => setSesion(getSesion())), []);
 
@@ -25,17 +35,18 @@ export default function App() {
   };
 
   return (
-    <div className="app">
-      <header className="topbar">
-        <div className="brand">
-          <img src="/brand/svg/logo-monocromo-blanco.svg" alt="California" className="brand-logo" />
-        </div>
-        <div className="topbar-derecha">
-        <nav>
-          {(!sesion || sesion.rol === "caja") && (
-            <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
-              Pedidos
-            </NavLink>
+    <div className={`app ${pantallaCliente ? "app-kiosco" : ""}`}>
+      {mostrarTopbar && (
+        <header className="topbar">
+          <div className="brand">
+            <img src="/brand/svg/logo-monocromo-blanco.svg" alt="California" className="brand-logo" />
+          </div>
+          <div className="topbar-derecha">
+          <nav>
+            {(!sesion || sesion.rol === "caja") && (
+              <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
+                Pedidos
+              </NavLink>
           )}
           {(sesion?.rol === "caja" || sesion?.rol === "cocina") && (
             <NavLink to="/cocina" className={({ isActive }) => (isActive ? "active" : "")}>
@@ -90,6 +101,7 @@ export default function App() {
         </div>
         </div>
       </header>
+      )}
       <main className="content">
         <Routes>
           <Route path="/" element={<Order />} />
