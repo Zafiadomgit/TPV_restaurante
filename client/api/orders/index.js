@@ -94,7 +94,28 @@ export default async function handler(req, res) {
       let precioBase = producto.precio;
       let baseSobrescrita = false;
       const nombresSeleccionados = [];
+
+      // "¿En menú o no?" (Kebab, Dürüm...): un paso puede depender de la
+      // opción elegida en OTRO paso (mostrarSi) — ej. "Tus patatas" y
+      // "Elige tu bebida" solo cuentan (precio y ticket) si en el paso
+      // "menu" se marcó "en-menu". Igual que en personalizarCalculo.js
+      // (frontend) — nunca se confía en que el cliente mande vacíos esos
+      // pasos por su cuenta, se ignoran aquí pase lo que pase si no
+      // corresponde mostrarlos.
+      const modificadoresPorId = new Map((producto.modificadores || []).map((p) => [p.id, p]));
+      const esPasoVisible = (paso) => {
+        if (!paso.mostrarSi) return true;
+        const pasoDelQueDepende = modificadoresPorId.get(paso.mostrarSi.paso);
+        if (!pasoDelQueDepende) return false;
+        if (!pasoDelQueDepende.opciones.some((o) => o.id === paso.mostrarSi.opcion)) return false;
+        const seleccionDelQueDepende = Array.isArray(item.modificadores?.[paso.mostrarSi.paso])
+          ? item.modificadores[paso.mostrarSi.paso]
+          : [];
+        return seleccionDelQueDepende.includes(paso.mostrarSi.opcion);
+      };
+
       for (const paso of producto.modificadores || []) {
+        if (!esPasoVisible(paso)) continue;
         const seleccionCliente = Array.isArray(item.modificadores?.[paso.id])
           ? item.modificadores[paso.id]
           : [];

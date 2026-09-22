@@ -15,6 +15,17 @@ export function seleccionInicial(producto) {
   return inicial;
 }
 
+// "¿En menú o no?" (Kebab, Dürüm, Lahmacum...): un paso puede depender
+// de la opción elegida en OTRO paso anterior — ej. "Tus patatas" y
+// "Elige tu bebida" solo existen si en el paso "menu" se eligió
+// "en-menu". Sin mostrarSi, el paso siempre está visible (compatible
+// con todos los productos que no usan esta opción).
+export function pasoVisible(paso, seleccion) {
+  if (!paso.mostrarSi) return true;
+  const elegidasDelPasoDelQueDepende = seleccion[paso.mostrarSi.paso] || [];
+  return elegidasDelPasoDelQueDepende.includes(paso.mostrarSi.opcion);
+}
+
 // Selección única tipo radio (ej. tamaño de pizza, carne de pedrata):
 // tocar otra opción sustituye la elegida en vez de rechazar el toque por
 // haber llegado al límite — un paso de "elige uno" no debe poder
@@ -56,6 +67,7 @@ export function toggleOpcionEnSeleccion(seleccion, paso, opcionId) {
 export function calcularPersonalizacion(producto, seleccion) {
   let precioBase = producto.precio;
   for (const paso of producto.modificadores || []) {
+    if (!pasoVisible(paso, seleccion)) continue;
     const elegidas = seleccion[paso.id] || [];
     if (typeof paso.precioSiTodoQuitado === "number" && paso.opciones.length > 0) {
       const disparadores = paso.disparadoresPrecioAlternativo;
@@ -77,6 +89,11 @@ export function calcularPersonalizacion(producto, seleccion) {
   }
 
   const detallePasos = (producto.modificadores || []).map((paso) => {
+    // Un paso oculto (ej. "Tus patatas" cuando se eligió "Solo" en vez de
+    // "En menú") no debe sumar precio ni aparecer en el ticket de cocina,
+    // aunque tenga una opción por defecto marcada en la selección.
+    if (!pasoVisible(paso, seleccion)) return { extra: 0, textos: [] };
+
     const elegidas = seleccion[paso.id] || [];
     const seleccionadas = elegidas.map((optId) => paso.opciones.find((o) => o.id === optId)).filter(Boolean);
 

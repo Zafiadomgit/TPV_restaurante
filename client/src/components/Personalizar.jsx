@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { t, conIdioma } from "../textos.js";
-import { seleccionInicial, toggleOpcionEnSeleccion, calcularPersonalizacion } from "../personalizarCalculo.js";
+import { seleccionInicial, toggleOpcionEnSeleccion, calcularPersonalizacion, pasoVisible } from "../personalizarCalculo.js";
 
 export default function Personalizar({ producto, idioma, onConfirmar, onCancelar }) {
   const [seleccion, setSeleccion] = useState(() => seleccionInicial(producto));
@@ -47,7 +47,9 @@ export default function Personalizar({ producto, idioma, onConfirmar, onCancelar
         </div>
 
         <div className="personalizar-body">
-          {(producto.modificadores || []).map((paso) => (
+          {(producto.modificadores || [])
+            .filter((paso) => pasoVisible(paso, seleccion))
+            .map((paso) => (
             <div key={paso.id} className="personalizar-paso">
               <div className="personalizar-paso-titulo">
                 <span>{paso.titulo}</span>

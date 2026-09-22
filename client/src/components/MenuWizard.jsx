@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { t } from "../textos.js";
-import { seleccionInicial, toggleOpcionEnSeleccion, calcularPersonalizacion } from "../personalizarCalculo.js";
+import { seleccionInicial, toggleOpcionEnSeleccion, calcularPersonalizacion, pasoVisible } from "../personalizarCalculo.js";
 
 // Flujo a pantalla completa para "Haz tu menú" — a petición del cliente,
 // en vez de un solo modal con todos los pasos apilados (Personalizar.jsx,
@@ -12,10 +12,16 @@ import { seleccionInicial, toggleOpcionEnSeleccion, calcularPersonalizacion } fr
 // compartida vía personalizarCalculo.js, así que un menú cuesta igual
 // elegido aquí que desde el modal antiguo.
 export default function MenuWizard({ producto, idioma, onConfirmar, onCancelar }) {
-  const pasos = producto.modificadores || [];
+  const todosLosPasos = producto.modificadores || [];
   const [pasoIndex, setPasoIndex] = useState(0);
   const [seleccion, setSeleccion] = useState(() => seleccionInicial(producto));
   const [cantidad, setCantidad] = useState(1);
+
+  // "¿En menú o no?" puede ocultar pasos enteros (Tus patatas, Elige tu
+  // bebida...) según lo elegido — pasos se recalcula en cada render a
+  // partir de la selección actual, así que al elegir "En menú" esos
+  // pasos aparecen en el recorrido, y al elegir "Solo" desaparecen.
+  const pasos = todosLosPasos.filter((paso) => pasoVisible(paso, seleccion));
 
   const enResumen = pasoIndex >= pasos.length;
   const pasoActual = pasos[pasoIndex];
@@ -141,9 +147,13 @@ export default function MenuWizard({ producto, idioma, onConfirmar, onCancelar }
           <h2 className="menu-wizard-titulo">Resumen de tu menú</h2>
           <ul className="menu-wizard-resumen-lista">
             {detallePasos.map((d, i) =>
+              // detallePasos viene de calcularPersonalizacion(), que recorre
+              // TODOS los pasos del producto (todosLosPasos) sin filtrar —
+              // hay que indexar contra esa misma lista, no contra "pasos"
+              // (que solo trae los visibles y desalinearía los índices).
               d.textos.length > 0 ? (
-                <li key={pasos[i].id}>
-                  <strong>{pasos[i].titulo}:</strong> {d.textos.join(", ")}
+                <li key={todosLosPasos[i].id}>
+                  <strong>{todosLosPasos[i].titulo}:</strong> {d.textos.join(", ")}
                 </li>
               ) : null
             )}
