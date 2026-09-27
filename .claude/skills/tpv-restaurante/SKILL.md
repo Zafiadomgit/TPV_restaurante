@@ -593,6 +593,56 @@ más diseño).
     el pedido) ya cubre lo que el cliente pedía como paso final del
     vídeo de KFC — no se duplicó dentro del asistente.
 
+### Aviso sonoro de pedido nuevo en cocina (`sonidoCocina.js`)
+A petición del cliente (sonido tipo "pip" o "tin tin" cuando llega un
+pedido nuevo a /cocina): `client/src/sonidoCocina.js` sintetiza el
+sonido con Web Audio API (dos tonos cortos, sin archivo de audio que
+alojar). `Kitchen.jsx` guarda en un ref el conjunto de ids de pedidos en
+estado "pendiente" que ya vio en el ciclo de sondeo anterior (cada 3s,
+`POLL_MS`); si en el ciclo siguiente aparece algún id de "pendiente" que
+no estaba antes, suena. El primer ciclo (`idsPendientesVistos.current`
+todavía `null`) nunca suena — si no, sonaría por los pedidos que ya
+estaban ahí al abrir la pantalla, no solo por los nuevos de verdad.
+Los navegadores bloquean el audio hasta la primera interacción real del
+usuario en la página — hay un listener de `pointerdown` (una sola vez)
+que llama a `desbloquearSonido()` para que el aviso pueda sonar solo
+desde ahí en adelante, sin que el cocinero tenga que hacer nada especial.
+
+### Apertura del cajón desde caja (`qzTray.js`, paquete npm `qz-tray`)
+A petición del cliente ("visual, sin tener que meter un importe"). El
+cajón está conectado por cable a la impresora de tickets (USB) — abrirlo
+es mandarle a la impresora un comando ESC/POS de "kick"
+(`\x1B\x70\x00\x19\xFA`, estándar, no depende del modelo de impresora).
+Un navegador no puede hablarle directo a una impresora USB (hoy la
+impresión de recibos va por `window.print()`, el diálogo nativo del
+sistema, que no sirve para esto), así que se usa **QZ Tray** — programa
+gratuito de código abierto que hay que instalar una vez en el PC/tablet
+de caja (https://qz.io/download/) y que se queda escuchando en segundo
+plano para recibir estas órdenes desde la web.
+
+- **Sin certificado/firma configurados** (modo simple, sin confianza
+  previa): la primera vez que la web intenta hablar con QZ Tray en cada
+  sesión, QZ Tray le muestra al usuario un aviso preguntando si permite
+  la conexión — hay que darle a "Allow"/"Permitir". Para que ese aviso
+  desaparezca (modo firmado) hace falta generar un certificado y
+  configurar `qz.security.setCertificatePromise`/`setSignaturePromise`
+  — no se hizo en esta primera versión, valorar si el cliente lo pide.
+- **Botón "Abrir cajón"** en `Caja.jsx` (arriba, junto a "Cambiar
+  sede") — llama a `abrirCajon(nombreImpresora)`. La primera vez en
+  cada dispositivo (no hay nombre de impresora guardado en
+  localStorage, clave `tpv_impresora_caja`), primero pide la lista de
+  impresoras que ve QZ Tray (`listarImpresoras()`) y muestra un
+  `<select>` para elegir cuál — las siguientes veces abre directo con
+  la guardada, no hay que volver a elegir.
+- Si QZ Tray no está instalado/abierto en ese dispositivo,
+  `abrirCajon()`/`listarImpresoras()` lanzan un error con un mensaje
+  claro (enlace de descarga incluido) en vez de un error técnico — se
+  muestra en pantalla, no rompe el resto de caja. Verificado con
+  Playwright que ese camino de error funciona bien sin QZ Tray real
+  instalado (no había forma de probar la apertura real del cajón sin
+  el hardware — pendiente de que el dueño confirme que funciona en el
+  dispositivo real una vez instale QZ Tray).
+
 ### Reorganización de carta — orden de despliegue (dato vs. código)
 El incidente real que motiva esta nota: se ejecutó el SQL de consolidar
 Pizzas en Supabase antes de hacer fast-forward del commit correspondiente

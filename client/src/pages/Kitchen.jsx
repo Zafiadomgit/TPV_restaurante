@@ -3,6 +3,7 @@ import { api } from "../api.js";
 import OrderTicket from "../components/OrderTicket.jsx";
 import { getSede, guardarSede, SEDES } from "../sede.js";
 import SelectorSede from "../components/SelectorSede.jsx";
+import { desbloquearSonido, reproducirSonidoNuevoPedido } from "../sonidoCocina.js";
 
 const POLL_MS = 3000;
 
@@ -16,6 +17,20 @@ export default function Kitchen() {
   const [orders, setOrders] = useState([]);
   const [sede, setSede] = useState(() => getSede());
   const enVuelo = useRef(false);
+  // Ids de pedidos "pendiente" ya vistos, para saber cuáles son NUEVOS
+  // de verdad y avisar solo de esos — no de todos los que ya estaban en
+  // la pantalla desde antes. null hasta la primera carga, para no sonar
+  // por los pedidos que ya estaban pendientes al abrir la pantalla.
+  const idsPendientesVistos = useRef(null);
+
+  // El navegador bloquea el audio hasta la primera interacción real del
+  // usuario en la página — con cualquier toque/clic en cocina, desde
+  // ahí el aviso sonoro ya puede sonar solo.
+  useEffect(() => {
+    const desbloquear = () => desbloquearSonido();
+    window.addEventListener("pointerdown", desbloquear, { once: true });
+    return () => window.removeEventListener("pointerdown", desbloquear);
+  }, []);
 
   useEffect(() => {
     if (!sede) return;
@@ -24,7 +39,15 @@ export default function Kitchen() {
       enVuelo.current = true;
       try {
         const data = await api.getOrders(undefined, sede);
-        setOrders(data.filter((o) => COLUMNAS.some((c) => c.estado === o.estado)));
+        const activos = data.filter((o) => COLUMNAS.some((c) => c.estado === o.estado));
+        setOrders(activos);
+
+        const idsPendientesAhora = new Set(activos.filter((o) => o.estado === "pendiente").map((o) => o.id));
+        if (idsPendientesVistos.current) {
+          const hayNuevo = [...idsPendientesAhora].some((id) => !idsPendientesVistos.current.has(id));
+          if (hayNuevo) reproducirSonidoNuevoPedido();
+        }
+        idsPendientesVistos.current = idsPendientesAhora;
       } catch {
         // se reintenta en el siguiente ciclo
       } finally {

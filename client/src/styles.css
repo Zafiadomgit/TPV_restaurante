@@ -3064,6 +3064,54 @@ h4,
   padding: 0;
 }
 
+.caja-titulo-acciones {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.caja-abrir-cajon {
+  border: 1px solid #d1622f;
+  background: #fff;
+  color: #d1622f;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.caja-abrir-cajon:hover {
+  background: #d1622f;
+  color: #fff;
+}
+
+.caja-abrir-cajon:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.caja-elegir-impresora {
+  background: #fff7ef;
+  border: 1px solid #f0d9c3;
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.caja-elegir-impresora label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.caja-elegir-impresora-row {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
 /* ---- Panel: filtro de sede ---- */
 .panel-titulo-row {
   display: flex;

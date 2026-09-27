@@ -6,6 +6,7 @@ import { getSede, guardarSede, borrarSede, SEDES } from "../sede.js";
 import ReciboImprimible from "../components/ReciboImprimible.jsx";
 import Personalizar from "../components/Personalizar.jsx";
 import SelectorSede from "../components/SelectorSede.jsx";
+import { abrirCajon, getImpresoraGuardada, guardarImpresora, listarImpresoras } from "../qzTray.js";
 
 const POLL_MS = 3000;
 
@@ -29,6 +30,15 @@ export default function Caja() {
   const [abriendo, setAbriendo] = useState(false);
   const [cerrando, setCerrando] = useState(false);
   const enVuelo = useRef(false);
+
+  // Apertura del cajón (ver client/src/qzTray.js) — la primera vez que
+  // se usa en cada dispositivo hace falta elegir a qué impresora
+  // mandarle el comando; luego queda guardada en este dispositivo
+  // (localStorage) y las siguientes veces se abre directo.
+  const [abriendoCajon, setAbriendoCajon] = useState(false);
+  const [errorCajon, setErrorCajon] = useState("");
+  const [impresorasParaElegir, setImpresorasParaElegir] = useState(null);
+  const [impresoraElegida, setImpresoraElegida] = useState("");
 
   const [categoriaActiva, setCategoriaActiva] = useState("");
   const [items, setItems] = useState([]);
@@ -75,6 +85,54 @@ export default function Caja() {
       setError(e.message);
     } finally {
       setGuardandoTiempoEspera(false);
+    }
+  };
+
+  const clicAbrirCajon = async () => {
+    setErrorCajon("");
+    const impresoraGuardada = getImpresoraGuardada();
+    if (impresoraGuardada) {
+      setAbriendoCajon(true);
+      try {
+        await abrirCajon(impresoraGuardada);
+      } catch (e) {
+        setErrorCajon(e.message);
+      } finally {
+        setAbriendoCajon(false);
+      }
+      return;
+    }
+
+    // Primera vez en este dispositivo: hay que elegir a qué impresora
+    // mandarle el comando antes de poder abrir el cajón.
+    setAbriendoCajon(true);
+    try {
+      const impresoras = await listarImpresoras();
+      if (!impresoras || impresoras.length === 0) {
+        setErrorCajon("QZ Tray no encontró ninguna impresora instalada en este dispositivo.");
+        return;
+      }
+      setImpresorasParaElegir(impresoras);
+      setImpresoraElegida(impresoras[0]);
+    } catch (e) {
+      setErrorCajon(e.message);
+    } finally {
+      setAbriendoCajon(false);
+    }
+  };
+
+  const confirmarImpresoraYAbrir = async () => {
+    if (!impresoraElegida) return;
+    guardarImpresora(impresoraElegida);
+    setImpresorasParaElegir(null);
+    setAbriendoCajon(true);
+    setErrorCajon("");
+    try {
+      await abrirCajon(impresoraElegida);
+    } catch (e) {
+      setErrorCajon(e.message);
+    } finally {
+      setAbriendoCajon(false);
     }
   };
 
@@ -305,17 +363,56 @@ export default function Caja() {
     <div className="caja-page">
       <div className="caja-titulo-row">
         <h2>Caja · {SEDES[sede].nombre}</h2>
-        <button
-          type="button"
-          className="caja-cambiar-sede"
-          onClick={() => {
-            borrarSede();
-            setSede(null);
-          }}
-        >
-          Cambiar sede
-        </button>
+        <div className="caja-titulo-acciones">
+          <button
+            type="button"
+            className="caja-abrir-cajon"
+            onClick={clicAbrirCajon}
+            disabled={abriendoCajon}
+          >
+            {abriendoCajon ? "Abriendo..." : "🗄️ Abrir cajón"}
+          </button>
+          <button
+            type="button"
+            className="caja-cambiar-sede"
+            onClick={() => {
+              borrarSede();
+              setSede(null);
+            }}
+          >
+            Cambiar sede
+          </button>
+        </div>
       </div>
+      {errorCajon && <p className="error">{errorCajon}</p>}
+
+      {impresorasParaElegir && (
+        <div className="caja-elegir-impresora">
+          <label htmlFor="impresora-cajon">
+            Primera vez: elige a qué impresora está conectado el cajón
+          </label>
+          <div className="caja-elegir-impresora-row">
+            <select
+              id="impresora-cajon"
+              value={impresoraElegida}
+              onChange={(e) => setImpresoraElegida(e.target.value)}
+            >
+              {impresorasParaElegir.map((nombre) => (
+                <option key={nombre} value={nombre}>
+                  {nombre}
+                </option>
+              ))}
+            </select>
+            <button type="button" onClick={confirmarImpresoraYAbrir} disabled={abriendoCajon}>
+              Guardar y abrir
+            </button>
+            <button type="button" onClick={() => setImpresorasParaElegir(null)}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
       {error && <p className="error">{error}</p>}
 
       <form className="tiempo-espera-form" onSubmit={guardarTiempoEspera}>
