@@ -796,8 +796,86 @@ h4,
   margin: 0 0 0.6rem 0;
 }
 
+.kds-header-acciones {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.kds-btn-impresora {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.kds-error-impresion {
+  color: #ff8f8f;
+  font-weight: 600;
+  margin: -0.4rem 0 1rem;
+}
+
+.kds-elegir-impresora {
+  background: #1b2329;
+  border-radius: 10px;
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1.2rem;
+}
+
+.kds-elegir-impresora label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.kds-elegir-impresora-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.kds-elegir-impresora-row select {
+  padding: 0.4rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.kds-elegir-impresora-row button {
+  padding: 0.4rem 0.9rem;
+  border: none;
+  border-radius: 6px;
+  background: #d1622f;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.kds-ticket-acciones {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.kds-btn-reimprimir {
+  flex: none;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.kds-btn-reimprimir:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .kds-btn-avanzar {
-  width: 100%;
+  flex: 1;
   padding: 0.7rem;
   border: none;
   border-radius: 8px;
@@ -1063,6 +1141,60 @@ h4,
 .tiempo-espera-ok {
   color: #1f9d55;
   font-weight: 600;
+}
+
+.recogida-personalizar-form {
+  background: white;
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.recogida-personalizar-titulo {
+  margin: 0 0 0.7rem;
+  font-weight: 600;
+  color: #1f2933;
+}
+
+.recogida-personalizar-campo {
+  margin-bottom: 0.7rem;
+}
+
+.recogida-personalizar-campo label {
+  display: block;
+  font-size: 0.85rem;
+  color: #52606d;
+  margin-bottom: 0.35rem;
+}
+
+.recogida-personalizar-campo input {
+  width: 100%;
+  max-width: 420px;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.recogida-personalizar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.recogida-personalizar-row button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: #1f2933;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.recogida-personalizar-row button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .pedidos-sin-cobrar {
@@ -2340,6 +2472,13 @@ h4,
   display: flex;
   flex-direction: column;
   position: relative;
+  /* z-index (con position:relative) crea aquí su propio stacking
+     context — lo necesita .k-recogida-overlay (z-index negativo, ver
+     más abajo) para quedar por detrás de la cabecera/columnas pero por
+     delante del fondo/imagen de este mismo elemento; sin esto, un hijo
+     con z-index negativo se escapa al stacking context del documento y
+     queda oculto detrás de todo el bloque .kiosco, imagen incluida. */
+  z-index: 0;
   overflow: hidden;
   background: var(--k-fondo);
   color: var(--k-tinta);
@@ -3699,6 +3838,18 @@ h4,
 }
 
 /* ---- 06 Recogida (monitor de cara al cliente) ---- */
+/* Capa oscura sobre el fondo personalizable (ver Recogida.jsx) para que
+   el texto siga siendo legible encima de cualquier foto que suba el
+   dueño — z-index negativo para quedar detrás de cabecera/columnas
+   (que son estáticas, no posicionadas) dentro del stacking context de
+   .kiosco. */
+.k-recogida-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(rgba(15, 17, 20, 0.6), rgba(15, 17, 20, 0.8));
+}
+
 .k-recogida-cabecera {
   flex: none;
   height: 92px;

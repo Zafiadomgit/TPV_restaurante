@@ -685,6 +685,92 @@ plano para recibir estas órdenes desde la web.
   el hardware — pendiente de que el dueño confirme que funciona en el
   dispositivo real una vez instale QZ Tray).
 
+### Tickets de cocina impresos, en impresora aparte de caja (`ticketCocinaTexto.js` + `qzTray.js`)
+A petición del cliente ("tickets de cocina claros y separados, necesidad
+de impresora aparte"): además del tablero KDS en pantalla (`Kitchen.jsx`),
+cada comanda nueva se imprime en papel en una impresora de cocina que
+puede ser un dispositivo físico distinto del de caja.
+
+- `client/src/ticketCocinaTexto.js` construye el texto ESC/POS del
+  ticket (`construirTicketCocina(order)`): número de ticket grande,
+  mesa/origen, hora, cada línea de item con su `modificadoresTexto`/
+  `notas`, y `notasGenerales` del pedido si las hay. Reutiliza los mismos
+  campos que ya pinta `OrderTicket.jsx` en pantalla — no hay una segunda
+  fuente de verdad del contenido del ticket.
+- **Sin tildes/ñ/€ en el texto impreso a propósito**: las impresoras
+  térmicas baratas arrancan en la página de códigos PC437/USA, que no
+  tiene esos caracteres — en vez de un comando de página de códigos que
+  dependa del modelo exacto de impresora, `paraImpresora()` los pasa a su
+  versión sin tilde ("café" → "cafe", "€" → "EUR") antes de imprimir. Un
+  ticket legible sin tilde es mejor que uno con símbolos rotos.
+- `qzTray.js` expone `imprimirTicketCocina(nombreImpresora, order)` (manda
+  el texto como `type: "raw"`, igual que `abrirCajon()`) y una impresora
+  guardada APARTE de la de caja: clave de localStorage
+  `tpv_impresora_cocina` (vs. `tpv_impresora_caja`) — son dos
+  dispositivos físicos distintos, cada uno con su propia impresora
+  configurada en su propio localStorage.
+- `Kitchen.jsx`: botón "🖨️ Configurar impresora" en la cabecera (mismo
+  flujo de primera-vez que "Abrir cajón" en Caja.jsx: pide
+  `listarImpresoras()` y un `<select>`). Con impresora ya configurada,
+  cada pedido "pendiente" NUEVO detectado en el ciclo de sondeo (mismo
+  mecanismo que el aviso sonoro, `idsPendientesVistos`) se imprime solo,
+  sin que nadie tenga que darle a un botón. Cada `OrderTicket.jsx`
+  también tiene un botón "Reimprimir" individual, por si se atasca el
+  papel o la impresora estaba apagada cuando llegó el pedido.
+- Mismo manejo de errores que el cajón: si QZ Tray no está instalado/
+  abierto, se muestra un mensaje claro en vez de romper la pantalla —
+  verificado con Playwright sin QZ Tray real instalado (pendiente que el
+  dueño confirme la impresión real en el dispositivo, con impresora de
+  cocina de verdad conectada).
+- **Ojo con el efecto de dependencias en `Kitchen.jsx`**: el `useEffect`
+  de sondeo de pedidos tiene `impresoraCocina` en su array de
+  dependencias (no solo `sede`) — si no estuviera, la función `cargar()`
+  quedaría "congelada" con el valor de impresora que hubiera al montar el
+  componente (normalmente `null`) y nunca empezaría a imprimir aunque el
+  cocinero configurara la impresora más tarde en la misma sesión.
+  `idsPendientesVistos.current` vive fuera del efecto (en un `ref`), así
+  que reiniciar el intervalo al cambiar de impresora no duplica avisos ni
+  impresiones de pedidos que ya se habían visto.
+
+### Pantalla de recogida personalizable: fondo y logo (`ajustes` por sede)
+A petición del cliente: `/recogida` (monitor de cara al cliente, ver
+sección "Pantalla de recogida") admite una imagen de fondo y un logo
+propios, en vez del tema oscuro/logo de California fijos de siempre.
+
+- Columnas nuevas en `ajustes` (mismo patrón que
+  `tiempo_espera_minutos`: por sede, columna `local`):
+  `fondo_recogida_url`, `logo_recogida_url` — ambas `text` nullable. Vacío
+  = se queda con el tema oscuro y el logo por defecto, no hay hueco roto
+  ni imagen caída. Migración en
+  `supabase/ajustes_recogida_personalizable.sql` (columnas nuevas → SQL
+  antes de desplegar el código que las usa, ver la nota de "orden de
+  despliegue" más abajo).
+- `client/api/ajustes.js`: el PATCH ahora es de campos parciales — solo
+  valida/actualiza lo que venga presente en el body
+  (`tiempoEsperaMinutos` y/o `fondoRecogidaUrl`/`logoRecogidaUrl`), para
+  que el formulario de fondo/logo en Caja pueda guardarse sin tener que
+  mandar también el tiempo de espera (y viceversa).
+- Se edita desde `Caja.jsx` (mismo sitio y mismo patrón que el tiempo de
+  espera — rol `caja`), con dos campos de texto plano para las URLs
+  (mismo patrón que "URL de imagen" en `EditarProducto.jsx`: no hay
+  selector de archivos, el cajero pega una URL ya subida a algún sitio).
+- `Recogida.jsx` pide `GET /api/ajustes?local=<sede>` al entrar y luego
+  cada 60s (mucho más espaciado que el sondeo de pedidos de 3s — el
+  fondo casi nunca cambia mientras el monitor está encendido, no hace
+  falta pedirlo tan seguido). Si hay `fondoRecogidaUrl`, se aplica como
+  `background-image` inline sobre `.kiosco.k-recogida` y se añade
+  `<div className="k-recogida-overlay">` (degradado oscuro semitransparente
+  por encima, para que el texto siga siendo legible encima de cualquier
+  foto). Si hay `logoRecogidaUrl`, sustituye al logo de California de la
+  cabecera.
+- **`.kiosco` necesitó `z-index: 0` explícito** (además de
+  `position: relative`, que ya tenía) para que `position:relative` +
+  `z-index` formen aquí su propio *stacking context* — si no, un hijo con
+  `z-index` negativo (el overlay) se escapa al stacking context del
+  documento entero y queda pintado por detrás de todo el bloque
+  `.kiosco`, imagen de fondo incluida (invisible). Si se añade otra capa
+  con z-index negativo dentro de `.kiosco` en el futuro, recordar esto.
+
 ### Reorganización de carta — orden de despliegue (dato vs. código)
 El incidente real que motiva esta nota: se ejecutó el SQL de consolidar
 Pizzas en Supabase antes de hacer fast-forward del commit correspondiente

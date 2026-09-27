@@ -25,7 +25,7 @@ function formatTranscurrido(iso) {
   return `${minutos}:${String(segundos).padStart(2, "0")}`;
 }
 
-export default function OrderTicket({ order, onAvanzar }) {
+export default function OrderTicket({ order, onAvanzar, onReimprimir, imprimiendo }) {
   const siguiente = SIGUIENTE_ESTADO[order.estado];
   const urgente = minutosDesde(order.creadoEn) >= MINUTOS_URGENTE;
   const paraLlevar = order.mesa === "Para llevar";
@@ -58,11 +58,23 @@ export default function OrderTicket({ order, onAvanzar }) {
       </ul>
       {order.notasGenerales && <p className="kds-nota-general">Nota: {order.notasGenerales}</p>}
 
-      {siguiente && (
-        <button className="kds-btn-avanzar" onClick={() => onAvanzar(order.id, siguiente)}>
-          {ACCION_LABEL[order.estado]}
-        </button>
-      )}
+      <div className="kds-ticket-acciones">
+        {onReimprimir && (
+          <button
+            type="button"
+            className="kds-btn-reimprimir"
+            onClick={() => onReimprimir(order)}
+            disabled={imprimiendo}
+          >
+            {imprimiendo ? "Imprimiendo..." : "🖨️ Reimprimir"}
+          </button>
+        )}
+        {siguiente && (
+          <button className="kds-btn-avanzar" onClick={() => onAvanzar(order.id, siguiente)}>
+            {ACCION_LABEL[order.estado]}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

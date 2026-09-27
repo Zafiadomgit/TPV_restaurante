@@ -3,7 +3,11 @@ import { exigirRol } from "./_lib/auth.js";
 import { LOCALES_VALIDOS } from "./_lib/orders.js";
 
 function mapRow(row) {
-  return { tiempoEsperaMinutos: row.tiempo_espera_minutos };
+  return {
+    tiempoEsperaMinutos: row.tiempo_espera_minutos,
+    fondoRecogidaUrl: row.fondo_recogida_url,
+    logoRecogidaUrl: row.logo_recogida_url,
+  };
 }
 
 // Ajustes del negocio (de momento, solo el tiempo de espera estimado que
@@ -32,18 +36,32 @@ export default async function handler(req, res) {
   if (req.method === "PATCH") {
     if (!exigirRol(req, res, ["caja"])) return;
 
-    const { tiempoEsperaMinutos, local } = req.body || {};
+    const { tiempoEsperaMinutos, fondoRecogidaUrl, logoRecogidaUrl, local } = req.body || {};
     if (!LOCALES_VALIDOS.includes(local)) {
       return res.status(400).json({ error: "Sede no válida" });
     }
-    const minutos = Number(tiempoEsperaMinutos);
-    if (!Number.isFinite(minutos) || minutos <= 0) {
-      return res.status(400).json({ error: "El tiempo de espera debe ser un número mayor que 0" });
+
+    // Cada bloque del formulario de Caja (tiempo de espera / fondo y logo
+    // de recogida) se guarda por separado, así que solo se valida y
+    // actualiza lo que venga presente en el body.
+    const cambios = {};
+    if (tiempoEsperaMinutos !== undefined) {
+      const minutos = Number(tiempoEsperaMinutos);
+      if (!Number.isFinite(minutos) || minutos <= 0) {
+        return res.status(400).json({ error: "El tiempo de espera debe ser un número mayor que 0" });
+      }
+      cambios.tiempo_espera_minutos = Math.round(minutos);
+    }
+    if (fondoRecogidaUrl !== undefined) cambios.fondo_recogida_url = fondoRecogidaUrl.trim() || null;
+    if (logoRecogidaUrl !== undefined) cambios.logo_recogida_url = logoRecogidaUrl.trim() || null;
+
+    if (Object.keys(cambios).length === 0) {
+      return res.status(400).json({ error: "No hay cambios que guardar" });
     }
 
     const { data, error } = await supabase
       .from("ajustes")
-      .update({ tiempo_espera_minutos: Math.round(minutos) })
+      .update(cambios)
       .eq("local", local)
       .select()
       .maybeSingle();
