@@ -6,7 +6,7 @@
 const TEXTOS = {
   es: {
     cargandoMenu: "Cargando menú...",
-    tocaParaEmpezar: "Toca para empezar tu pedido",
+    tocaParaEmpezar: "¿Dónde vas a comer hoy?",
     comerAqui: "COMER AQUÍ",
     enElLocal: "En el local",
     paraLlevar: "PARA LLEVAR",
@@ -58,7 +58,7 @@ const TEXTOS = {
   },
   en: {
     cargandoMenu: "Loading menu...",
-    tocaParaEmpezar: "Tap to start your order",
+    tocaParaEmpezar: "Where are you eating today?",
     comerAqui: "EAT HERE",
     enElLocal: "Dine in",
     paraLlevar: "TAKEAWAY",
