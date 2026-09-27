@@ -550,17 +550,30 @@ más diseño).
   dispare gane y el otro quede ignorado (bug real encontrado y corregido
   en este cambio — antes había un `break` que hacía mutuamente
   excluyentes ambos mecanismos).
-- Precios de "en menú" (`supabase/menu_en_menu_o_no.sql`): Kebab 7,50€ /
-  Dürüm 8,50€ / Lahmacum 9,50€ / Zona crujiente 9,50€ / Ensaladas 9,50€
-  — fijo, cualquier sabor de esa categoría. Hamburguesa clásica/crispy
-  6,50€, XXL 8,50€. Perrito caliente 6€. Pollo asado 14,50€. Platos
-  combinados: ternera/pollo/mixto/falafel 9,50€, arroz-carne 10€,
-  carne-queso/solo-carne 10,50€, solo-carne-queso 11,50€, doble 13,50€
-  — varios precios agrupados, no uno solo (a petición del cliente,
-  mantiene la estructura que ya tenía "Haz tu menú" para estos platos).
-  Si se añade un producto nuevo a estas categorías, hay que decidirle un
-  precio de menú a mano (no hay fórmula automática) — mirar el patrón de
-  precios de sabores similares en la misma categoría.
+- Precios de "en menú" (`supabase/menu_en_menu_o_no.sql`) — dos modelos
+  distintos según categoría, confirmados con el cliente:
+  - **Kebab, Dürüm y Lahmacum: recargo de +4€ sobre el precio de CADA
+    sabor** (no un precio fijo por categoría — primer intento de esto
+    fue fijo y hubo que corregirlo). Ej. kebab normal 4,50€ solo → 8,50€
+    en menú; kebab solo carne 5,50€ solo → 9,50€ en menú. El generador
+    (`preciosKebabDurumLahmacum` en el script que produjo el SQL) suma
+    la constante `RECARGO_KEBAB_DURUM_LAHMACUM = 4` al precio de cada
+    producto — si el cliente cambia este recargo, no hay que tocar cada
+    producto a mano, solo esa constante y regenerar.
+  - **El resto sí son precios agrupados/fijos**: Zona crujiente 9,50€ y
+    Ensaladas 9,50€ (fijo, cualquier sabor). Hamburguesa clásica/crispy
+    6,50€, XXL 8,50€. Perrito caliente 6€. Pollo asado 14,50€. Platos
+    combinados (recargo +1,50€ sobre cada plato, confirmado sin cambios
+    con el cliente): ternera/pollo/mixto/falafel 9,50€, arroz-carne 10€,
+    carne-queso/solo-carne 10,50€, solo-carne-queso 11,50€, doble
+    13,50€ — mantiene la estructura que ya tenía "Haz tu menú" para
+    estos platos.
+  - Si se añade un producto nuevo a Zona crujiente/Hamburguesas/Perrito
+    caliente/Pollo asado/Ensaladas/Platos combinados, hay que decidirle
+    un precio de menú a mano (no hay fórmula automática ahí) — mirar el
+    patrón de precios de sabores similares en la misma categoría. Un
+    producto nuevo de Kebab/Dürüm/Lahmacum, en cambio, ya cae solo en
+    el recargo de +4€ si se usa el mismo generador.
 - **Estilo visual = igual que las categorías**, y **pasos "Quitar
   ingredientes"/"Extras" = estilo del kiosco de KFC** (a petición del
   cliente, que mandó primero fotos de las fichas de categoría y luego un
