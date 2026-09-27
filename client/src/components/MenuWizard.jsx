@@ -58,7 +58,7 @@ export default function MenuWizard({ producto, idioma, onConfirmar, onCancelar }
   };
 
   return (
-    <div className="menu-wizard">
+    <div className="kiosco menu-wizard">
       <div className="menu-wizard-header">
         <button type="button" className="menu-wizard-atras" onClick={atras}>
           {pasoIndex === 0 ? "✕" : "◀"}

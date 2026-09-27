@@ -59,14 +59,14 @@ aparte:
   `.estado-en_preparacion`, `.estado-listo`, `.estado-abierto`, etc. en
   `styles.css`). Sigue este patrón para cualquier entidad nueva con
   estados sobre fondo claro.
-- **Excepción — pantallas de tema oscuro**: `/cocina` (`#12181d`) y
-  `/recogida` (`#12181d`) son las únicas pantallas oscuras, pensadas para
-  visibilidad en cocina y en un monitor de recogida para clientes. Usan sus
-  propias clases (`.kds-*`, `.recogida-*`) en vez de `.ticket-cocina`/
-  `.card-caja` — no mezcles ambos sistemas. La pantalla de inicio del
-  kiosco (`.kiosk-inicio`) también es oscura, pero es un caso aparte
-  (bienvenida a pantalla completa), no un tablero de datos.
-  Las tres (`.kds-page`, `.recogida-page`, `.kiosk-inicio`) se estiran
+- **Excepción — pantallas de tema oscuro**: `/cocina` (`#12181d`, clases
+  `.kds-*`) es un tablero de cocina oscuro por su cuenta, sin relación con
+  el kiosco — no mezcles sus clases con `.ticket-cocina`/`.card-caja`.
+  **Todo el kiosco de cliente es oscuro** desde "Kiosco: tema oscuro
+  'Contraste noche'" (ver más abajo) — ya no es una excepción de una sola
+  pantalla, es el kiosco entero. Las pantallas de personal (cocina aparte,
+  caja, historial, carta, panel) siguen en claro sin tocar.
+  `.kds-page`/`.recogida-page`/`.kiosco` se estiran
   hasta el borde con `margin: -1.5rem` (cancela el padding de
   `.content`) + `flex: 1` — `.content` es `display: flex;
   flex-direction: column` justo para esto. **No le pongas un
@@ -499,6 +499,48 @@ patrón), `traducciones_menu_en.sql` no se vuelve a ejecutar solo.
     en producción (aprendido del incidente de precio de Pizzas: ejecutar
     el SQL antes de que el código correspondiente esté desplegado deja el
     sitio cobrando mal hasta que se despliega — ver más abajo).
+
+### Kiosco: tema oscuro "Contraste noche"
+Todas las pantallas de cliente (bienvenida, inicio, categorías, menú +
+carrito, `Personalizar.jsx`, `MenuWizard.jsx`, `UpsellComplementos.jsx`,
+`Recogida.jsx`, confirmar cancelar) usan ahora un tema oscuro — se
+eliminó el CSS del kiosco claro. Las pantallas de personal (cocina, caja,
+historial, carta, panel) NO cambiaron, siguen en claro.
+
+- **Envoltorio**: toda pantalla del kiosco lleva la clase `kiosco` en su
+  contenedor raíz (`<div className="kiosco k-pantalla">`, etc.) — es lo
+  que activa los tokens de color de abajo. Si añades una pantalla de
+  cliente nueva, ponle esta clase o se quedará con el tema claro
+  equivocado.
+- **Tokens** (`:root` en `styles.css`, prefijo `--k-`): `--k-fondo`
+  (`#0f1114`), `--k-superficie` (`#191c22`), `--k-hundido` (`#14171c`),
+  `--k-tinta` (texto, `#f5f3f0` y variantes `-70/-60/-50/-45` de
+  opacidad), `--k-linea`/`--k-linea-media`/`--k-linea-fuerte` (bordes),
+  `--k-naranja` (`#e9702f`, el naranja de marca) y `--k-naranja-suave`,
+  `--k-ambar`, `--k-verde`, `--k-rojo` (`#ff8f8f`, para "quitar"/errores
+  sobre fondo oscuro — NUNCA un rojo saturado tipo `#c0392b`, se ve mal
+  sobre `--k-fondo`). Tipografías: `--k-condensada` (Barlow Condensed,
+  títulos) y `--k-mono` (IBM Plex Mono, precios/números). Cualquier CSS
+  nuevo para una pantalla `.kiosco` debe usar estos tokens, nunca un
+  color plano — así cambia todo junto si se ajusta la paleta.
+- **`KioskCabecera.jsx`** (nuevo): la barra superior común a categorías y
+  menú (logo + tipo de servicio + tiempo de espera a la izquierda,
+  acciones de cada pantalla como children a la derecha) — antes cada
+  pantalla repetía su propia cabecera.
+- Sin sesión, `/` y `/recogida` ocupan toda la ventana y ocultan la barra
+  de navegación del personal — solo queda un enlace discreto "Acceso
+  personal" en la bienvenida.
+- `formatEuros()` (`format.js`, nuevo) — importes con coma en vez de
+  punto (`4,50 €`), usado en el kiosco oscuro; el resto de pantallas
+  sigue con `.toFixed(2)` + `€` como antes.
+- Este cambio lo hizo una sesión de Claude distinta en paralelo,
+  directamente sobre la rama de producción — se descubrió y se
+  fusionó (`git merge`) con el trabajo de "¿En menú o no?" de esta
+  skill; los dos conviven sin problema porque tocan capas distintas
+  (uno es visual/CSS, el otro es de datos/lógica de precio). Si aparece
+  un tercer cambio divergente en producción, revisar con
+  `git merge-base --is-ancestor` antes de hacer push — no asumir que la
+  rama de desarrollo sigue estando delante.
 
 ### Asistente a pantalla completa (`MenuWizard.jsx`) y "¿En menú o no?"
 **"Haz tu menú" ya NO existe como categoría** — se eliminó (categoría +

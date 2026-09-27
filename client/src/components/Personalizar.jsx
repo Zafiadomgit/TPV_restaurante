@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { t, conIdioma } from "../textos.js";
+import { formatEuros } from "../format.js";
 import { seleccionInicial, toggleOpcionEnSeleccion, calcularPersonalizacion, pasoVisible } from "../personalizarCalculo.js";
 
 export default function Personalizar({ producto, idioma, onConfirmar, onCancelar }) {
@@ -29,73 +30,81 @@ export default function Personalizar({ producto, idioma, onConfirmar, onCancelar
   };
 
   return (
-    <div className="personalizar-overlay" onClick={onCancelar}>
-      <div className="personalizar-modal" onClick={(e) => e.stopPropagation()}>
-        {producto.imagen && (
-          <div className="personalizar-imagen">
-            <img src={producto.imagen} alt="" />
-          </div>
-        )}
-        <div className="personalizar-header">
-          <div>
-            <h3>{conIdioma(producto.nombre, producto.nombreEn, idioma).toUpperCase()}</h3>
-            <p>{conIdioma(producto.descripcion, producto.descripcionEn, idioma)}</p>
-          </div>
-          <button className="personalizar-cerrar" onClick={onCancelar}>
+    <div className="k-overlay" onClick={onCancelar}>
+      <div className="k-modal k-personalizar" onClick={(e) => e.stopPropagation()}>
+        <div className="k-personalizar-hero">
+          {producto.imagen && <img src={producto.imagen} alt="" />}
+          <div className="k-personalizar-velo" />
+          <button type="button" className="k-cerrar" onClick={onCancelar} aria-label="Cerrar">
             ✕
           </button>
+          <div className="k-personalizar-hero-texto">
+            <div>
+              <div className="k-personalizar-nombre">
+                {conIdioma(producto.nombre, producto.nombreEn, idioma).toUpperCase()}
+              </div>
+              {producto.descripcion && (
+                <div className="k-personalizar-desc">
+                  {conIdioma(producto.descripcion, producto.descripcionEn, idioma)}
+                </div>
+              )}
+            </div>
+            <span className="k-personalizar-precio">{formatEuros(precioUnidad)}</span>
+          </div>
         </div>
 
-        <div className="personalizar-body">
+        <div className="k-personalizar-pasos">
           {(producto.modificadores || [])
             .filter((paso) => pasoVisible(paso, seleccion))
             .map((paso) => (
-            <div key={paso.id} className="personalizar-paso">
-              <div className="personalizar-paso-titulo">
-                <span>{paso.titulo}</span>
-                {paso.nota && <span className="personalizar-paso-nota">{paso.nota}</span>}
+              <div key={paso.id} className="k-paso">
+                <div className="k-paso-titulo">
+                  <span className="k-paso-nombre">{paso.titulo}</span>
+                  {paso.nota && <span className="k-paso-nota">{paso.nota}</span>}
+                </div>
+                <div className="k-opciones">
+                  {paso.opciones.map((opcion) => {
+                    const elegida = (seleccion[paso.id] || []).includes(opcion.id);
+                    // El paso de tamaño muestra el precio absoluto de esa
+                    // opción (ej. "10,00 €"), no un recargo — los demás
+                    // pasos muestran el recargo de precioExtra como hasta
+                    // ahora ("+1,00 €"), y nada si es gratis.
+                    const precioMostrado = paso.esSelectorTamano ? opcion.precioBase : opcion.precioExtra || null;
+                    return (
+                      <button
+                        key={opcion.id}
+                        type="button"
+                        aria-pressed={elegida}
+                        className={`k-opcion ${elegida ? "elegida" : ""}`}
+                        onClick={() => toggleOpcion(paso, opcion.id)}
+                      >
+                        <span className="k-opcion-nombre">{opcion.nombre}</span>
+                        {precioMostrado > 0 && (
+                          <span className="k-opcion-extra">
+                            {paso.esSelectorTamano ? "" : "+"}
+                            {formatEuros(precioMostrado)}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="personalizar-opciones">
-                {paso.opciones.map((opcion) => {
-                  const elegida = (seleccion[paso.id] || []).includes(opcion.id);
-                  // El paso de tamaño muestra el precio absoluto de esa
-                  // opción (ej. "10,00 €"), no un recargo — los demás
-                  // pasos muestran el recargo de precioExtra como hasta
-                  // ahora ("+1,00 €"), y nada si es gratis.
-                  const precioMostrado = paso.esSelectorTamano ? opcion.precioBase : opcion.precioExtra || null;
-                  return (
-                    <button
-                      key={opcion.id}
-                      type="button"
-                      className={`personalizar-opcion ${elegida ? "elegida" : ""}`}
-                      onClick={() => toggleOpcion(paso, opcion.id)}
-                    >
-                      <span>{opcion.nombre}</span>
-                      {precioMostrado > 0 && (
-                        <span className="personalizar-opcion-nota">
-                          {paso.esSelectorTamano ? "" : "+"}
-                          {precioMostrado.toFixed(2)} €
-                        </span>
-                      )}
-                      <span className={`personalizar-marca ${elegida ? "elegida" : ""}`}>
-                        {elegida ? "✓" : "+"}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+            ))}
         </div>
 
-        <div className="personalizar-footer">
-          <div className="qty-controls">
-            <button onClick={() => setCantidad((c) => Math.max(1, c - 1))}>-</button>
+        <div className="k-modal-pie">
+          <div className="k-cantidad k-cantidad--grande">
+            <button type="button" onClick={() => setCantidad((c) => Math.max(1, c - 1))} aria-label="-1">
+              −
+            </button>
             <span>{cantidad}</span>
-            <button onClick={() => setCantidad((c) => c + 1)}>+</button>
+            <button type="button" onClick={() => setCantidad((c) => c + 1)} aria-label="+1">
+              +
+            </button>
           </div>
-          <button className="personalizar-confirmar" onClick={confirmar}>
-            {t(idioma, "anadir")} · {precioTotal.toFixed(2)} €
+          <button type="button" className="k-boton-confirmar" onClick={confirmar}>
+            {t(idioma, "anadirAlPedido")} <span className="k-separador">·</span> {formatEuros(precioTotal)}
           </button>
         </div>
       </div>
