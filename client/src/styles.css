@@ -2645,10 +2645,16 @@ h4,
 
 .k-bienvenida-foto {
   position: absolute;
-  inset: 0;
-  width: 100%;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  /* Solo la parte derecha: a la izquierda va el panel de idioma y la foto
+     (producto recortado sobre fondo transparente) no debe quedar debajo
+     del texto. */
+  width: 62%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   display: block;
 }
 

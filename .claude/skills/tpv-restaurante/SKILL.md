@@ -693,9 +693,11 @@ hamburguesas con margen para que la tarjeta 16:10 no corte el pan).
 Siguen sin foto: Ensalada California y Bebidas (no hay material del que
 sacarlas sin inventar un envase de marca) — piden foto real al cliente.
 
-**Kiosco**: la bienvenida tiene un vídeo de fondo (`client/public/video/
-bienvenida-kebab.webm` + `.mp4` de respaldo, póster `.webp`) generado con
-las mismas fotos; "¿Dónde vas a comer hoy?" tiene fondo
+**Kiosco**: la bienvenida tuvo un vídeo generado con recortes de las
+fotos, pero **no gustó y se retiró** (vuelve la foto de hamburguesa XXL, a
+la derecha del panel de idioma); se está encargando un vídeo de verdad. Si
+se añade uno, usa `<video autoPlay muted loop playsInline>` con WebM + MP4
+(el Chromium de Playwright no decodifica H.264). "¿Dónde vas a comer hoy?" tiene fondo
 (`menu/fondo-inicio.webp`) y ya no lleva el badge "Más pedido". Pizzas
 enseñan los 3 tamaños con precio en la tarjeta (`MenuItemCard.jsx`, paso
 `tamano`). Efecto al añadir (reforzado tras "no se aprecian bien"): la
