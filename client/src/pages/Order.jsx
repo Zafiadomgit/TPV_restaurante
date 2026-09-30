@@ -18,10 +18,15 @@ import { rectDeFoto, volarAlPedido } from "../efectosAnadir.js";
 
 const CATEGORIA_UPSELL = "Complementos";
 
-// Fondo de la bienvenida: foto fija de producto. (El vídeo generado con
-// recortes de las fotos se retiró porque no gustó; se sustituirá por un
-// vídeo de verdad cuando esté listo.)
-const FOTO_BIENVENIDA = "/menu/hamburguesa-xxl.webp";
+// Fondo de la bienvenida: vídeo real del asador de kebab (lo aportó el
+// dueño). Volteado en espejo para que el asador quede a la derecha y no
+// debajo del panel de idioma, con el color corregido y un fundido al final
+// para que el bucle no dé salto. WebM (VP9) primero y MP4 (H.264) de
+// respaldo; el póster es un fotograma, para que no haya hueco negro
+// mientras carga.
+const VIDEO_BIENVENIDA_WEBM = "/video/kebab-asador.webm";
+const VIDEO_BIENVENIDA_MP4 = "/video/kebab-asador.mp4";
+const POSTER_BIENVENIDA = "/video/kebab-asador-poster.webp";
 // Fondo de la pantalla "¿Dónde vas a comer hoy?".
 const FONDO_INICIO = "/menu/fondo-inicio.webp";
 // Fotos de las dos tarjetas de "¿Dónde vas a comer hoy?" — reutilizan las
@@ -334,7 +339,18 @@ export default function Order() {
   if (paso === "bienvenida") {
     return (
       <div className="kiosco k-bienvenida">
-        <img src={FOTO_BIENVENIDA} alt="" className="k-bienvenida-foto" />
+        <video
+          className="k-bienvenida-video"
+          poster={POSTER_BIENVENIDA}
+          autoPlay
+          muted
+          loop
+          playsInline
+          aria-hidden="true"
+        >
+          <source src={VIDEO_BIENVENIDA_WEBM} type="video/webm" />
+          <source src={VIDEO_BIENVENIDA_MP4} type="video/mp4" />
+        </video>
         <div className="k-bienvenida-velo" />
         <div className="k-bienvenida-panel">
           <img

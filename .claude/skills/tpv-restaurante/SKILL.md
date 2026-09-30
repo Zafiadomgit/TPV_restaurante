@@ -694,9 +694,11 @@ Siguen sin foto: Ensalada California y Bebidas (no hay material del que
 sacarlas sin inventar un envase de marca) — piden foto real al cliente.
 
 **Kiosco**: la bienvenida tuvo un vídeo generado con recortes de las
-fotos, pero **no gustó y se retiró** (vuelve la foto de hamburguesa XXL, a
-la derecha del panel de idioma); se está encargando un vídeo de verdad. Si
-se añade uno, usa `<video autoPlay muted loop playsInline>` con WebM + MP4
+fotos, pero **no gustó y se retiró**. Ahora usa un vídeo real del asador
+que aportó el dueño (`client/public/video/kebab-asador.{webm,mp4}` +
+póster): volteado en espejo para que el asador quede a la derecha del
+panel de idioma, color corregido (quitaba un tono rosado) y con fundido
+final para que el bucle no salte. Si se cambia el vídeo, usa `<video autoPlay muted loop playsInline>` con WebM + MP4
 (el Chromium de Playwright no decodifica H.264). "¿Dónde vas a comer hoy?" tiene fondo
 (`menu/fondo-inicio.webp`) y ya no lleva el badge "Más pedido". Pizzas
 enseñan los 3 tamaños con precio en la tarjeta (`MenuItemCard.jsx`, paso

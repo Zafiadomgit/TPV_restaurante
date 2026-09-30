@@ -2643,18 +2643,13 @@ h4,
   flex-direction: row;
 }
 
-.k-bienvenida-foto {
+/* Vídeo a pantalla completa (el asador ya viene colocado a la derecha). */
+.k-bienvenida-video {
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  /* Solo la parte derecha: a la izquierda va el panel de idioma y la foto
-     (producto recortado sobre fondo transparente) no debe quedar debajo
-     del texto. */
-  width: 62%;
+  inset: 0;
+  width: 100%;
   height: 100%;
-  object-fit: contain;
-  object-position: center;
+  object-fit: cover;
   display: block;
 }
 
