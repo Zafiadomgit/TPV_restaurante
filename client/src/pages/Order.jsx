@@ -17,10 +17,19 @@ import KioskCabecera from "../components/KioskCabecera.jsx";
 
 const CATEGORIA_UPSELL = "Complementos";
 
-// Fotos de la pantalla de bienvenida y de las dos tarjetas de "¿Dónde te
-// lo comes?" — reutilizan las fotos de producto ya subidas (ver
-// menu_imagenes.sql), no son fotos nuevas.
-const FOTO_BIENVENIDA = "/menu/hamburguesa-xxl.webp";
+// Fondo de la bienvenida: vídeo animado con los productos del kebab (a
+// petición del cliente, en vez de una foto fija). Generado a partir de las
+// mismas fotos de producto de client/public/menu/ — el póster es su primer
+// fotograma, para que no haya un hueco negro mientras carga el vídeo.
+// WebM (VP9) primero y MP4 (H.264) de respaldo: así se reproduce en
+// cualquier navegador del kiosco, tenga o no los códecs propietarios.
+const VIDEO_BIENVENIDA_WEBM = "/video/bienvenida-kebab.webm";
+const VIDEO_BIENVENIDA_MP4 = "/video/bienvenida-kebab.mp4";
+const POSTER_BIENVENIDA = "/video/bienvenida-kebab-poster.webp";
+// Fondo de la pantalla "¿Dónde vas a comer hoy?".
+const FONDO_INICIO = "/menu/fondo-inicio.webp";
+// Fotos de las dos tarjetas de "¿Dónde vas a comer hoy?" — reutilizan las
+// fotos de producto ya subidas (ver menu_imagenes.sql), no son fotos nuevas.
 const FOTO_COMER_AQUI = "/menu/ensalada-cocktail.webp";
 const FOTO_PARA_LLEVAR = "/menu/patatas-deluxe.webp";
 
@@ -59,6 +68,18 @@ export default function Order() {
   const [upsellVisto, setUpsellVisto] = useState(false);
   const [confirmandoCancelar, setConfirmandoCancelar] = useState(false);
   const [sede, setSede] = useState(() => getSede());
+  // Aviso "✓ X añadido a tu pedido" que salta cada vez que algo entra en
+  // el carrito (a petición del cliente, efecto al añadir producto).
+  const [avisoAnadido, setAvisoAnadido] = useState(null);
+
+  useEffect(() => {
+    if (!avisoAnadido) return undefined;
+    const id = setTimeout(() => setAvisoAnadido(null), 1800);
+    return () => clearTimeout(id);
+  }, [avisoAnadido]);
+
+  const avisarAnadido = (producto, cantidad = 1) =>
+    setAvisoAnadido({ producto, cantidad, clave: Date.now() });
 
   const cambiarIdioma = (nuevo) => {
     setIdioma(nuevo);
@@ -129,6 +150,7 @@ export default function Order() {
       setProductoPersonalizando(producto);
       return;
     }
+    avisarAnadido(producto);
     setItems((prev) => {
       const existente = prev.find((i) => i.productId === producto.id && !i.modificadoresTexto);
       if (existente) {
@@ -170,6 +192,7 @@ export default function Order() {
       },
     ]);
     setProductoPersonalizando(null);
+    avisarAnadido(producto, cantidad);
   };
 
   const confirmarMenuWizard = ({ seleccion, cantidad, precioUnidad, modificadoresTexto }) => {
@@ -189,6 +212,7 @@ export default function Order() {
       },
     ]);
     setProductoEnWizard(null);
+    avisarAnadido(producto, cantidad);
   };
 
   const increase = (lineId) =>
@@ -205,6 +229,25 @@ export default function Order() {
     setItems((prev) => prev.map((i) => (i.lineId === lineId ? { ...i, notas } : i)));
 
   const { subtotal, iva, total } = useMemo(() => calcularTotales(items), [items]);
+
+  // Unidades de cada producto ya en el pedido (sumando todas sus líneas) —
+  // la tarjeta lo enseña como "✓ 2" y lanza su efecto cuando sube.
+  const cantidadPorProducto = useMemo(() => {
+    const mapa = {};
+    for (const i of items) mapa[i.productId] = (mapa[i.productId] || 0) + i.cantidad;
+    return mapa;
+  }, [items]);
+
+  const toastAnadido = avisoAnadido && (
+    <div className="k-toast-anadido" key={avisoAnadido.clave} role="status">
+      <span className="k-toast-anadido-check">✓</span>
+      <span>
+        {avisoAnadido.cantidad > 1 ? `${avisoAnadido.cantidad} × ` : ""}
+        <strong>{conIdioma(avisoAnadido.producto.nombre, avisoAnadido.producto.nombreEn, idioma)}</strong>{" "}
+        {t(idioma, "anadidoAlPedido")}
+      </span>
+    </div>
+  );
 
   // La categoría "Complementos" se ofrece una vez, justo al pulsar
   // "Enviar comanda" (a petición del cliente) — no se vuelve a mostrar en
@@ -275,7 +318,18 @@ export default function Order() {
   if (paso === "bienvenida") {
     return (
       <div className="kiosco k-bienvenida">
-        <img src={FOTO_BIENVENIDA} alt="" className="k-bienvenida-foto" />
+        <video
+          className="k-bienvenida-foto"
+          poster={POSTER_BIENVENIDA}
+          autoPlay
+          muted
+          loop
+          playsInline
+          aria-hidden="true"
+        >
+          <source src={VIDEO_BIENVENIDA_WEBM} type="video/webm" />
+          <source src={VIDEO_BIENVENIDA_MP4} type="video/mp4" />
+        </video>
         <div className="k-bienvenida-velo" />
         <div className="k-bienvenida-panel">
           <img
@@ -318,6 +372,8 @@ export default function Order() {
   if (paso === "inicio") {
     return (
       <div className="kiosco k-inicio">
+        <img src={FONDO_INICIO} alt="" className="k-inicio-fondo" aria-hidden="true" />
+        <div className="k-inicio-velo" />
         <div className="k-inicio-top">
           <img src="/brand/svg/logo-monocromo-blanco.svg" alt="California" className="k-inicio-logo" />
           <SelectorIdioma idioma={idioma} onCambiar={cambiarIdioma} className="k-idiomas k-idiomas--grande" />
@@ -333,11 +389,10 @@ export default function Order() {
                 <span className="k-servicio-sub">{t(idioma, "enElLocal")}</span>
               </div>
             </button>
-            <button type="button" className="k-servicio k-servicio--destacado" onClick={() => elegirTipoServicio("llevar")}>
+            <button type="button" className="k-servicio" onClick={() => elegirTipoServicio("llevar")}>
               <img src={FOTO_PARA_LLEVAR} alt="" className="k-servicio-foto" />
               <div className="k-servicio-velo" />
               <div className="k-servicio-texto">
-                <span className="k-badge k-badge--estatico">{t(idioma, "masPedido")}</span>
                 <span className="k-servicio-titulo">{t(idioma, "paraLlevar")}</span>
                 <span className="k-servicio-sub">{t(idioma, "paraLlevarSub")}</span>
               </div>
@@ -390,6 +445,7 @@ export default function Order() {
     return (
       <div className="kiosco k-pantalla">
         {confirmarCancelarModal}
+        {toastAnadido}
         <KioskCabecera {...cabeceraProps}>
           <SelectorIdioma idioma={idioma} onCambiar={cambiarIdioma} className="k-idiomas" />
           {botonCancelar}
@@ -425,7 +481,9 @@ export default function Order() {
               <span className="k-mono-etiqueta">
                 {unidadesEnCarrito} {t(idioma, "productos")}
               </span>
-              <span className="k-barra-pedido-total">{formatEuros(total)}</span>
+              <span className="k-barra-pedido-total k-pop" key={total}>
+                {formatEuros(total)}
+              </span>
             </div>
             <button type="button" className="k-boton-principal k-boton-principal--grande" onClick={() => setPaso("menu")}>
               {t(idioma, "verMiPedido")}
@@ -453,10 +511,12 @@ export default function Order() {
   return (
     <div className="kiosco k-pantalla">
       {confirmarCancelarModal}
+      {toastAnadido}
 
       {mostrarUpsell && categoriaComplementos && (
         <UpsellComplementos
           productos={categoriaComplementos.productos}
+          cantidadPorProducto={cantidadPorProducto}
           idioma={idioma}
           onAdd={onAddProducto}
           onFinalizar={cerrarUpsell}
@@ -500,7 +560,13 @@ export default function Order() {
             {menu
               .find((cat) => cat.categoria === categoriaActiva)
               ?.productos.map((producto) => (
-                <MenuItemCard key={producto.id} producto={producto} idioma={idioma} onAdd={onAddProducto} />
+                <MenuItemCard
+                  key={producto.id}
+                  producto={producto}
+                  idioma={idioma}
+                  onAdd={onAddProducto}
+                  cantidadEnPedido={cantidadPorProducto[producto.id] || 0}
+                />
               ))}
           </div>
         </div>

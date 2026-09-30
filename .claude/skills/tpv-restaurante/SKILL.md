@@ -594,6 +594,8 @@ más diseño).
   excluyentes ambos mecanismos).
 - Precios de "en menú" (`supabase/menu_en_menu_o_no.sql`) — dos modelos
   distintos según categoría, confirmados con el cliente:
+  - (**Obsoleto desde `menu_cambios_cliente_carta.sql`**, ver "Cambios de
+    carta del cliente" más abajo — se deja como historia.)
   - **Kebab, Dürüm y Lahmacum: recargo de +4€ sobre el precio de CADA
     sabor** (no un precio fijo por categoría — primer intento de esto
     fue fijo y hubo que corregirlo). Ej. kebab normal 4,50€ solo → 8,50€
@@ -634,6 +636,66 @@ más diseño).
   - El upsell "¿algo más?" de `UpsellComplementos.jsx` (a nivel de todo
     el pedido) ya cubre lo que el cliente pedía como paso final del
     vídeo de KFC — no se duplicó dentro del asistente.
+
+### Cambios de carta del cliente (lista de septiembre) — `menu_cambios_cliente_carta.sql`
+Lista larga de cambios pedida por el cliente, entregada como UN script
+generado (`supabase/generadores/cambios_carta_cliente.py` →
+`supabase/menu_cambios_cliente_carta.sql`, no se edita el .sql a mano).
+El generador parte del JSON de `menu_en_menu_o_no.sql` (último script que
+reescribió los 47 productos con "¿En menú o no?") y le aplica los cambios,
+así no se equivoca ningún precio. **Deja obsoletas** algunas notas de la
+sección de "¿En menú o no?" de más arriba:
+- **Precios "En menú" de Kebab/Dürüm/Lahmacum ya NO son "+4 € por sabor"**:
+  el cliente dio precios concretos — kebab 7,50 (falafel 8, doble 9,50,
+  doble solo carne 10), dürüm 8,50 (9 / 10,50 / 11,50), lahmacum 9,50
+  (10 / 11,50 / 12,50). "Solo carne" no lo mencionó: se le puso el mismo
+  recargo de su categoría (8,50 / 9,50 / 10,50) — pendiente de confirmar.
+- **Productos nuevos**: `kebab-doble-solo-carne` (7,50), `durum-doble-solo-carne`
+  (9), `lahmacum-doble-solo-carne` (9,50), `plato-doble-solo-carne` (14 / menú
+  15,50). `plato-carne-queso` queda `activo = false` (no borrado).
+- **Los "doble" ganan `precioSiTodoQuitado`** (= precio de su "doble solo
+  carne") con los mismos disparadores que el resto (lechuga, repollo y
+  zanahoria) — antes eran de los "a propósito sin este mecanismo".
+- **"+1 €" visible en quitar lechuga / repollo y zanahoria**: es solo una
+  etiqueta (`recargoPorQuitar()` en `personalizarCalculo.js`, usada por
+  `Personalizar.jsx` y `MenuWizard.jsx`); el cobro sigue siendo el de
+  `precioSiTodoQuitado` — +1 € UNA vez aunque se marquen las dos.
+- **Platos combinados**: "En menú" es solo + bebida (sin paso "Tus
+  patatas", opción renombrada "En menú (+ bebida)", precios sin cambio);
+  extra "Arroz basmati" +3,50 € en ternera/pollo/mixto/falafel/doble;
+  solo carne / solo carne con queso / arroz sin verduras ni "quitar".
+- **Zona crujiente (menos burrito), Ensaladas y Pollo asado ya NO tienen
+  "En menú"** — abren el modal normal. Alitas/nuggets/palomitas/tiras
+  tienen "¿Con ensalada?" (+2,50 €) y, con `mostrarSi`, "Quitar
+  ingredientes de la ensalada" (id `quitar`) justo debajo.
+- Vegetal con queso: "Sin queso" en quitar y "queso gouda" en la
+  descripción. Falafel de Complementos: paso `salsas-aparte`.
+- Orden de despliegue: código primero (las fotos nuevas tienen que existir)
+  y después el SQL. Verificado aplicando TODOS los scripts de `supabase/`
+  en orden sobre un Postgres local y pasando pedidos por el handler real
+  de `POST /api/orders` (38 casos de precio, backend = kiosco).
+
+**Fotos generadas por nosotros** (el cliente pidió "las que falten,
+añadidlas vosotros"): no hay fotos nuevas del cliente, así que salen de
+las que ya había — recortes (`kebab.webp`, `durum.webp`, `lahmacun.webp`
+sacados de `menu-doner-kebab`/`menu-durum`/`menu-lahmacum` sin la lata ni
+las patatas; `salsa-blanca`/`salsa-picante` de `salsas.webp`),
+composiciones (`*-falafel.webp` = base + ración de falafel; `salsa-roja` =
+tarrina blanca recoloreada, la roja real está tapada por las otras dos) y
+retoques (`pedratas-*.webp` sin fondo negro y a escala por tamaño;
+hamburguesas con margen para que la tarjeta 16:10 no corte el pan).
+Siguen sin foto: Ensalada California y Bebidas (no hay material del que
+sacarlas sin inventar un envase de marca) — piden foto real al cliente.
+
+**Kiosco**: la bienvenida tiene un vídeo de fondo (`client/public/video/
+bienvenida-kebab.webm` + `.mp4` de respaldo, póster `.webp`) generado con
+las mismas fotos; "¿Dónde vas a comer hoy?" tiene fondo
+(`menu/fondo-inicio.webp`) y ya no lleva el badge "Más pedido". Pizzas
+enseñan los 3 tamaños con precio en la tarjeta (`MenuItemCard.jsx`, paso
+`tamano`). Efecto al añadir: brillo + ráfaga en la tarjeta y "✓ N" (cuando
+sube la cantidad de ese producto en el pedido), aviso flotante "✓ X añadido
+a tu pedido", salto en cantidades/totales (`.k-pop`) y, en el upsell de
+Complementos, contador "✓ N añadidos" + brillo en "Finalizar pedido".
 
 ### Aviso sonoro de pedido nuevo en cocina (`sonidoCocina.js`)
 A petición del cliente (sonido tipo "pip" o "tin tin" cuando llega un

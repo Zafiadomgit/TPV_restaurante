@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { t, conIdioma } from "../textos.js";
 import { formatEuros } from "../format.js";
-import { seleccionInicial, toggleOpcionEnSeleccion, calcularPersonalizacion, pasoVisible } from "../personalizarCalculo.js";
+import {
+  seleccionInicial,
+  toggleOpcionEnSeleccion,
+  calcularPersonalizacion,
+  pasoVisible,
+  recargoPorQuitar,
+} from "../personalizarCalculo.js";
 
 export default function Personalizar({ producto, idioma, onConfirmar, onCancelar }) {
   const [seleccion, setSeleccion] = useState(() => seleccionInicial(producto));
@@ -68,8 +74,12 @@ export default function Personalizar({ producto, idioma, onConfirmar, onCancelar
                     // El paso de tamaño muestra el precio absoluto de esa
                     // opción (ej. "10,00 €"), no un recargo — los demás
                     // pasos muestran el recargo de precioExtra como hasta
-                    // ahora ("+1,00 €"), y nada si es gratis.
-                    const precioMostrado = paso.esSelectorTamano ? opcion.precioBase : opcion.precioExtra || null;
+                    // ahora ("+1,00 €"), y nada si es gratis. Las opciones de
+                    // quitar que suben el precio (ej. sin lechuga) enseñan
+                    // su recargo aunque su precioExtra sea 0.
+                    const precioMostrado = paso.esSelectorTamano
+                      ? opcion.precioBase
+                      : opcion.precioExtra || recargoPorQuitar(producto, paso, opcion.id) || null;
                     return (
                       <button
                         key={opcion.id}

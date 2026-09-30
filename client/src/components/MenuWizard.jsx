@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { t } from "../textos.js";
-import { seleccionInicial, toggleOpcionEnSeleccion, calcularPersonalizacion, pasoVisible } from "../personalizarCalculo.js";
+import {
+  seleccionInicial,
+  toggleOpcionEnSeleccion,
+  calcularPersonalizacion,
+  pasoVisible,
+  recargoPorQuitar,
+} from "../personalizarCalculo.js";
 
 // Flujo a pantalla completa para "Haz tu menú" — a petición del cliente,
 // en vez de un solo modal con todos los pasos apilados (Personalizar.jsx,
@@ -89,6 +95,9 @@ export default function MenuWizard({ producto, idioma, onConfirmar, onCancelar }
               // para añadir — en vez de la ficha genérica que se usa en
               // el resto de pasos (carne, patatas, salsas, bebida).
               if (pasoActual.id === "quitar") {
+                // Quitar lechuga o repollo y zanahoria sube el precio (hay
+                // que echar más carne) — se enseña aquí como "+1,00 €".
+                const recargo = recargoPorQuitar(producto, pasoActual, opcion.id);
                 return (
                   <button
                     key={opcion.id}
@@ -100,6 +109,7 @@ export default function MenuWizard({ producto, idioma, onConfirmar, onCancelar }
                       🚫
                     </span>
                     <span className="menu-wizard-opcion-nombre">{opcion.nombre}</span>
+                    {recargo > 0 && <span className="menu-wizard-opcion-precio">+{recargo.toFixed(2)} €</span>}
                   </button>
                 );
               }

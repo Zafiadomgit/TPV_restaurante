@@ -44,7 +44,9 @@ export default function CartSidebar({
                     <button type="button" onClick={() => onDecrease(item.lineId)} aria-label="-1">
                       −
                     </button>
-                    <span>{item.cantidad}</span>
+                    <span className="k-pop" key={item.cantidad}>
+                      {item.cantidad}
+                    </span>
                     <button type="button" onClick={() => onIncrease(item.lineId)} aria-label="+1">
                       +
                     </button>
@@ -83,7 +85,9 @@ export default function CartSidebar({
         </div>
         <div className="k-total-final">
           <span>{t(idioma, "total")}</span>
-          <span className="k-total-importe">{formatEuros(total)}</span>
+          <span className="k-total-importe k-pop" key={total}>
+            {formatEuros(total)}
+          </span>
         </div>
         <button type="button" className="k-boton-confirmar" disabled={faltaItems || enviando} onClick={onEnviar}>
           {enviando ? t(idioma, "enviando") : t(idioma, "enviarComanda")}

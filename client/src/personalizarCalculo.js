@@ -45,6 +45,21 @@ export function toggleOpcionEnSeleccion(seleccion, paso, opcionId) {
   return { ...seleccion, [paso.id]: [...actual, opcionId] };
 }
 
+// Recargo que se le enseña al cliente junto a una opción de "Quitar
+// ingredientes" que dispara el precio alternativo (precioSiTodoQuitado) —
+// ej. "Sin lechuga +1,00 €" en Kebab/Dürüm/Lahmacum, a petición del
+// cliente. Solo es una etiqueta: el cobro real sigue siendo el de
+// calcularPersonalizacion() (el recargo se aplica UNA vez aunque se
+// marquen varias opciones disparadoras, igual que siempre). Devuelve 0 si
+// la opción no dispara nada o el paso no usa disparadores.
+export function recargoPorQuitar(producto, paso, opcionId) {
+  if (typeof paso.precioSiTodoQuitado !== "number") return 0;
+  if (!Array.isArray(paso.disparadoresPrecioAlternativo)) return 0;
+  if (!paso.disparadoresPrecioAlternativo.includes(opcionId)) return 0;
+  const recargo = paso.precioSiTodoQuitado - producto.precio;
+  return recargo > 0 ? recargo : 0;
+}
+
 // Gana el primer paso (en orden de array) que consiga sustituir el
 // precio base:
 //  - precioSiTodoQuitado: si el paso trae disparadoresPrecioAlternativo,
