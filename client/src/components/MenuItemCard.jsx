@@ -15,7 +15,7 @@ function preciosPorTamano(producto) {
 
 // Cuánto dura el efecto de "añadido" sobre la tarjeta (ms) — igual que la
 // animación .k-producto--anadido en styles.css.
-const DURACION_EFECTO = 1100;
+const DURACION_EFECTO = 1400;
 
 export default function MenuItemCard({ producto, idioma, onAdd, cantidadEnPedido = 0 }) {
   const nombre = conIdioma(producto.nombre, producto.nombreEn, idioma);
@@ -53,8 +53,13 @@ export default function MenuItemCard({ producto, idioma, onAdd, cantidadEnPedido
           </span>
         )}
         {efecto > 0 && (
+          <span className="k-producto-check" aria-hidden="true" key={`check-${efecto}`}>
+            <span>✓</span>
+          </span>
+        )}
+        {efecto > 0 && (
           <span className="k-rafaga" aria-hidden="true" key={efecto}>
-            {Array.from({ length: 10 }, (_, i) => (
+            {Array.from({ length: 14 }, (_, i) => (
               <span key={i} style={{ "--i": i }} />
             ))}
           </span>
@@ -78,7 +83,7 @@ export default function MenuItemCard({ producto, idioma, onAdd, cantidadEnPedido
           <button
             type="button"
             className={`k-boton-anadir ${efecto ? "k-boton-anadir--hecho" : ""}`}
-            onClick={() => onAdd(producto)}
+            onClick={(e) => onAdd(producto, e.currentTarget.closest(".k-producto"))}
           >
             {efecto
               ? `✓ ${t(idioma, "anadido")}`

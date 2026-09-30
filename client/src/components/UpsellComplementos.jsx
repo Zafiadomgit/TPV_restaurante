@@ -1,4 +1,6 @@
+import { useEffect, useRef } from "react";
 import { t } from "../textos.js";
+import { lanzarConfeti } from "../efectosAnadir.js";
 import MenuItemCard from "./MenuItemCard.jsx";
 
 // Aparece una vez, justo antes de enviar la comanda, ofreciendo la
@@ -12,9 +14,17 @@ export default function UpsellComplementos({ productos, cantidadPorProducto = {}
   // de finalizar lo repite (a petición del cliente: que se note el efecto
   // de añadir, sobre todo en este paso final).
   const anadidos = productos.reduce((acc, p) => acc + (cantidadPorProducto[p.id] || 0), 0);
+
+  // Confeti sobre el modal cada vez que entra un complemento más.
+  const modal = useRef(null);
+  const anadidosAntes = useRef(anadidos);
+  useEffect(() => {
+    if (anadidos > anadidosAntes.current) lanzarConfeti(modal.current);
+    anadidosAntes.current = anadidos;
+  }, [anadidos]);
   return (
     <div className="k-overlay" onClick={onFinalizar}>
-      <div className="k-modal k-upsell" onClick={(e) => e.stopPropagation()}>
+      <div className="k-modal k-upsell" ref={modal} onClick={(e) => e.stopPropagation()}>
         <div className="k-modal-cabecera">
           <div>
             <h3 className="k-modal-titulo">{t(idioma, "upsellTitulo")}</h3>
@@ -48,6 +58,7 @@ export default function UpsellComplementos({ productos, cantidadPorProducto = {}
           <button
             type="button"
             className={`k-boton-confirmar ${anadidos > 0 ? "k-boton-confirmar--brillo" : ""}`}
+            data-destino-vuelo
             onClick={onFinalizar}
           >
             {t(idioma, "upsellFinalizar")}

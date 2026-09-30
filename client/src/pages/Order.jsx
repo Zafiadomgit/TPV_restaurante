@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api.js";
 import { calcularTotales } from "../totales.js";
@@ -14,6 +14,7 @@ import SelectorIdioma from "../components/SelectorIdioma.jsx";
 import UpsellComplementos from "../components/UpsellComplementos.jsx";
 import SelectorSede from "../components/SelectorSede.jsx";
 import KioskCabecera from "../components/KioskCabecera.jsx";
+import { rectDeFoto, volarAlPedido } from "../efectosAnadir.js";
 
 const CATEGORIA_UPSELL = "Complementos";
 
@@ -78,8 +79,20 @@ export default function Order() {
     return () => clearTimeout(id);
   }, [avisoAnadido]);
 
-  const avisarAnadido = (producto, cantidad = 1) =>
+  // De dónde sale el vuelo "al pedido": la foto de la tarjeta que se tocó.
+  // Se guarda al tocar y se usa cuando el producto entra de verdad en el
+  // pedido (al momento si es directo, o al confirmar el modal/asistente).
+  const origenVuelo = useRef(null);
+
+  const avisarAnadido = (producto, cantidad = 1) => {
     setAvisoAnadido({ producto, cantidad, clave: Date.now() });
+    const origen = origenVuelo.current;
+    origenVuelo.current = null;
+    // Tras el render: el carrito/"Finalizar pedido" ya está en pantalla
+    // (al volver del asistente a pantalla completa, el carrito se monta en
+    // este mismo render).
+    requestAnimationFrame(() => volarAlPedido(producto.imagen, origen));
+  };
 
   const cambiarIdioma = (nuevo) => {
     setIdioma(nuevo);
@@ -138,7 +151,8 @@ export default function Order() {
     setConfirmandoCancelar(false);
   };
 
-  const onAddProducto = (producto) => {
+  const onAddProducto = (producto, tarjeta) => {
+    origenVuelo.current = rectDeFoto(tarjeta);
     if (producto.modificadores) {
       // "¿En menú o no?" (Kebab, Dürüm, Lahmacum...): un producto con un
       // paso "menu" en sus modificadores abre el asistente a pantalla
@@ -244,6 +258,9 @@ export default function Order() {
 
   const toastAnadido = avisoAnadido && (
     <div className="k-toast-anadido" key={avisoAnadido.clave} role="status">
+      {avisoAnadido.producto.imagen ? (
+        <img className="k-toast-anadido-foto" src={avisoAnadido.producto.imagen} alt="" />
+      ) : null}
       <span className="k-toast-anadido-check">✓</span>
       <span>
         {avisoAnadido.cantidad > 1 ? `${avisoAnadido.cantidad} × ` : ""}

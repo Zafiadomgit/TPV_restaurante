@@ -698,7 +698,13 @@ bienvenida-kebab.webm` + `.mp4` de respaldo, póster `.webp`) generado con
 las mismas fotos; "¿Dónde vas a comer hoy?" tiene fondo
 (`menu/fondo-inicio.webp`) y ya no lleva el badge "Más pedido". Pizzas
 enseñan los 3 tamaños con precio en la tarjeta (`MenuItemCard.jsx`, paso
-`tamano`). Efecto al añadir: brillo + ráfaga en la tarjeta y "✓ N" (cuando
+`tamano`). Efecto al añadir (reforzado tras "no se aprecian bien"): la
+foto vuela al carrito o, en el upsell, a "Finalizar pedido"
+(`efectosAnadir.js`, Web Animations API), confeti sobre el modal de
+Complementos, ✓ grande sobre la foto. **No uses `@media
+(prefers-reduced-motion)` para apagar estos efectos**: los PCs de kiosco con
+Windows suelen tener "mostrar animaciones" desactivado y el efecto
+desaparecía entero. Resto: brillo + ráfaga en la tarjeta y "✓ N" (cuando
 sube la cantidad de ese producto en el pedido), aviso flotante "✓ X añadido
 a tu pedido", salto en cantidades/totales (`.k-pop`) y, en el upsell de
 Complementos, contador "✓ N añadidos" + brillo en "Finalizar pedido".

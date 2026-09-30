@@ -4041,21 +4041,32 @@ h4,
    flotante "✓ X añadido a tu pedido" (Order.jsx) y un pequeño salto en
    cantidades/totales que cambian (.k-pop, reiniciado con key en JSX). */
 .k-producto--anadido-0 {
-  animation: k-anadido-a 1.1s ease-out;
+  position: relative;
+  z-index: 2;
+  animation: k-anadido-a 1.4s ease-out;
 }
 
 .k-producto--anadido-1 {
-  animation: k-anadido-b 1.1s ease-out;
+  position: relative;
+  z-index: 2;
+  animation: k-anadido-b 1.4s ease-out;
 }
 
 @keyframes k-anadido-a {
   0% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(233, 112, 47, 0);
+    box-shadow: 0 0 0 0 rgba(87, 201, 138, 0);
   }
-  18% {
-    transform: scale(1.035);
-    box-shadow: 0 0 0 4px var(--k-naranja), 0 0 38px rgba(233, 112, 47, 0.55);
+  15% {
+    transform: scale(1.07);
+    box-shadow: 0 0 0 5px var(--k-verde), 0 0 60px rgba(87, 201, 138, 0.7);
+  }
+  30% {
+    transform: scale(0.98);
+  }
+  45% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 5px var(--k-verde), 0 0 50px rgba(87, 201, 138, 0.55);
   }
   100% {
     transform: scale(1);
@@ -4066,11 +4077,18 @@ h4,
 @keyframes k-anadido-b {
   0% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(233, 112, 47, 0);
+    box-shadow: 0 0 0 0 rgba(87, 201, 138, 0);
   }
-  18% {
-    transform: scale(1.035);
-    box-shadow: 0 0 0 4px var(--k-naranja), 0 0 38px rgba(233, 112, 47, 0.55);
+  15% {
+    transform: scale(1.07);
+    box-shadow: 0 0 0 5px var(--k-verde), 0 0 60px rgba(87, 201, 138, 0.7);
+  }
+  30% {
+    transform: scale(0.98);
+  }
+  45% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 5px var(--k-verde), 0 0 50px rgba(87, 201, 138, 0.55);
   }
   100% {
     transform: scale(1);
@@ -4109,13 +4127,13 @@ h4,
   position: absolute;
   left: -6px;
   top: -6px;
-  width: 12px;
-  height: 12px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: var(--k-naranja);
   opacity: 0;
-  transform: rotate(calc(var(--i) * 36deg)) translateY(0);
-  animation: k-rafaga 0.8s ease-out forwards;
+  transform: rotate(calc(var(--i) * 25.7deg)) translateY(0);
+  animation: k-rafaga 0.9s ease-out forwards;
 }
 
 .k-rafaga span:nth-child(even) {
@@ -4127,11 +4145,11 @@ h4,
 @keyframes k-rafaga {
   0% {
     opacity: 1;
-    transform: rotate(calc(var(--i) * 36deg)) translateY(0) scale(1);
+    transform: rotate(calc(var(--i) * 25.7deg)) translateY(0) scale(1);
   }
   100% {
     opacity: 0;
-    transform: rotate(calc(var(--i) * 36deg)) translateY(-110px) scale(0.4);
+    transform: rotate(calc(var(--i) * 25.7deg)) translateY(-170px) scale(0.4);
   }
 }
 
@@ -4145,7 +4163,7 @@ h4,
     transform: scale(1);
   }
   35% {
-    transform: scale(1.3);
+    transform: scale(1.5);
   }
   100% {
     transform: scale(1);
@@ -4181,22 +4199,29 @@ h4,
   align-items: center;
   gap: 14px;
   max-width: calc(100% - 32px);
-  padding: 16px 26px 16px 16px;
-  border-radius: 16px;
+  padding: 14px 30px 14px 14px;
+  border-radius: 20px;
   background: var(--k-superficie);
-  border: 2px solid var(--k-verde);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+  border: 3px solid var(--k-verde);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(87, 201, 138, 0.35);
   color: var(--k-tinta);
-  font-size: 19px;
+  font-size: 24px;
   transform: translateX(-50%);
-  animation: k-toast 1.8s ease-out forwards;
+  animation: k-toast 2.4s ease-out forwards;
   pointer-events: none;
+}
+
+.k-toast-anadido-foto {
+  flex: none;
+  width: 76px;
+  height: 58px;
+  object-fit: contain;
 }
 
 .k-toast-anadido-check {
   flex: none;
-  width: 40px;
-  height: 40px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -4232,13 +4257,14 @@ h4,
 .k-upsell-contador {
   align-self: center;
   margin-left: auto;
-  padding: 8px 16px;
+  padding: 10px 20px;
+  box-shadow: 0 0 30px rgba(87, 201, 138, 0.5);
   border-radius: 999px;
   background: var(--k-verde);
   color: var(--k-fondo);
   font-family: var(--k-condensada);
   font-weight: 700;
-  font-size: 20px;
+  font-size: 24px;
   white-space: nowrap;
 }
 
@@ -4294,13 +4320,99 @@ h4,
   white-space: nowrap;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .k-producto--anadido-0,
-  .k-producto--anadido-1,
-  .k-rafaga,
-  .k-pop,
-  .k-linea,
-  .k-boton-confirmar--brillo::after {
-    animation: none;
+/* Sin @media (prefers-reduced-motion) a propósito: muchos PCs de kiosco
+   con Windows tienen "mostrar animaciones" desactivado y eso apagaba todos
+   estos efectos, justo lo que el cliente pidió ver. */
+
+/* Foto del producto volando hacia el pedido (efectosAnadir.js). */
+.k-vuelo {
+  position: fixed;
+  z-index: 90;
+  pointer-events: none;
+  border-radius: 50%;
+  background: var(--k-superficie);
+  border: 4px solid var(--k-verde);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(87, 201, 138, 0.6);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--k-verde);
+  font-size: 64px;
+  font-weight: 700;
+}
+
+.k-vuelo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 8%;
+}
+
+.k-confeti {
+  position: fixed;
+  z-index: 85;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.k-confeti span {
+  position: absolute;
+  top: 0;
+  border-radius: 2px;
+}
+
+/* ✓ grande sobre la foto de la tarjeta al añadir. */
+.k-producto-check {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(87, 201, 138, 0.28);
+  pointer-events: none;
+  animation: k-check-fondo 1.4s ease-out forwards;
+}
+
+.k-producto-check span {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: var(--k-verde);
+  color: var(--k-fondo);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 54px;
+  font-weight: 700;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  animation: k-check 1.4s cubic-bezier(0.2, 1.4, 0.4, 1) forwards;
+}
+
+@keyframes k-check-fondo {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes k-check {
+  0% {
+    transform: scale(0);
+  }
+  25% {
+    transform: scale(1.15);
+  }
+  40%,
+  70% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
   }
 }

@@ -19,7 +19,7 @@ export default function CartSidebar({
   const faltaItems = items.length === 0;
 
   return (
-    <aside className="k-carrito">
+    <aside className="k-carrito" data-destino-vuelo>
       <div className="k-carrito-cabecera">
         <span className="k-carrito-titulo">{t(idioma, "tuPedido")}</span>
         <span className="k-mono-etiqueta">
