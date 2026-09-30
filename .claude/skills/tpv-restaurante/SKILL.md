@@ -653,6 +653,12 @@ sección de "¿En menú o no?" de más arriba:
 - **Productos nuevos**: `kebab-doble-solo-carne` (7,50), `durum-doble-solo-carne`
   (9), `lahmacum-doble-solo-carne` (9,50), `plato-doble-solo-carne` (14 / menú
   15,50). `plato-carne-queso` queda `activo = false` (no borrado).
+- **Falafel**: su `precioSiTodoQuitado` era el de "solo carne" (igual que
+  ternera) y, al costar 0,50 € más, quitar verdura solo sumaba +0,50 €.
+  Ahora es precio + 1 (kebab 6, dürüm 7,50, lahmacum 8).
+- **Verificación**: `supabase/verificar_cambios_cliente_carta.sql` (solo
+  lectura, generado por `generadores/verificar_cambios_cliente.py`)
+  repasa los 146 puntos de carta contra la BD real y marca ✅/❌.
 - **Los "doble" ganan `precioSiTodoQuitado`** (= precio de su "doble solo
   carne") con los mismos disparadores que el resto (lechuga, repollo y
   zanahoria) — antes eran de los "a propósito sin este mecanismo".

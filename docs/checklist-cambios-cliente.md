@@ -3,7 +3,9 @@
 ✅ hecho y verificado · ⚠️ hecho con una nota que conviene confirmar con el cliente · ❌ pendiente de material del cliente
 
 **Para que se vea en producción:** 1) desplegar este commit (código + fotos + vídeo), 2) **después** ejecutar
-`supabase/menu_cambios_cliente_carta.sql` en el SQL Editor de Supabase. Sin el paso 2 no cambian ni
+`supabase/menu_cambios_cliente_carta.sql` en el SQL Editor de Supabase, 3) ejecutar
+`supabase/verificar_cambios_cliente_carta.sql` (solo lectura): repasa cada punto de carta de esta lista
+contra la base de datos real y tiene que salir todo ✅ (146 comprobaciones). Sin el paso 2 no cambian ni
 los precios, ni los productos, ni las fotos por producto (sí el vídeo, el fondo, pizzas, hamburguesas y el efecto al añadir).
 
 ## General (kiosco)
@@ -14,7 +16,7 @@ los precios, ni los productos, ni las fotos por producto (sí el vídeo, el fond
 
 ## Kebab
 - ✅ ~~Poner fotos de cada kebab~~ — una foto de kebab para todos; el de falafel lleva además la ración de falafel
-- ✅ ~~Quitar repollo y zanahoria / lechuga: +1 €~~ — ahora se muestra "+1,00 €" en esas dos opciones (se cobra +1 € una vez, aunque se quiten las dos, como hasta ahora)
+- ✅ ~~Quitar repollo y zanahoria / lechuga: +1 €~~ — ahora se muestra "+1,00 €" en esas dos opciones (se cobra +1 € una vez, aunque se quiten las dos, como hasta ahora). Corregido también en falafel, que sumaba solo +0,50 €
 - ✅ ~~Kebab solo carne: sin verduras en la descripción~~ → "Carne + salsas"
 - ✅ ~~Kebab loco: sin verduras en la descripción~~ → "Carne y patatas fritas dentro + salsas"
 - ✅ ~~Kebab vegetal: queso en la descripción y "Sin queso" en quitar ingredientes~~

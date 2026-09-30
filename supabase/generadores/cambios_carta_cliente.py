@@ -139,6 +139,11 @@ Nuevo "{f['nombre']} doble solo carne": solo {num(f['dsc'][0])} €, menú {num(
 
     mods = copy.deepcopy(BASE[f"{pre}-falafel"])
     precio_menu(mods, en_menu=f["menu_falafel"])
+    # Falafel es 0,50 € más caro que ternera, pero su precioSiTodoQuitado era
+    # el mismo que el resto (el de "solo carne"), así que quitar verdura solo
+    # sumaba +0,50 €. El cliente pide +1 € en toda la sección.
+    solo_falafel = paso(mods, "menu")["opciones"][0]["precioBase"]
+    paso(mods, "quitar")["precioSiTodoQuitado"] = solo_falafel + 1
     update_mods(f"{pre}-falafel", mods, imagen_url=f["img_falafel"])
 
     mods = copy.deepcopy(BASE[f"{pre}-solo-carne"])
