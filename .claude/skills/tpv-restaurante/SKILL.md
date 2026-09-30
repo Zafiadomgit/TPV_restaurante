@@ -698,10 +698,11 @@ fotos, pero **no gustó y se retiró**. Ahora usa un vídeo real del asador
 que aportó el dueño (`client/public/video/kebab-asador.{webm,mp4}` +
 póster): volteado en espejo para que el asador quede a la derecha del
 panel de idioma, color corregido (quitaba un tono rosado) y con fundido
-final para que el bucle no salte. Se muestra ENTERO en un panel 16:9 a la
-derecha del de idioma (`.k-bienvenida-video`, ancho explícito: un `<video>`
-no se estira con left+right), no a pantalla completa — a pantalla completa
-el dueño lo veía demasiado grande y cortado. **Bebidas**: fotos de
+final para que el bucle no salte. Va a pantalla completa (el dueño probó un panel
+enmarcado y no le gustó), solo un poco atenuado (`.k-bienvenida-velo`
+suave); el logo y los botones de idioma van en una tarjeta semitransparente
+con desenfoque (`.k-bienvenida-panel`) para leerse sin oscurecer el vídeo
+— antes un degradado muy oscuro tapaba media pantalla y no se apreciaba. **Bebidas**: fotos de
 Coca-Cola (botella), Coca-Cola 0, Monster y agua (Ciel) con el fondo
 quitado con `@imgly/background-removal-node` (npm, modelo incluido, funciona
 sin red — útil para próximos lotes) y `supabase/menu_imagenes_bebidas.sql`;
