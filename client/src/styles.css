@@ -2643,22 +2643,33 @@ h4,
   flex-direction: row;
 }
 
-/* Vídeo a pantalla completa (el asador ya viene colocado a la derecha). */
+/* Vídeo del asador: panel a la derecha del de idioma, mostrado ENTERO
+   (16:9, sin recortar) — a pantalla completa se veía demasiado grande y
+   cortado (a petición del dueño). */
 .k-bienvenida-video {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  z-index: 1;
+  top: 50%;
+  right: 56px;
+  /* Ancho explícito: un <video> no se estira con left+right (usa su ancho
+     nativo de 1920 px y se sale de la pantalla). */
+  width: min(calc(100% - 700px - 56px), calc((100vh - 120px) * 16 / 9));
+  height: auto;
+  aspect-ratio: 16 / 9;
+  transform: translateY(-50%);
+  object-fit: contain;
   display: block;
+  border-radius: 24px;
+  background: var(--k-hundido);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(245, 243, 240, 0.08);
 }
 
 .k-bienvenida-velo {
   position: absolute;
   inset: 0;
-  /* Más claro a la derecha que antes: ahí va el vídeo de productos, que
-     tiene que verse bien; a la izquierda sigue oscuro para el texto. */
-  background: linear-gradient(90deg, rgba(15, 17, 20, 0.96) 0%, rgba(15, 17, 20, 0.85) 36%, rgba(15, 17, 20, 0.15) 62%, rgba(15, 17, 20, 0) 100%);
+  /* Brillo cálido detrás del panel del vídeo (el vídeo va aparte, ya no
+     debajo del texto). */
+  background: radial-gradient(ellipse 45% 60% at 70% 50%, rgba(233, 112, 47, 0.18), rgba(15, 17, 20, 0) 70%);
 }
 
 .k-bienvenida-panel {
@@ -3992,6 +4003,11 @@ h4,
 
 /* ---- Pantallas más estrechas que el kiosco de 1280 px ---- */
 @media (max-width: 1100px) {
+  /* Sin sitio a la derecha del panel de idioma: el vídeo no se muestra. */
+  .k-bienvenida-video {
+    display: none;
+  }
+
   .k-categorias-grid {
     grid-template-columns: repeat(3, 1fr);
   }
