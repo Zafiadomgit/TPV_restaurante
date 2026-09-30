@@ -974,7 +974,8 @@ un cambio de diseño real, no un ajuste trivial.
    lateral, con las píldoras de categoría de siempre para cambiar rápido
    sin volver a la pantalla de categorías, más un enlace "◀ Categorías"
    que sí vuelve a ella sin vaciar el carrito). "Cancelar pedido" es lo
-   único que resetea todo y vuelve a `inicio` — **pide confirmación
+   único que resetea todo y vuelve a `bienvenida` (elegir idioma, a
+   petición del cliente — antes volvía a `inicio`) — **pide confirmación
    primero** (`confirmandoCancelar` + `confirmarCancelarModal`, mismo
    patrón visual que `Personalizar`/`UpsellComplementos`): a petición del
    dueño, un toque accidental no debe borrar el carrito sin avisar. El

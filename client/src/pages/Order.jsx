@@ -129,8 +129,12 @@ export default function Order() {
     setItems([]);
     setNotasGenerales("");
     setTipoServicio(null);
-    setPaso("inicio");
+    // A petición del cliente: cancelar vuelve a la pantalla de elegir
+    // idioma (bienvenida), no a "¿Dónde vas a comer hoy?" — el siguiente
+    // cliente empieza siempre desde el principio.
+    setPaso("bienvenida");
     setUpsellVisto(false);
+    setAvisoAnadido(null);
     setConfirmandoCancelar(false);
   };
 
