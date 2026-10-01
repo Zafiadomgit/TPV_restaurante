@@ -836,10 +836,15 @@ propios, en vez del tema oscuro/logo de California fijos de siempre.
   (`tiempoEsperaMinutos` y/o `fondoRecogidaUrl`/`logoRecogidaUrl`), para
   que el formulario de fondo/logo en Caja pueda guardarse sin tener que
   mandar también el tiempo de espera (y viceversa).
-- Se edita desde `Caja.jsx` (mismo sitio y mismo patrón que el tiempo de
-  espera — rol `caja`), con dos campos de texto plano para las URLs
-  (mismo patrón que "URL de imagen" en `EditarProducto.jsx`: no hay
-  selector de archivos, el cajero pega una URL ya subida a algún sitio).
+- **Ya NO se edita desde `/caja`**: hubo un formulario de dos URLs en
+  `Caja.jsx`, pero el dueño pidió quitarlo (un cajero no va a saber
+  pegar una URL de imagen). Si el cliente quiere un fondo o logo, nos lo
+  pide y se pone a mano por SQL:
+  `update ajustes set fondo_recogida_url = '/menu/fondo-inicio.webp'
+  where local = 'villarcayo';` (o `logo_recogida_url`; `null` para volver
+  al de siempre). El PATCH de `api/ajustes.js` sigue aceptando esos
+  campos y `Recogida.jsx` los sigue leyendo — solo se quitó la UI. No la
+  vuelvas a poner en `/caja` sin que el dueño lo pida.
 - `Recogida.jsx` pide `GET /api/ajustes?local=<sede>` al entrar y luego
   cada 60s (mucho más espaciado que el sondeo de pedidos de 3s — el
   fondo casi nunca cambia mientras el monitor está encendido, no hace

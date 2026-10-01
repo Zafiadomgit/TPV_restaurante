@@ -52,10 +52,6 @@ export default function Caja() {
   const [tiempoEsperaInput, setTiempoEsperaInput] = useState("");
   const [guardandoTiempoEspera, setGuardandoTiempoEspera] = useState(false);
   const [tiempoEsperaGuardadoOk, setTiempoEsperaGuardadoOk] = useState(false);
-  const [fondoRecogidaInput, setFondoRecogidaInput] = useState("");
-  const [logoRecogidaInput, setLogoRecogidaInput] = useState("");
-  const [guardandoRecogida, setGuardandoRecogida] = useState(false);
-  const [recogidaGuardadoOk, setRecogidaGuardadoOk] = useState(false);
   const [sede, setSede] = useState(() => getSede());
 
   useEffect(() => {
@@ -72,11 +68,7 @@ export default function Caja() {
     if (!sede) return;
     api
       .getAjustes(sede)
-      .then((data) => {
-        setTiempoEsperaInput(String(data.tiempoEsperaMinutos));
-        setFondoRecogidaInput(data.fondoRecogidaUrl || "");
-        setLogoRecogidaInput(data.logoRecogidaUrl || "");
-      })
+      .then((data) => setTiempoEsperaInput(String(data.tiempoEsperaMinutos)))
       .catch(() => {});
   }, [sede]);
 
@@ -93,30 +85,6 @@ export default function Caja() {
       setError(e.message);
     } finally {
       setGuardandoTiempoEspera(false);
-    }
-  };
-
-  // Fondo/logo de la pantalla de recogida (/recogida) — dejan el campo
-  // vacío para volver al tema oscuro y logo por defecto (ver ajustes.js:
-  // string vacío se guarda como null).
-  const guardarRecogida = async (e) => {
-    e.preventDefault();
-    setError("");
-    setRecogidaGuardadoOk(false);
-    setGuardandoRecogida(true);
-    try {
-      const actualizado = await api.actualizarAjustes({
-        fondoRecogidaUrl: fondoRecogidaInput,
-        logoRecogidaUrl: logoRecogidaInput,
-        local: sede,
-      });
-      setFondoRecogidaInput(actualizado.fondoRecogidaUrl || "");
-      setLogoRecogidaInput(actualizado.logoRecogidaUrl || "");
-      setRecogidaGuardadoOk(true);
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setGuardandoRecogida(false);
     }
   };
 
@@ -464,42 +432,6 @@ export default function Caja() {
             {guardandoTiempoEspera ? "Guardando..." : "Guardar"}
           </button>
           {tiempoEsperaGuardadoOk && <span className="tiempo-espera-ok">✔️ Guardado</span>}
-        </div>
-      </form>
-
-      <form className="recogida-personalizar-form" onSubmit={guardarRecogida}>
-        <p className="recogida-personalizar-titulo">Pantalla de recogida (monitor de cara al cliente)</p>
-        <div className="recogida-personalizar-campo">
-          <label htmlFor="fondo-recogida">Imagen de fondo (URL) — vacío = tema oscuro de siempre</label>
-          <input
-            id="fondo-recogida"
-            type="text"
-            placeholder="https://... o /brand/..."
-            value={fondoRecogidaInput}
-            onChange={(e) => {
-              setFondoRecogidaInput(e.target.value);
-              setRecogidaGuardadoOk(false);
-            }}
-          />
-        </div>
-        <div className="recogida-personalizar-campo">
-          <label htmlFor="logo-recogida">Logo (URL) — vacío = logo de California de siempre</label>
-          <input
-            id="logo-recogida"
-            type="text"
-            placeholder="https://... o /brand/..."
-            value={logoRecogidaInput}
-            onChange={(e) => {
-              setLogoRecogidaInput(e.target.value);
-              setRecogidaGuardadoOk(false);
-            }}
-          />
-        </div>
-        <div className="recogida-personalizar-row">
-          <button type="submit" disabled={guardandoRecogida}>
-            {guardandoRecogida ? "Guardando..." : "Guardar"}
-          </button>
-          {recogidaGuardadoOk && <span className="tiempo-espera-ok">✔️ Guardado</span>}
         </div>
       </form>
 
