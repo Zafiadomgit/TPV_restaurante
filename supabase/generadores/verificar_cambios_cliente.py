@@ -58,7 +58,7 @@ def n(v):
 
 
 FAM = {
-    "kebab": ("Kebab", 7.5, 8, 9.5, (7.5, 10), "/menu/kebab.webp", "/menu/kebab-falafel.webp", "/menu/kebab.webp"),
+    "kebab": ("Kebab", 7.5, 8, 9.5, (7.5, 10.5), "/menu/kebab.webp", "/menu/kebab-falafel.webp", "/menu/kebab.webp"),
     "durum": ("Dürüm", 8.5, 9, 10.5, (9, 11.5), "/menu/durum.webp", "/menu/durum-falafel.webp", "/menu/durum-loco.webp"),
     "lahmacum": ("Lahmacun", 9.5, 10, 11.5, (9.5, 12.5), "/menu/lahmacun.webp", "/menu/lahmacun-falafel.webp", "/menu/lahmacun.webp"),
 }

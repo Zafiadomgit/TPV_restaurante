@@ -66,7 +66,7 @@ with comprobaciones as (
   union all
   select 29 as n, 'Kebab' as seccion, 'Doble solo carne: precio solo 7.50 €' as punto, '7.50' as esperado, (select round(precio, 2)::text from menu_productos where id = 'kebab-doble-solo-carne') as actual
   union all
-  select 30 as n, 'Kebab' as seccion, 'Doble solo carne: precio menú 10.00 €' as punto, '10.00' as esperado, (select round((o->>'precioBase')::numeric, 2)::text from menu_productos p, jsonb_array_elements(p.modificadores) s, jsonb_array_elements(s->'opciones') o where p.id = 'kebab-doble-solo-carne' and s->>'id' = 'menu' and o->>'id' = 'en-menu') as actual
+  select 30 as n, 'Kebab' as seccion, 'Doble solo carne: precio menú 10.50 €' as punto, '10.50' as esperado, (select round((o->>'precioBase')::numeric, 2)::text from menu_productos p, jsonb_array_elements(p.modificadores) s, jsonb_array_elements(s->'opciones') o where p.id = 'kebab-doble-solo-carne' and s->>'id' = 'menu' and o->>'id' = 'en-menu') as actual
   union all
   select 31 as n, 'Dürüm' as seccion, 'Foto durum-ternera' as punto, '/menu/durum.webp' as esperado, (select imagen_url::text from menu_productos where id = 'durum-ternera') as actual
   union all

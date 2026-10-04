@@ -103,7 +103,7 @@ FAMILIAS = {
     # prefijo id: (categoría, nombre, nombre_en, imagen normal, imagen falafel, imagen loco,
     #              menú normal, menú falafel, menú doble, doble solo carne (solo, menú), menú solo carne)
     "kebab": dict(cat="Kebab", nombre="Kebab", en="kebab", img="/menu/kebab.webp", img_falafel="/menu/kebab-falafel.webp",
-                  img_loco="/menu/kebab.webp", menu=7.5, menu_falafel=8, menu_doble=9.5, dsc=(7.5, 10), menu_solo_carne=8.5),
+                  img_loco="/menu/kebab.webp", menu=7.5, menu_falafel=8, menu_doble=9.5, dsc=(7.5, 10.5), menu_solo_carne=8.5),
     "durum": dict(cat="Dürüm", nombre="Dürüm", en="dürüm", img="/menu/durum.webp", img_falafel="/menu/durum-falafel.webp",
                   img_loco="/menu/durum-loco.webp", menu=8.5, menu_falafel=9, menu_doble=10.5, dsc=(9, 11.5), menu_solo_carne=9.5),
     "lahmacum": dict(cat="Lahmacum", nombre="Lahmacum", en="lahmacum", img="/menu/lahmacun.webp", img_falafel="/menu/lahmacun-falafel.webp",
@@ -283,9 +283,9 @@ CABECERA = """-- Cambios de carta pedidos por el cliente (lista de septiembre 20
 -- categoría (kebab +3 € -> 8,50 €, dürüm +2,50 € -> 9,50 €, lahmacum +3 € ->
 -- 10,50 €) para que no quede más caro que el doble en menú. Así, además,
 -- "ternera sin lechuga en menú" (menú + 1 €) cuesta lo mismo que "solo carne
--- en menú". Única excepción que no cuadra al céntimo: kebab doble en menú
--- sin lechuga = 9,50 + 1 = 10,50 € frente a 10 € del "kebab doble solo
--- carne" en menú (precio dado por el cliente).
+-- en menú". (Confirmado después por el cliente.) Kebab doble solo carne en
+-- menú: el cliente pidió 10 € pero luego pidió igualarlo con "kebab doble
+-- en menú sin lechuga" (9,50 + 1) -> 10,50 €.
 --
 -- Seguro de re-ejecutar (updates + insert ... on conflict).
 
