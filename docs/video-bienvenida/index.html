@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: "Barlow Condensed";
+        font-weight: 800;
+        src: url("assets/barlow-condensed-latin-800-normal.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "Barlow Condensed";
+        font-weight: 600;
+        src: url("assets/barlow-condensed-latin-600-normal.woff2") format("woff2");
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #0f1114;
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #0f1114;
+        font-family: "Barlow Condensed", sans-serif;
+        color: #f5f3f0;
+      }
+      .clip {
+        position: absolute;
+        inset: 0;
+      }
+      /* Fondo oscuro con brillo cálido (escenas de producto). */
+      .fondo-calido {
+        background:
+          radial-gradient(ellipse 55% 65% at 64% 55%, rgba(233, 112, 47, 0.38), rgba(15, 17, 20, 0) 70%),
+          #0f1114;
+      }
+      video.clip,
+      .foto-full {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      /* Velo para que el texto de la derecha se lea sobre el vídeo. */
+      .velo-dcha {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(270deg, rgba(15, 17, 20, 0.75) 0%, rgba(15, 17, 20, 0.35) 40%, rgba(15, 17, 20, 0) 65%);
+      }
+      /* Los textos van en la mitad derecha: a la izquierda, en el kiosco,
+         está la tarjeta de elegir idioma. */
+      .titulo {
+        position: absolute;
+        right: 200px;
+        text-align: right;
+        z-index: 5;
+      }
+      .etiqueta {
+        display: inline-block;
+        font-weight: 600;
+        font-size: 34px;
+        letter-spacing: 0.32em;
+        color: #e9702f;
+        text-transform: uppercase;
+      }
+      .grande {
+        display: block;
+        font-weight: 800;
+        font-size: 210px;
+        line-height: 0.86;
+        letter-spacing: 0.01em;
+        text-transform: uppercase;
+        text-shadow: 0 12px 50px rgba(0, 0, 0, 0.55);
+      }
+      .grande span {
+        display: inline-block;
+      }
+      .sub {
+        display: block;
+        margin-top: 18px;
+        font-weight: 600;
+        font-size: 44px;
+        color: rgba(245, 243, 240, 0.85);
+      }
+      .producto {
+        position: absolute;
+        z-index: 3;
+        filter: drop-shadow(0 40px 60px rgba(0, 0, 0, 0.6));
+      }
+      .brasa {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #ffb36b;
+        box-shadow: 0 0 14px 4px rgba(255, 140, 50, 0.85);
+        z-index: 4;
+      }
+      /* Barrido naranja entre escenas. */
+      .barrido {
+        position: absolute;
+        top: -10%;
+        left: 0;
+        width: 70%;
+        height: 120%;
+        background: linear-gradient(90deg, #e9702f, #f0ad4e);
+        transform: skewX(-14deg);
+        z-index: 20;
+      }
+      #logo {
+        position: absolute;
+        right: 210px;
+        top: 330px;
+        width: 700px;
+        z-index: 6;
+      }
+      .negro {
+        background: #0f1114;
+        z-index: 30;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="24" data-width="1920" data-height="1080">
+      <!-- 1 · Asador + KEBAB (0–6 s) -->
+      <video id="v1" class="clip" src="assets/asador.mp4" data-start="0" data-duration="6" data-media-start="1.5" muted></video>
+      <div class="clip velo-dcha" data-start="0" data-duration="6"></div>
+      <div id="t1" class="titulo clip-texto" style="top: 300px" data-start="0" data-duration="6">
+        <span class="etiqueta">Recién cortado</span>
+        <span class="grande" id="t1-grande"><span>K</span><span>E</span><span>B</span><span>A</span><span>B</span></span>
+        <span class="sub">Döner asado al momento</span>
+      </div>
+
+      <!-- 2 · Hamburguesa (6–10.5 s) -->
+      <div id="s2" class="clip fondo-calido" data-start="6" data-duration="4.5">
+        <img id="burger" class="producto" src="assets/hamburguesa-xxl.webp" style="left: 930px; top: 360px; width: 820px" alt="" />
+        <div id="t2" class="titulo" style="top: 110px">
+          <span class="etiqueta">A la plancha</span>
+          <span class="grande" style="font-size: 150px">Hamburguesas</span>
+        </div>
+      </div>
+
+      <!-- 3 · Pizza (10.5–15 s) -->
+      <div id="s3" class="clip" data-start="10.5" data-duration="4.5">
+        <img id="pizza" class="foto-full" src="assets/pizza-carta.webp" alt="" />
+        <div class="velo-dcha"></div>
+        <div id="t3" class="titulo" style="top: 330px">
+          <span class="etiqueta">Recién horneadas</span>
+          <span class="grande">Pizzas</span>
+          <span class="sub">Pequeña · Mediana · Familiar</span>
+        </div>
+      </div>
+
+      <!-- 4 · Dürüm, kebab y pedrata (15–19.5 s) -->
+      <div id="s4" class="clip fondo-calido" data-start="15" data-duration="4.5">
+        <img id="durum" class="producto" src="assets/durum-ternera-ia.webp" style="left: 800px; top: 470px; width: 600px" alt="" />
+        <img id="kebab" class="producto" src="assets/kebab.webp" style="left: 1320px; top: 500px; width: 560px" alt="" />
+        <img id="pedrata" class="producto" src="assets/pedratas-xxl.webp" style="left: 1040px; top: 640px; width: 560px" alt="" />
+        <div id="t4" class="titulo" style="top: 90px">
+          <span class="etiqueta">Hecho al momento</span>
+          <span class="grande" style="font-size: 150px">Dürüm · Kebab</span>
+          <span class="grande" style="font-size: 150px">Lahmacun</span>
+        </div>
+      </div>
+
+      <!-- 5 · Asador + logo (19.5–24 s) -->
+      <video id="v5" class="clip" src="assets/asador.mp4" data-start="19.5" data-duration="4.5" data-media-start="9" muted></video>
+      <div class="clip velo-dcha" data-start="19.5" data-duration="4.5"></div>
+      <img id="logo" class="clip-texto" src="assets/logo.svg" data-start="19.5" data-duration="4.5" alt="" />
+      <div id="t5" class="titulo" style="top: 640px" data-start="19.5" data-duration="4.5">
+        <span class="sub" style="font-size: 52px">Kebab · Hamburguesería · Pizzería</span>
+      </div>
+
+      <!-- Brasas flotando (todo el vídeo) -->
+      <div id="brasas" class="clip" data-start="0" data-duration="24" style="z-index: 8"></div>
+
+      <!-- Barridos de transición -->
+      <div id="b1" class="barrido" data-start="5.55" data-duration="0.9"></div>
+      <div id="b2" class="barrido" data-start="10.05" data-duration="0.9"></div>
+      <div id="b3" class="barrido" data-start="14.55" data-duration="0.9"></div>
+      <div id="b4" class="barrido" data-start="19.05" data-duration="0.9"></div>
+
+      <!-- Fundido de entrada/salida para que el bucle no dé salto -->
+      <div id="negro-in" class="clip negro" data-start="0" data-duration="0.6"></div>
+      <div id="negro-out" class="clip negro" data-start="23.4" data-duration="0.6"></div>
+    </div>
+
+    <script>
+      // Brasas con posiciones deterministas (sin Math.random: el render
+      // tiene que salir idéntico cada vez).
+      let semilla = 7;
+      const azar = () => {
+        semilla = (semilla * 16807) % 2147483647;
+        return (semilla - 1) / 2147483646;
+      };
+      const contenedor = document.getElementById("brasas");
+      const brasas = [];
+      for (let i = 0; i < 34; i++) {
+        const b = document.createElement("div");
+        b.className = "brasa";
+        const tam = 4 + azar() * 7;
+        b.style.width = b.style.height = tam + "px";
+        b.style.left = 760 + azar() * 1120 + "px";
+        b.style.top = 1100 + "px";
+        contenedor.appendChild(b);
+        brasas.push({ el: b, retraso: azar() * 24, dur: 5 + azar() * 4, deriva: (azar() - 0.5) * 220 });
+      }
+
+      const tl = gsap.timeline({ paused: true });
+
+      // Brasas: suben y se apagan, en varias tandas a lo largo del vídeo.
+      for (const b of brasas) {
+        for (let t = b.retraso - 24; t < 24; t += b.dur + 1.5) {
+          if (t + b.dur < 0) continue;
+          tl.fromTo(
+            b.el,
+            { y: 0, x: 0, opacity: 0 },
+            { y: -(700 + b.deriva * 2), x: b.deriva, opacity: 1, duration: b.dur * 0.25, ease: "none" },
+            Math.max(0, t)
+          );
+          tl.to(b.el, { y: -(1150 + b.deriva * 2), x: b.deriva * 1.6, opacity: 0, duration: b.dur * 0.75, ease: "none" }, Math.max(0, t) + b.dur * 0.25);
+        }
+      }
+
+      // Entrada desde negro
+      tl.fromTo("#negro-in", { opacity: 1 }, { opacity: 0, duration: 0.6, ease: "power1.out" }, 0);
+
+      // 1 · KEBAB
+      tl.fromTo("#v1", { scale: 1 }, { scale: 1.1, duration: 6, ease: "none" }, 0);
+      tl.from("#t1 .etiqueta", { x: 80, opacity: 0, duration: 0.6, ease: "power3.out" }, 0.4);
+      tl.from("#t1-grande span", { y: 140, opacity: 0, rotation: 8, duration: 0.7, stagger: 0.08, ease: "back.out(1.6)" }, 0.6);
+      tl.from("#t1 .sub", { x: 80, opacity: 0, duration: 0.6, ease: "power3.out" }, 1.3);
+
+      // Barridos (entran por la izquierda y salen por la derecha)
+      for (const [id, t] of [["#b1", 5.55], ["#b2", 10.05], ["#b3", 14.55], ["#b4", 19.05]]) {
+        tl.fromTo(id, { xPercent: -160 }, { xPercent: 230, duration: 0.9, ease: "power2.inOut" }, t);
+      }
+
+      // 2 · Hamburguesa: entra girando y cae con un pequeño rebote
+      tl.fromTo("#burger", { x: 500, y: 160, rotation: 25, scale: 0.6 }, { x: 0, y: 0, rotation: 0, scale: 1, duration: 1.1, ease: "back.out(1.4)" }, 6.2);
+      tl.to("#burger", { scale: 1.06, y: -14, duration: 3.1, ease: "sine.inOut" }, 7.35);
+      tl.from("#t2 .etiqueta", { x: 80, opacity: 0, duration: 0.5, ease: "power3.out" }, 6.6);
+      tl.from("#t2 .grande", { y: 120, opacity: 0, duration: 0.7, ease: "power3.out" }, 6.8);
+
+      // 3 · Pizza: zoom y giro lentos
+      tl.fromTo("#pizza", { scale: 1.25, rotation: -4 }, { scale: 1.05, rotation: 2, duration: 4.5, ease: "none" }, 10.5);
+      tl.from("#t3 .etiqueta", { x: 80, opacity: 0, duration: 0.5, ease: "power3.out" }, 11.0);
+      tl.from("#t3 .grande", { scale: 1.6, opacity: 0, duration: 0.7, ease: "power4.out" }, 11.15);
+      tl.from("#t3 .sub", { y: 40, opacity: 0, duration: 0.5, ease: "power3.out" }, 11.7);
+
+      // 4 · Dürüm, kebab y pedrata entran escalonados
+      tl.from("#durum", { x: -400, rotation: -12, opacity: 0, duration: 0.9, ease: "power3.out" }, 15.2);
+      tl.from("#kebab", { x: 700, rotation: 12, opacity: 0, duration: 0.9, ease: "power3.out" }, 15.45);
+      tl.from("#pedrata", { y: 500, opacity: 0, duration: 0.9, ease: "back.out(1.3)" }, 15.7);
+      tl.to(["#durum", "#kebab", "#pedrata"], { y: "-=18", duration: 2.8, ease: "sine.inOut" }, 16.6);
+      tl.from("#t4 .etiqueta", { x: 80, opacity: 0, duration: 0.5, ease: "power3.out" }, 15.5);
+      tl.from("#t4 .grande", { x: 140, opacity: 0, duration: 0.7, stagger: 0.15, ease: "power3.out" }, 15.7);
+
+      // 5 · Logo
+      tl.fromTo("#v5", { scale: 1.12 }, { scale: 1.0, duration: 4.5, ease: "none" }, 19.5);
+      tl.from("#logo", { scale: 0.7, opacity: 0, duration: 0.9, ease: "back.out(1.5)" }, 19.9);
+      tl.from("#t5 .sub", { y: 40, opacity: 0, duration: 0.6, ease: "power3.out" }, 20.6);
+
+      // Salida a negro (el bucle vuelve a entrar desde negro)
+      tl.fromTo("#negro-out", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power1.in" }, 23.4);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
