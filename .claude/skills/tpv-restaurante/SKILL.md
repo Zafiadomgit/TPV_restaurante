@@ -693,9 +693,12 @@ hamburguesas con margen para que la tarjeta 16:10 no corte el pan).
 Siguen sin foto: Ensalada California y Bebidas (no hay material del que
 sacarlas sin inventar un envase de marca) — piden foto real al cliente.
 
-**Kiosco**: la pantalla de elegir idioma lleva otra vez la **foto fija**
-(`menu/hamburguesa-xxl.webp` en la mitad derecha, degradado oscuro a la
-izquierda). El vídeo `client/public/video/bienvenida.{webm,mp4}` (montado con
+**Kiosco**: la pantalla de elegir idioma lleva de fondo el **vídeo real del
+asador** que aportó el dueño (`video/kebab-asador.{webm,mp4}` + póster) a
+pantalla completa, solo un poco atenuado, con el logo y los botones en una
+tarjeta semitransparente (`.k-bienvenida-panel`). Ojo: cuando el dueño dijo
+"como estaba antes del vídeo" se refería a ESTO, no a la foto fija de la
+hamburguesa (se puso por error y la rechazó). El vídeo `client/public/video/bienvenida.{webm,mp4}` (montado con
 HyperFrames: fuente y cómo re-renderizar en `docs/video-bienvenida/`; incluye
 el asador real que aportó el dueño, `kebab-asador.mp4`) es ahora el
 **salvapantallas** (`components/Salvapantallas.jsx`, a petición del dueño):
