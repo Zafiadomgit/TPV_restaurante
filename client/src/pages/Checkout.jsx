@@ -1,23 +1,32 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api.js";
 import { formatTicket } from "../format.js";
 import { getIdioma, guardarIdioma } from "../idioma.js";
 import { t, ESTADOS_LABEL, METODO_PAGO_LABEL } from "../textos.js";
 import SelectorIdioma from "../components/SelectorIdioma.jsx";
+import { useInactividad } from "../useInactividad.js";
 
 const POLL_MS = 3000;
 
 const ESTADOS_SIN_AVISO = ["listo", "entregado", "cancelado"];
 
+// Pantalla final del kiosco: si nadie la toca en este tiempo (el cliente ya
+// se fue a caja con su número), vuelve sola al inicio, que arranca con el
+// salvapantallas. Escribir el WhatsApp cuenta como actividad.
+const VOLVER_AL_INICIO_MS = 60 * 1000;
+
 export default function Checkout() {
   const { orderId } = useParams();
+  const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [error, setError] = useState("");
   const [idioma, setIdioma] = useState(() => getIdioma());
   const [telefonoInput, setTelefonoInput] = useState("");
   const [guardandoTelefono, setGuardandoTelefono] = useState(false);
   const [errorTelefono, setErrorTelefono] = useState("");
+
+  useInactividad(VOLVER_AL_INICIO_MS, () => navigate("/"));
 
   const cambiarIdioma = (nuevo) => {
     setIdioma(nuevo);

@@ -703,7 +703,7 @@ pantalla completa con "Toca para pedir · Tap to order", sale al abrir el
 kiosco y tras inactividad (`useInactividad.js`: 60 s sin pedido, 3 min con un
 pedido a medias, que entonces se descarta). El primer toque solo lo cierra
 (se cierra en `click`, no en `pointerdown`, para que no atraviese al botón de
-debajo) y deja en elegir idioma. **Bebidas**: fotos de
+debajo) y deja en elegir idioma. La pantalla final (`Checkout.jsx`, número de pedido) vuelve sola a `/` (y por tanto al salvapantallas) tras 60 s sin tocarla. **Bebidas**: fotos de
 Coca-Cola (botella), Coca-Cola 0, Monster y agua (Ciel) con el fondo
 quitado con `@imgly/background-removal-node` (npm, modelo incluido, funciona
 sin red — útil para próximos lotes) y `supabase/menu_imagenes_bebidas.sql`;
