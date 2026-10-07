@@ -14,18 +14,21 @@ import SelectorIdioma from "../components/SelectorIdioma.jsx";
 import UpsellComplementos from "../components/UpsellComplementos.jsx";
 import SelectorSede from "../components/SelectorSede.jsx";
 import KioskCabecera from "../components/KioskCabecera.jsx";
+import Salvapantallas from "../components/Salvapantallas.jsx";
 import { rectDeFoto, volarAlPedido } from "../efectosAnadir.js";
+import { useInactividad } from "../useInactividad.js";
 
 const CATEGORIA_UPSELL = "Complementos";
 
-// Fondo de la bienvenida: vídeo montado con HyperFrames (fuente en
-// docs/video-bienvenida/) — asador real + KEBAB, hamburguesa, pizza, dürüm/
-// kebab/pedrata y logo, 24 s en bucle. Textos y productos van en la mitad
-// derecha: a la izquierda está la tarjeta de elegir idioma. WebM (VP9)
-// primero y MP4 (H.264) de respaldo; el póster es un fotograma.
-const VIDEO_BIENVENIDA_WEBM = "/video/bienvenida.webm";
-const VIDEO_BIENVENIDA_MP4 = "/video/bienvenida.mp4";
-const POSTER_BIENVENIDA = "/video/bienvenida-poster.webp";
+// Fondo de la pantalla de elegir idioma: foto fija de producto, en la mitad
+// derecha (a la izquierda va el panel de idioma). El vídeo de bienvenida ya
+// no va aquí: ahora es el salvapantallas (components/Salvapantallas.jsx).
+const FOTO_BIENVENIDA = "/menu/hamburguesa-xxl.webp";
+// Salvapantallas: sale al abrir el kiosco y tras este tiempo sin tocar la
+// pantalla. Si hay un pedido a medias se espera más, y al saltar se
+// descarta (el cliente se ha ido) para que el siguiente empiece de cero.
+const INACTIVIDAD_SIN_PEDIDO_MS = 60 * 1000;
+const INACTIVIDAD_CON_PEDIDO_MS = 3 * 60 * 1000;
 // Fondo de la pantalla "¿Dónde vas a comer hoy?".
 const FONDO_INICIO = "/menu/fondo-inicio.webp";
 // Fotos de las dos tarjetas de "¿Dónde vas a comer hoy?" — reutilizan las
@@ -71,6 +74,7 @@ export default function Order() {
   // Aviso "✓ X añadido a tu pedido" que salta cada vez que algo entra en
   // el carrito (a petición del cliente, efecto al añadir producto).
   const [avisoAnadido, setAvisoAnadido] = useState(null);
+  const [salvapantallas, setSalvapantallas] = useState(true);
 
   useEffect(() => {
     if (!avisoAnadido) return undefined;
@@ -137,18 +141,37 @@ export default function Order() {
   // había añadido al carrito.
   const pedirConfirmacionCancelar = () => setConfirmandoCancelar(true);
 
-  const confirmarCancelar = () => {
+  // Deja el kiosco listo para el siguiente cliente: pedido vacío y en la
+  // pantalla de elegir idioma.
+  const reiniciarPedido = () => {
     setItems([]);
     setNotasGenerales("");
     setTipoServicio(null);
-    // A petición del cliente: cancelar vuelve a la pantalla de elegir
-    // idioma (bienvenida), no a "¿Dónde vas a comer hoy?" — el siguiente
-    // cliente empieza siempre desde el principio.
     setPaso("bienvenida");
     setUpsellVisto(false);
+    setMostrarUpsell(false);
     setAvisoAnadido(null);
     setConfirmandoCancelar(false);
+    setProductoPersonalizando(null);
+    setProductoEnWizard(null);
   };
+
+  // A petición del cliente: cancelar vuelve a la pantalla de elegir idioma
+  // (bienvenida), no a "¿Dónde vas a comer hoy?" — el siguiente cliente
+  // empieza siempre desde el principio.
+  const confirmarCancelar = reiniciarPedido;
+
+  // Sin tocar la pantalla un rato → vuelve el salvapantallas. Con el pedido
+  // ya enviándose no se toca nada.
+  const pedidoAMedias = paso !== "bienvenida" || items.length > 0;
+  useInactividad(
+    pedidoAMedias ? INACTIVIDAD_CON_PEDIDO_MS : INACTIVIDAD_SIN_PEDIDO_MS,
+    () => {
+      reiniciarPedido();
+      setSalvapantallas(true);
+    },
+    !salvapantallas && !enviando
+  );
 
   const onAddProducto = (producto, tarjeta) => {
     origenVuelo.current = rectDeFoto(tarjeta);
@@ -331,25 +354,18 @@ export default function Order() {
     );
   }
 
-  // Pantalla de bienvenida: fotos del menú + elegir idioma, antes de
+  if (salvapantallas) {
+    return <Salvapantallas onCerrar={() => setSalvapantallas(false)} textoToca="Toca para pedir · Tap to order" />;
+  }
+
+  // Pantalla de bienvenida: foto de producto + elegir idioma, antes de
   // cargar nada — a petición del cliente, elegir idioma aquí es lo que
   // lleva directo a la pantalla de empezar el pedido (no hace falta
   // esperar a que el menú termine de cargar para ver esto).
   if (paso === "bienvenida") {
     return (
       <div className="kiosco k-bienvenida">
-        <video
-          className="k-bienvenida-video"
-          poster={POSTER_BIENVENIDA}
-          autoPlay
-          muted
-          loop
-          playsInline
-          aria-hidden="true"
-        >
-          <source src={VIDEO_BIENVENIDA_WEBM} type="video/webm" />
-          <source src={VIDEO_BIENVENIDA_MP4} type="video/mp4" />
-        </video>
+        <img src={FOTO_BIENVENIDA} alt="" className="k-bienvenida-foto" />
         <div className="k-bienvenida-velo" />
         <div className="k-bienvenida-panel">
           <img

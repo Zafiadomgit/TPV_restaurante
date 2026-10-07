@@ -693,18 +693,17 @@ hamburguesas con margen para que la tarjeta 16:10 no corte el pan).
 Siguen sin foto: Ensalada California y Bebidas (no hay material del que
 sacarlas sin inventar un envase de marca) — piden foto real al cliente.
 
-**Kiosco**: la bienvenida tuvo un vídeo generado con recortes de las
-fotos, pero **no gustó y se retiró**. Ahora usa `client/public/video/bienvenida.{webm,mp4}`, montado con
-HyperFrames (fuente y cómo re-renderizar en `docs/video-bienvenida/`), que
-incluye el vídeo real del asador
-que aportó el dueño (`client/public/video/kebab-asador.{webm,mp4}` +
-póster): volteado en espejo para que el asador quede a la derecha del
-panel de idioma, color corregido (quitaba un tono rosado) y con fundido
-final para que el bucle no salte. Va a pantalla completa (el dueño probó un panel
-enmarcado y no le gustó), solo un poco atenuado (`.k-bienvenida-velo`
-suave); el logo y los botones de idioma van en una tarjeta semitransparente
-con desenfoque (`.k-bienvenida-panel`) para leerse sin oscurecer el vídeo
-— antes un degradado muy oscuro tapaba media pantalla y no se apreciaba. **Bebidas**: fotos de
+**Kiosco**: la pantalla de elegir idioma lleva otra vez la **foto fija**
+(`menu/hamburguesa-xxl.webp` en la mitad derecha, degradado oscuro a la
+izquierda). El vídeo `client/public/video/bienvenida.{webm,mp4}` (montado con
+HyperFrames: fuente y cómo re-renderizar en `docs/video-bienvenida/`; incluye
+el asador real que aportó el dueño, `kebab-asador.mp4`) es ahora el
+**salvapantallas** (`components/Salvapantallas.jsx`, a petición del dueño):
+pantalla completa con "Toca para pedir · Tap to order", sale al abrir el
+kiosco y tras inactividad (`useInactividad.js`: 60 s sin pedido, 3 min con un
+pedido a medias, que entonces se descarta). El primer toque solo lo cierra
+(se cierra en `click`, no en `pointerdown`, para que no atraviese al botón de
+debajo) y deja en elegir idioma. **Bebidas**: fotos de
 Coca-Cola (botella), Coca-Cola 0, Monster y agua (Ciel) con el fondo
 quitado con `@imgly/background-removal-node` (npm, modelo incluido, funciona
 sin red — útil para próximos lotes) y `supabase/menu_imagenes_bebidas.sql`;

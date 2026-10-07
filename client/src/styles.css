@@ -2589,16 +2589,17 @@ h4,
   flex-direction: row;
 }
 
-/* Vídeo del asador a pantalla completa (como lo quiere el dueño), solo
-   un poco atenuado para que se aprecie bien. El texto ya no depende de un
-   degradado oscuro encima del vídeo: va dentro de su propia tarjeta
-   (.k-bienvenida-panel). */
-.k-bienvenida-video {
+/* Foto de producto en la mitad derecha: a la izquierda va el panel de
+   idioma y la foto (producto recortado sobre fondo transparente) no debe
+   quedar debajo del texto. */
+.k-bienvenida-foto {
   position: absolute;
-  inset: 0;
-  width: 100%;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 62%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   display: block;
 }
@@ -2606,28 +2607,63 @@ h4,
 .k-bienvenida-velo {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(15, 17, 20, 0.45) 0%, rgba(15, 17, 20, 0.15) 45%, rgba(15, 17, 20, 0) 70%);
+  background: linear-gradient(90deg, rgba(15, 17, 20, 0.96) 0%, rgba(15, 17, 20, 0.85) 36%, rgba(15, 17, 20, 0.15) 62%, rgba(15, 17, 20, 0) 100%);
 }
 
 .k-bienvenida-panel {
   position: relative;
   z-index: 1;
-  align-self: center;
-  width: 560px;
-  max-width: calc(100% - 64px);
-  margin-left: 56px;
-  padding: 48px 48px 52px;
+  width: 640px;
+  max-width: 100%;
+  padding: 72px 64px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 36px;
-  /* Tarjeta semitransparente: el texto se lee bien sin oscurecer el vídeo. */
-  background: rgba(15, 17, 20, 0.72);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(245, 243, 240, 0.1);
-  border-radius: 28px;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  gap: 40px;
+}
+
+/* ---- Salvapantallas (vídeo de bienvenida) ----
+   Tapa toda la pantalla, también la barra superior; un toque lo quita. */
+.k-salvapantallas {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #0f1114;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.k-salvapantallas-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.k-salvapantallas-toca {
+  position: absolute;
+  left: 50%;
+  bottom: 48px;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 18px 40px;
+  border-radius: 999px;
+  background: var(--k-naranja);
+  color: #fff;
+  font-family: var(--k-condensada);
+  font-weight: 700;
+  font-size: 34px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  animation: k-salvapantallas-latido 2.2s ease-in-out infinite;
+}
+
+@keyframes k-salvapantallas-latido {
+  0%, 100% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.06); }
 }
 
 .k-bienvenida-logo {
