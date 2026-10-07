@@ -18,15 +18,14 @@ import { rectDeFoto, volarAlPedido } from "../efectosAnadir.js";
 
 const CATEGORIA_UPSELL = "Complementos";
 
-// Fondo de la bienvenida: vídeo real del asador de kebab (lo aportó el
-// dueño). Volteado en espejo para que el asador quede a la derecha y no
-// debajo del panel de idioma, con el color corregido y un fundido al final
-// para que el bucle no dé salto. WebM (VP9) primero y MP4 (H.264) de
-// respaldo; el póster es un fotograma, para que no haya hueco negro
-// mientras carga.
-const VIDEO_BIENVENIDA_WEBM = "/video/kebab-asador.webm";
-const VIDEO_BIENVENIDA_MP4 = "/video/kebab-asador.mp4";
-const POSTER_BIENVENIDA = "/video/kebab-asador-poster.webp";
+// Fondo de la bienvenida: vídeo montado con HyperFrames (fuente en
+// docs/video-bienvenida/) — asador real + KEBAB, hamburguesa, pizza, dürüm/
+// kebab/pedrata y logo, 24 s en bucle. Textos y productos van en la mitad
+// derecha: a la izquierda está la tarjeta de elegir idioma. WebM (VP9)
+// primero y MP4 (H.264) de respaldo; el póster es un fotograma.
+const VIDEO_BIENVENIDA_WEBM = "/video/bienvenida.webm";
+const VIDEO_BIENVENIDA_MP4 = "/video/bienvenida.mp4";
+const POSTER_BIENVENIDA = "/video/bienvenida-poster.webp";
 // Fondo de la pantalla "¿Dónde vas a comer hoy?".
 const FONDO_INICIO = "/menu/fondo-inicio.webp";
 // Fotos de las dos tarjetas de "¿Dónde vas a comer hoy?" — reutilizan las

@@ -17,8 +17,8 @@ en la mitad derecha porque a la izquierda está la tarjeta de elegir idioma.
    - `gsap.min.js` ← `gsap/dist/` (junto a `index.html`, no en assets/)
 3. Necesita ffmpeg/ffprobe y Chrome headless (`HYPERFRAMES_BROWSER_PATH` si no lo encuentra).
 4. `npx hyperframes render -o borrador.mp4`, y comprimir para el kiosco:
-   - `ffmpeg -i borrador.mp4 -an -c:v libx264 -crf 24 -pix_fmt yuv420p -movflags +faststart kebab-asador.mp4`
-   - `ffmpeg -i borrador.mp4 -an -c:v libvpx-vp9 -b:v 0 -crf 34 kebab-asador.webm`
+   - `ffmpeg -i borrador.mp4 -an -c:v libx264 -crf 24 -pix_fmt yuv420p -movflags +faststart client/public/video/bienvenida.mp4`
+   - `ffmpeg -i borrador.mp4 -an -c:v libvpx-vp9 -b:v 0 -crf 34 client/public/video/bienvenida.webm` (y el póster `bienvenida-poster.webp`, un fotograma)
 
-Estado: BORRADOR, pendiente de aprobación; cuando lleguen los clips de Dreamina se
-sustituye el material de cada escena.
+Estado: en el kiosco desde octubre 2026 (versión borrador con fotos);
+cuando lleguen los clips de Dreamina se sustituye el material de cada escena.

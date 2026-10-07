@@ -694,7 +694,9 @@ Siguen sin foto: Ensalada California y Bebidas (no hay material del que
 sacarlas sin inventar un envase de marca) — piden foto real al cliente.
 
 **Kiosco**: la bienvenida tuvo un vídeo generado con recortes de las
-fotos, pero **no gustó y se retiró**. Ahora usa un vídeo real del asador
+fotos, pero **no gustó y se retiró**. Ahora usa `client/public/video/bienvenida.{webm,mp4}`, montado con
+HyperFrames (fuente y cómo re-renderizar en `docs/video-bienvenida/`), que
+incluye el vídeo real del asador
 que aportó el dueño (`client/public/video/kebab-asador.{webm,mp4}` +
 póster): volteado en espejo para que el asador quede a la derecha del
 panel de idioma, color corregido (quitaba un tono rosado) y con fundido
