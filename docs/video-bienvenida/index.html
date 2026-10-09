@@ -148,7 +148,6 @@
       <div id="s2" class="clip fondo-calido" data-start="6" data-duration="4.5">
         <img id="burger" class="producto" src="assets/hamburguesa-xxl.webp" style="left: 930px; top: 360px; width: 820px" alt="" />
         <div id="t2" class="titulo" style="top: 110px">
-          <span class="etiqueta">A la plancha</span>
           <span class="grande" style="font-size: 150px">Hamburguesas</span>
         </div>
       </div>
@@ -252,7 +251,6 @@
       // 2 · Hamburguesa: entra girando y cae con un pequeño rebote
       tl.fromTo("#burger", { x: 500, y: 160, rotation: 25, scale: 0.6 }, { x: 0, y: 0, rotation: 0, scale: 1, duration: 1.1, ease: "back.out(1.4)" }, 6.2);
       tl.to("#burger", { scale: 1.06, y: -14, duration: 3.1, ease: "sine.inOut" }, 7.35);
-      tl.from("#t2 .etiqueta", { x: 80, opacity: 0, duration: 0.5, ease: "power3.out" }, 6.6);
       tl.from("#t2 .grande", { y: 120, opacity: 0, duration: 0.7, ease: "power3.out" }, 6.8);
 
       // 3 · Pizza: zoom y giro lentos
