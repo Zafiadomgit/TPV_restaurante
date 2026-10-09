@@ -383,7 +383,7 @@ export default function Order() {
         <div className="k-bienvenida-velo" />
         <div className="k-bienvenida-panel">
           <img
-            src="/brand/svg/logo-horizontal-color.svg"
+            src="/brand/svg/logo-horizontal-transparente.svg"
             alt="California — Kebab, Hamburguesería, Pizzería"
             className="k-bienvenida-logo"
           />
