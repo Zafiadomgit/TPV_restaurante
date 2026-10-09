@@ -12,7 +12,7 @@ en la mitad derecha porque a la izquierda está la tarjeta de elegir idioma.
    - `asador.mp4` ← `client/public/video/kebab-asador.mp4`
    - `hamburguesa-xxl.webp`, `pizza-carta.webp`, `durum-ternera-ia.webp`, `kebab.webp`,
      `pedratas-xxl.webp` ← `client/public/menu/`
-   - `logo.svg` ← `client/public/brand/svg/logo-horizontal-color.svg`
+   - `logo.svg` ← `client/public/brand/svg/logo-horizontal-transparente.svg` (sin caja de fondo; lleva sombra en el CSS)
    - `barlow-condensed-latin-{600,800}-normal.woff2` ← `@fontsource/barlow-condensed/files/`
    - `gsap.min.js` ← `gsap/dist/` (junto a `index.html`, no en assets/)
 3. Necesita ffmpeg/ffprobe y Chrome headless (`HYPERFRAMES_BROWSER_PATH` si no lo encuentra).
