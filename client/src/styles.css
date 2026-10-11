@@ -3732,6 +3732,27 @@ h4,
   opacity: 0.75;
 }
 
+/* Paso con fotos ("Solo" / "En menú"): fichas grandes, foto arriba. */
+.menu-wizard-opciones--fotos {
+  grid-template-columns: repeat(auto-fit, minmax(340px, 400px));
+  justify-content: center;
+  gap: 28px;
+}
+
+.menu-wizard-opcion--foto {
+  min-height: 380px;
+  justify-content: flex-start;
+  padding: 24px 20px 22px;
+}
+
+.menu-wizard-opcion-foto {
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 16 / 10;
+  object-fit: contain;
+  display: block;
+}
+
 /* "Quitar ingredientes": icono tachado apagado mientras el ingrediente
    sigue incluido, en rojo al marcarlo para quitar. */
 .menu-wizard-opcion--quitar .menu-wizard-quitar-icono {

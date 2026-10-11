@@ -81,7 +81,11 @@ export default function MenuWizard({ producto, idioma, onConfirmar, onCancelar }
         <div className="menu-wizard-paso">
           <h2 className="menu-wizard-titulo">{pasoActual.titulo}</h2>
           {pasoActual.nota && <p className="menu-wizard-nota">{pasoActual.nota}</p>}
-          <div className="menu-wizard-opciones">
+          <div
+            className={`menu-wizard-opciones ${
+              pasoActual.opciones.some((o) => o.imagen) ? "menu-wizard-opciones--fotos" : ""
+            }`}
+          >
             {pasoActual.opciones.map((opcion) => {
               const elegida = (seleccion[pasoActual.id] || []).includes(opcion.id);
               // El paso de tamaño (si lo hubiera) muestra el precio
@@ -133,13 +137,25 @@ export default function MenuWizard({ producto, idioma, onConfirmar, onCancelar }
                 );
               }
 
+              // Foto en la ficha (a petición del cliente, para "Solo" / "En
+              // menú"): la opción la trae en `imagen` (p. ej. la foto del
+              // combo con patatas y bebida). Si alguna opción del paso
+              // "menu" tiene foto, "Solo" enseña la del propio producto,
+              // para que las dos fichas se vean parejas.
+              const fotoOpcion =
+                opcion.imagen ||
+                (pasoActual.id === "menu" && opcion.id === "solo" && pasoActual.opciones.some((o) => o.imagen)
+                  ? producto.imagen
+                  : null);
+
               return (
                 <button
                   key={opcion.id}
                   type="button"
-                  className={`menu-wizard-opcion ${elegida ? "elegida" : ""}`}
+                  className={`menu-wizard-opcion ${fotoOpcion ? "menu-wizard-opcion--foto" : ""} ${elegida ? "elegida" : ""}`}
                   onClick={() => elegirOpcion(pasoActual, opcion.id)}
                 >
+                  {fotoOpcion && <img src={fotoOpcion} alt="" className="menu-wizard-opcion-foto" />}
                   <span className="menu-wizard-opcion-nombre">{opcion.nombre}</span>
                   {precioMostrado > 0 && (
                     <span className="menu-wizard-opcion-precio">
