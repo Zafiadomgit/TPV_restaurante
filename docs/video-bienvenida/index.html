@@ -161,7 +161,7 @@
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="25.5" data-width="1920" data-height="1080">
+    <div id="root" data-composition-id="main" data-start="0" data-duration="38" data-width="1920" data-height="1080">
       <!-- 1 · Cortando el döner (0–7.5 s): clip vertical a la derecha sobre su copia desenfocada -->
       <video id="v1" class="clip" src="assets/corte.mp4" data-start="0" data-duration="7.5" muted></video>
       <div class="marco-vertical" data-start="0" data-duration="7.5"></div>
@@ -189,30 +189,51 @@
         <span class="grande" style="font-size: 170px">Listo<br />para ti</span>
       </div>
 
-      <!-- 4 · Logo (21–25.5 s) -->
-      <div id="s4" class="clip fondo-calido" data-start="21" data-duration="4.5" style="background: radial-gradient(ellipse 55% 65% at 50% 52%, rgba(233, 112, 47, 0.38), rgba(15, 17, 20, 0) 70%), #0f1114"></div>
-      <img id="logo" src="assets/logo.svg" data-start="21" data-duration="4.5" alt="" />
-      <div id="t4" class="titulo" style="top: 640px; left: 0; right: 0; text-align: center" data-start="21" data-duration="4.5">
+      <!-- 4 · Hamburguesa (21–26.6 s): clip recortado a la derecha, texto a la izquierda -->
+      <video id="v4" class="clip" src="assets/hamburguesa.mp4" data-start="21" data-duration="5.6" muted></video>
+      <div class="marco-vertical" style="left: 820px; width: 1060px" data-start="21" data-duration="5.6"></div>
+      <div class="clip velo-izq" data-start="21" data-duration="5.6" style="z-index: 2"></div>
+      <div id="t4h" class="titulo izq" style="top: 380px; left: 150px" data-start="21" data-duration="5.6">
+        <span class="etiqueta">Recién hechas</span>
+        <span class="grande" style="font-size: 104px">Hamburguesas</span>
+      </div>
+
+      <!-- 5 · Pizza (26.6–33.5 s): clip vertical a la izquierda, texto a la derecha -->
+      <video id="v5" class="clip" src="assets/pizza.mp4" data-start="26.6" data-duration="6.9" muted></video>
+      <div class="marco-vertical" style="left: 162px" data-start="26.6" data-duration="6.9"></div>
+      <div class="clip velo-dcha-fuerte" data-start="26.6" data-duration="6.9" style="z-index: 2"></div>
+      <div id="t5p" class="titulo" style="top: 330px" data-start="26.6" data-duration="6.9">
+        <span class="etiqueta">Recién horneadas</span>
+        <span class="grande">Pizzas</span>
+        <span class="sub">Pequeña · Mediana · Familiar</span>
+      </div>
+
+      <!-- 6 · Logo (33.5–38 s) -->
+      <div id="s4" class="clip fondo-calido" data-start="33.5" data-duration="4.5" style="background: radial-gradient(ellipse 55% 65% at 50% 52%, rgba(233, 112, 47, 0.38), rgba(15, 17, 20, 0) 70%), #0f1114"></div>
+      <img id="logo" src="assets/logo.svg" data-start="33.5" data-duration="4.5" alt="" />
+      <div id="t4" class="titulo" style="top: 640px; left: 0; right: 0; text-align: center" data-start="33.5" data-duration="4.5">
         <span class="sub" style="font-size: 52px">Kebab · Hamburguesería · Pizzería</span>
       </div>
 
       <!-- Brasas (asador y logo) -->
-      <div id="brasas" class="clip" data-start="0" data-duration="25.5" style="z-index: 8"></div>
+      <div id="brasas" class="clip" data-start="0" data-duration="38" style="z-index: 8"></div>
 
       <!-- Barridos de transición -->
       <div id="b1" class="barrido" data-start="7.05" data-duration="0.9"></div>
       <div id="b2" class="barrido" data-start="14.55" data-duration="0.9"></div>
       <div id="b3" class="barrido" data-start="20.55" data-duration="0.9"></div>
+      <div id="b4" class="barrido" data-start="26.15" data-duration="0.9"></div>
+      <div id="b5" class="barrido" data-start="33.05" data-duration="0.9"></div>
 
       <!-- Fundido de entrada/salida para que el bucle no dé salto -->
       <div id="negro-in" class="clip negro" data-start="0" data-duration="0.6"></div>
-      <div id="negro-out" class="clip negro" data-start="24.9" data-duration="0.6"></div>
+      <div id="negro-out" class="clip negro" data-start="37.4" data-duration="0.6"></div>
     </div>
 
     <script>
       // Brasas con posiciones deterministas (sin Math.random: el render
       // tiene que salir idéntico cada vez).
-      const DUR = 25.5;
+      const DUR = 38;
       let semilla = 7;
       const azar = () => {
         semilla = (semilla * 16807) % 2147483647;
@@ -247,7 +268,7 @@
       }
       // Las brasas solo en el asador y en el logo, no sobre el dürüm.
       tl.to("#brasas", { opacity: 0, duration: 0.4, ease: "none" }, 7.1);
-      tl.to("#brasas", { opacity: 1, duration: 0.6, ease: "none" }, 21);
+      tl.to("#brasas", { opacity: 1, duration: 0.6, ease: "none" }, 33.5);
 
       tl.fromTo("#negro-in", { opacity: 1 }, { opacity: 0, duration: 0.6, ease: "power1.out" }, 0);
 
@@ -257,7 +278,7 @@
       tl.from("#t1-grande span", { y: 140, opacity: 0, rotation: -8, duration: 0.7, stagger: 0.08, ease: "back.out(1.6)" }, 0.6);
       tl.from("#t1 .sub", { x: -80, opacity: 0, duration: 0.6, ease: "power3.out" }, 1.3);
 
-      for (const [id, t] of [["#b1", 7.05], ["#b2", 14.55], ["#b3", 20.55]]) {
+      for (const [id, t] of [["#b1", 7.05], ["#b2", 14.55], ["#b3", 20.55], ["#b4", 26.15], ["#b5", 33.05]]) {
         tl.fromTo(id, { xPercent: -160 }, { xPercent: 230, duration: 0.9, ease: "power2.inOut" }, t);
       }
 
@@ -272,11 +293,22 @@
       tl.from("#t3 .etiqueta", { x: -80, opacity: 0, duration: 0.5, ease: "power3.out" }, 15.5);
       tl.from("#t3 .grande", { x: -140, opacity: 0, duration: 0.7, ease: "power3.out" }, 15.7);
 
-      // 4 · Logo
-      tl.from("#logo", { scale: 0.7, opacity: 0, duration: 0.9, ease: "back.out(1.5)" }, 21.3);
-      tl.from("#t4 .sub", { y: 40, opacity: 0, duration: 0.6, ease: "power3.out" }, 22.0);
+      // 4 · Hamburguesas
+      tl.fromTo("#v4", { scale: 1.06 }, { scale: 1.0, duration: 5.6, ease: "none" }, 21);
+      tl.from("#t4h .etiqueta", { x: -80, opacity: 0, duration: 0.5, ease: "power3.out" }, 21.5);
+      tl.from("#t4h .grande", { y: 120, opacity: 0, duration: 0.7, ease: "power3.out" }, 21.7);
 
-      tl.fromTo("#negro-out", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power1.in" }, 24.9);
+      // 5 · Pizzas
+      tl.fromTo("#v5", { scale: 1.0 }, { scale: 1.05, duration: 6.9, ease: "none" }, 26.6);
+      tl.from("#t5p .etiqueta", { x: 80, opacity: 0, duration: 0.5, ease: "power3.out" }, 27.1);
+      tl.from("#t5p .grande", { scale: 1.6, opacity: 0, duration: 0.7, ease: "power4.out" }, 27.25);
+      tl.from("#t5p .sub", { y: 40, opacity: 0, duration: 0.5, ease: "power3.out" }, 27.8);
+
+      // 6 · Logo
+      tl.from("#logo", { scale: 0.7, opacity: 0, duration: 0.9, ease: "back.out(1.5)" }, 33.8);
+      tl.from("#t4 .sub", { y: 40, opacity: 0, duration: 0.6, ease: "power3.out" }, 34.5);
+
+      tl.fromTo("#negro-out", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power1.in" }, 37.4);
 
       window.__timelines = window.__timelines || {};
       window.__timelines["main"] = tl;

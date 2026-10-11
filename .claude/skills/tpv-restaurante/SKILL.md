@@ -698,7 +698,7 @@ asador** que aportó el dueño (`video/kebab-asador.{webm,mp4}` + póster) a
 pantalla completa, solo un poco atenuado, con el logo y los botones en una
 tarjeta semitransparente (`.k-bienvenida-panel`). Ojo: cuando el dueño dijo
 "como estaba antes del vídeo" se refería a ESTO, no a la foto fija de la
-hamburguesa (se puso por error y la rechazó). El vídeo `client/public/video/bienvenida.{webm,mp4}` (desde octubre 2026: los 3 clips de Pexels que mandó el dueño — cortando el döner, montando y enrollando un dürüm — + logo; ver `docs/video-bienvenida/README.md`) (montado con
+hamburguesa (se puso por error y la rechazó). El vídeo `client/public/video/bienvenida.{webm,mp4}` (desde octubre 2026: clips de Pexels que mandó el dueño — cortando el döner, montando y enrollando un dürüm, hamburguesa, pizza — + logo, 38 s; ver `docs/video-bienvenida/README.md`) (montado con
 HyperFrames: fuente y cómo re-renderizar en `docs/video-bienvenida/`; incluye
 el asador real que aportó el dueño, `kebab-asador.mp4`) es ahora el
 **salvapantallas** (`components/Salvapantallas.jsx`, a petición del dueño):
