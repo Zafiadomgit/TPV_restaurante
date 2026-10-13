@@ -9,10 +9,30 @@
 import qz from "qz-tray";
 import { construirTicketCocina } from "./ticketCocinaTexto.js";
 
-// ESC p 0 25 250 — el comando de "kick" estándar que reconoce prácticamente
-// cualquier impresora de tickets con cajón conectado (pin 2, tiempos de
-// pulso habituales). No hace falta saber el modelo exacto de impresora.
-const COMANDO_ABRIR_CAJON = "\x1B\x70\x00\x19\xFA";
+// ESC p m 25 250 — el comando de "kick" estándar de las impresoras de
+// tickets con cajón conectado. Según el modelo, el cajón va al conector
+// del pin 2 (m=0) o al del pin 5 (m=1); se mandan los dos seguidos para
+// que abra sea cual sea (al que no tiene cajón no le pasa nada). Antes
+// solo se mandaba el del pin 2 y en algunos cajones no abría.
+const COMANDO_ABRIR_CAJON = "\x1B\x70\x00\x19\xFA" + "\x1B\x70\x01\x19\xFA";
+
+// Impresoras "virtuales" de Windows/Mac que nunca son la de tickets: al
+// elegir impresora se ponen al final y no se preseleccionan (antes se
+// preseleccionaba la primera de la lista, que suele ser "Fax" o
+// "Microsoft Print to PDF", y el cajón no abría sin dar ningún error).
+const IMPRESORAS_VIRTUALES = /pdf|xps|fax|onenote|anydesk|send to|enviar a|document writer|microsoft print/i;
+const PISTAS_TICKETS = /pos|tm-|tm |epson|star|xprinter|bixolon|citizen|sunmi|thermal|t[ée]rmica|receipt|ticket|recibo|80mm|58mm|xp-|rongta|hprt|munbyn/i;
+
+// Ordena la lista para el desplegable: primero las que parecen de
+// tickets, después el resto y al final las virtuales.
+export function ordenarImpresoras(nombres) {
+  const peso = (n) => (PISTAS_TICKETS.test(n) ? 0 : IMPRESORAS_VIRTUALES.test(n) ? 2 : 1);
+  return [...nombres].sort((a, b) => peso(a) - peso(b));
+}
+
+export function esImpresoraVirtual(nombre) {
+  return IMPRESORAS_VIRTUALES.test(nombre || "");
+}
 
 const CLAVE_IMPRESORA_GUARDADA = "tpv_impresora_caja";
 // Cocina imprime en un dispositivo aparte de caja (el dueño pidió

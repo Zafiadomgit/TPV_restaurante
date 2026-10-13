@@ -780,6 +780,15 @@ plano para recibir estas órdenes desde la web.
   el hardware — pendiente de que el dueño confirme que funciona en el
   dispositivo real una vez instale QZ Tray).
 
+**Octubre 2026 — "no abre el cajón"**: antes la lista de impresoras
+preseleccionaba la primera (suele ser "Fax" o "Microsoft Print to PDF") y
+la elegida quedaba guardada sin forma de cambiarla, así que el cajón podía
+no abrir nunca sin dar error. Ahora `ordenarImpresoras()` pone primero las
+de tickets y al final las virtuales (`esImpresoraVirtual()`); una virtual
+guardada se ignora y se vuelve a pedir; tras abrir se enseña a qué
+impresora se mandó, con enlace "Cambiar impresora"; y el kick va a los dos
+conectores (pin 2 y pin 5).
+
 ### Tickets de cocina impresos, en impresora aparte de caja (`ticketCocinaTexto.js` + `qzTray.js`)
 A petición del cliente ("tickets de cocina claros y separados, necesidad
 de impresora aparte"): además del tablero KDS en pantalla (`Kitchen.jsx`),
@@ -787,7 +796,7 @@ cada comanda nueva se imprime en papel en una impresora de cocina que
 puede ser un dispositivo físico distinto del de caja.
 
 - `client/src/ticketCocinaTexto.js` construye el texto ESC/POS del
-  ticket (`construirTicketCocina(order)`): número de ticket grande,
+  ticket (`construirTicketCocina(order)`; desde oct. 2026 letra grande: producto a doble alto y ancho, cada cambio en su línea a doble alto): número de ticket grande,
   mesa/origen, hora, cada línea de item con su `modificadoresTexto`/
   `notas`, y `notasGenerales` del pedido si las hay. Reutiliza los mismos
   campos que ya pinta `OrderTicket.jsx` en pantalla — no hay una segunda
@@ -943,7 +952,7 @@ turno abierto sí/no"), confírmalo con el dueño antes de añadirlo — es
 justo lo que se acaba de sacar de ahí a propósito.
 
 Tras cobrar, aparece un botón "Imprimir recibo" que llama a
-`window.print()` sobre `ReciboImprimible.jsx` (`client/src/components/`)
+`imprimirRecibo()` (ReciboImprimible.jsx: mide el recibo y fija `@page { size: 80mm <alto>mm }` para no gastar papel; el recibo va en un portal en `<body>` y al imprimir se oculta todo lo demás con `display:none`; letra 15–26 px en negro puro, a petición del cliente) y antes `window.print()` sobre `ReciboImprimible.jsx` (`client/src/components/`)
 — un ticket de 80mm oculto en pantalla (`.recibo-imprimible { display:
 none }`) que solo se muestra mediante `@media print` en `styles.css` (con
 la técnica estándar `visibility: hidden` en `body *` + `visibility:

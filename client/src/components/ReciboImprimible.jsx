@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { formatTicket } from "../format.js";
 
 function formatFechaHora(iso) {
@@ -18,13 +19,37 @@ const DATOS_NEGOCIO = {
   email: "Kebabcali21@gmail.com",
 };
 
+// Imprime el recibo ajustando el largo del papel al del ticket (a
+// petición del cliente: "que salga menos ticket"). Sin esto el navegador
+// imprime una página entera (A4/carta) y la impresora de rollo saca un
+// tramo largo de papel en blanco. Mide el recibo, fija @page a 80 mm de
+// ancho x su alto real, imprime y quita la regla.
+export function imprimirRecibo() {
+  const recibo = document.querySelector(".recibo-imprimible");
+  let estilo = null;
+  if (recibo) {
+    const antes = recibo.getAttribute("style");
+    recibo.setAttribute("style", "display:block;position:fixed;left:-10000px;top:0;width:80mm;visibility:hidden");
+    const altoMm = Math.ceil((recibo.scrollHeight * 25.4) / 96) + 6;
+    if (antes === null) recibo.removeAttribute("style");
+    else recibo.setAttribute("style", antes);
+    estilo = document.createElement("style");
+    estilo.textContent = `@page { size: 80mm ${altoMm}mm; margin: 0; }`;
+    document.head.appendChild(estilo);
+  }
+  window.print();
+  if (estilo) setTimeout(() => estilo.remove(), 1000);
+}
+
 // Se queda fuera de la vista en pantalla (ver .recibo-imprimible en
 // styles.css) y solo se muestra cuando el navegador imprime — no es un
-// modal, así que no necesita botón de cerrar ni overlay.
+// modal, así que no necesita botón de cerrar ni overlay. Va directo en
+// <body> (portal) para que al imprimir se pueda ocultar todo lo demás con
+// display:none y no ocupe papel.
 export default function ReciboImprimible({ venta }) {
   if (!venta) return null;
 
-  return (
+  return createPortal(
     <div className="recibo-imprimible">
       <div className="recibo-header">
         <img src="/brand/svg/logo-ticket-negro.svg" alt="California" className="recibo-logo" />
@@ -83,6 +108,7 @@ export default function ReciboImprimible({ venta }) {
       )}
 
       <p className="recibo-footer">¡Gracias por tu visita!</p>
-    </div>
+    </div>,
+    document.body
   );
 }

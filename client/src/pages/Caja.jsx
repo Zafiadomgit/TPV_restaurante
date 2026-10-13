@@ -1,12 +1,75 @@
+  const mandarAbrirCajon = async (impresora) => {
+    setAbriendoCajon(true);
+    setErrorCajon("");
+    setAvisoCajon("");
+    try {
+      await abrirCajon(impresora);
+      setAvisoCajon(`Orden de abrir enviada a «${impresora}».`);
+    } catch (e) {
+      setErrorCajon(e.message);
+    } finally {
+      setAbriendoCajon(false);
+    }
+  };
+
+  // Lista de impresoras para elegir (primera vez, o con "Cambiar
+  // impresora"): las de tickets primero y preseleccionadas; PDF, XPS,
+  // Fax... al final.
+  const pedirElegirImpresora = async () => {
+    setErrorCajon("");
+    setAvisoCajon("");
+    setAbriendoCajon(true);
+    try {
+      const impresoras = await listarImpresoras();
+      if (!impresoras || impresoras.length === 0) {
+        setErrorCajon("QZ Tray no encontró ninguna impresora instalada en este dispositivo.");
+        return;
+      }
+      const ordenadas = ordenarImpresoras(impresoras);
+      const guardada = getImpresoraGuardada();
+      setImpresorasParaElegir(ordenadas);
+      setImpresoraElegida(guardada && ordenadas.includes(guardada) && !esImpresoraVirtual(guardada) ? guardada : ordenadas[0]);
+    } catch (e) {
+      setErrorCajon(e.message);
+    } finally {
+      setAbriendoCajon(false);
+    }
+  };
+
+  const clicAbrirCajon = async () => {
+    const impresoraGuardada = getImpresoraGuardada();
+    // Una impresora virtual (PDF, Fax...) guardada de antes nunca abre el
+    // cajón: se vuelve a pedir que se elija la buena.
+    if (impresoraGuardada && !esImpresoraVirtual(impresoraGuardada)) {
+      await mandarAbrirCajon(impresoraGuardada);
+      return;
+    }
+    await pedirElegirImpresora();
+  };
+
+  const confirmarImpresoraYAbrir = async () => {
+    if (!impresoraElegida) return;
+    guardarImpresora(impresoraElegida);
+    setImpresorasParaElegir(null);
+    await mandarAbrirCajon(impresoraElegida);
+  };
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../api.js";
 import { calcularTotales } from "../totales.js";
 import { formatTicket } from "../format.js";
 import { getSede, guardarSede, borrarSede, SEDES } from "../sede.js";
-import ReciboImprimible from "../components/ReciboImprimible.jsx";
+import ReciboImprimible, { imprimirRecibo } from "../components/ReciboImprimible.jsx";
 import Personalizar from "../components/Personalizar.jsx";
 import SelectorSede from "../components/SelectorSede.jsx";
-import { abrirCajon, getImpresoraGuardada, guardarImpresora, listarImpresoras } from "../qzTray.js";
+import {
+  abrirCajon,
+  esImpresoraVirtual,
+  getImpresoraGuardada,
+  guardarImpresora,
+  listarImpresoras,
+  ordenarImpresoras,
+} from "../qzTray.js";
 
 const POLL_MS = 3000;
 
@@ -39,6 +102,9 @@ export default function Caja() {
   const [errorCajon, setErrorCajon] = useState("");
   const [impresorasParaElegir, setImpresorasParaElegir] = useState(null);
   const [impresoraElegida, setImpresoraElegida] = useState("");
+  // Tras mandar la orden se enseña a qué impresora fue, para que si el
+  // cajón no abre se vea enseguida si era la impresora equivocada.
+  const [avisoCajon, setAvisoCajon] = useState("");
 
   const [categoriaActiva, setCategoriaActiva] = useState("");
   const [items, setItems] = useState([]);
@@ -385,11 +451,19 @@ export default function Caja() {
         </div>
       </div>
       {errorCajon && <p className="error">{errorCajon}</p>}
+      {avisoCajon && !impresorasParaElegir && (
+        <p className="caja-aviso-cajon">
+          {avisoCajon} ¿No se ha abierto?{" "}
+          <button type="button" className="caja-cambiar-impresora" onClick={pedirElegirImpresora}>
+            Cambiar impresora
+          </button>
+        </p>
+      )}
 
       {impresorasParaElegir && (
         <div className="caja-elegir-impresora">
           <label htmlFor="impresora-cajon">
-            Primera vez: elige a qué impresora está conectado el cajón
+            Elige la impresora de tickets a la que está conectado el cajón (no «PDF», «XPS» ni «Fax»)
           </label>
           <div className="caja-elegir-impresora-row">
             <select
@@ -449,7 +523,7 @@ export default function Caja() {
               <p>
                 Cobrado {formatTicket(ultimaVenta.ticketNumero)} · {ultimaVenta.total.toFixed(2)} €
               </p>
-              <button type="button" className="btn-imprimir-recibo" onClick={() => window.print()}>
+              <button type="button" className="btn-imprimir-recibo" onClick={imprimirRecibo}>
                 Imprimir recibo
               </button>
               <button type="button" className="btn-anular" onClick={anularUltimaVenta}>

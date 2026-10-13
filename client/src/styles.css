@@ -1282,123 +1282,142 @@ h4,
   color: white;
 }
 
-/* ---- Recibo imprimible (solo visible al imprimir, ver @media print) ---- */
+/* ---- Recibo imprimible (solo visible al imprimir, ver @media print) ----
+   A petición del cliente: letra más grande y todo en negro puro (el gris
+   sale muy flojo en impresora térmica), y que gaste menos papel: al
+   imprimir se ocultan con display:none todos los demás hijos de <body>
+   (el recibo va en un portal directo en <body>) y imprimirRecibo() fija
+   el largo de la página al del ticket. */
 .recibo-imprimible {
   display: none;
 }
 
 @media print {
-  body * {
-    visibility: hidden;
+  body > :not(.recibo-imprimible) {
+    display: none !important;
   }
 
-  .recibo-imprimible,
-  .recibo-imprimible * {
-    visibility: visible;
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    background: #fff;
   }
+}
 
+@media print {
   .recibo-imprimible {
     display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 80mm;
-    margin: 0 auto;
-    font-family: "Barlow", "Segoe UI", monospace, sans-serif;
-    color: #000;
-    font-size: 12px;
-  }
-
-  .recibo-header {
-    text-align: center;
-    margin-bottom: 0.4rem;
-  }
-
-  .recibo-logo {
-    width: 60mm;
-    height: auto;
-  }
-
-  .recibo-tagline {
-    margin: 0.2rem 0 0;
-    font-size: 10px;
-  }
-
-  .recibo-datos-fiscales {
-    margin: 0.3rem 0 0;
-  }
-
-  .recibo-datos-fiscales p {
     margin: 0;
-    font-size: 9px;
-    color: #333;
+    padding: 2mm 3mm 0;
+    box-sizing: border-box;
   }
+}
 
-  .recibo-ticket {
-    text-align: center;
-    font-size: 16px;
-    font-weight: 700;
-    margin: 0.5rem 0 0.1rem;
-  }
+.recibo-imprimible {
+  font-family: "Segoe UI", Arial, sans-serif;
+  color: #000;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.25;
+}
 
-  .recibo-fecha,
-  .recibo-origen {
-    text-align: center;
-    margin: 0.1rem 0;
-    font-size: 11px;
-  }
+.recibo-header {
+  text-align: center;
+  margin-bottom: 1mm;
+}
 
-  .recibo-imprimible hr {
-    border: none;
-    border-top: 1px dashed #000;
-    margin: 0.4rem 0;
-  }
+.recibo-logo {
+  width: 48mm;
+  height: auto;
+}
 
-  .recibo-items {
-    width: 100%;
-    border-collapse: collapse;
-  }
+.recibo-tagline {
+  margin: 0.5mm 0 0;
+  font-size: 13px;
+  font-weight: 600;
+}
 
-  .recibo-items td {
-    padding: 0.15rem 0;
-    vertical-align: top;
-  }
+.recibo-datos-fiscales {
+  margin: 0.5mm 0 0;
+}
 
-  .recibo-item-nombre {
-    text-align: left;
-  }
+.recibo-datos-fiscales p {
+  margin: 0;
+  font-size: 12px;
+  color: #000;
+}
 
-  .recibo-item-mods {
-    display: block;
-    font-size: 10px;
-    color: #333;
-  }
+.recibo-ticket {
+  text-align: center;
+  font-size: 26px;
+  font-weight: 800;
+  margin: 1.5mm 0 0;
+}
 
-  .recibo-item-precio {
-    text-align: right;
-    white-space: nowrap;
-  }
+.recibo-fecha,
+.recibo-origen {
+  text-align: center;
+  margin: 0;
+  font-size: 14px;
+}
 
-  .recibo-totales div {
-    display: flex;
-    justify-content: space-between;
-    margin: 0.15rem 0;
-  }
+.recibo-imprimible hr {
+  border: none;
+  border-top: 1px dashed #000;
+  margin: 1.5mm 0;
+}
 
-  .recibo-total-final {
-    font-weight: 700;
-    font-size: 14px;
-    border-top: 1px dashed #000;
-    padding-top: 0.3rem;
-    margin-top: 0.3rem !important;
-  }
+.recibo-items {
+  width: 100%;
+  border-collapse: collapse;
+}
 
-  .recibo-pago,
-  .recibo-footer {
-    text-align: center;
-    margin: 0.4rem 0 0;
-    font-size: 11px;
-  }
+.recibo-items td {
+  padding: 0.6mm 0;
+  vertical-align: top;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.recibo-item-nombre {
+  text-align: left;
+}
+
+.recibo-item-mods {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #000;
+}
+
+.recibo-item-precio {
+  text-align: right;
+  white-space: nowrap;
+  padding-left: 2mm !important;
+}
+
+.recibo-totales div {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.4mm 0;
+  font-size: 15px;
+}
+
+.recibo-total-final {
+  font-weight: 800;
+  font-size: 22px !important;
+  border-top: 1px dashed #000;
+  padding-top: 1mm;
+  margin-top: 1mm !important;
+}
+
+.recibo-pago,
+.recibo-footer {
+  text-align: center;
+  margin: 1.5mm 0 0;
+  font-size: 14px;
 }
 
 .caja-dividir {
@@ -2322,6 +2341,23 @@ h4,
 .caja-abrir-cajon:disabled {
   opacity: 0.6;
   cursor: default;
+}
+
+.caja-aviso-cajon {
+  margin: 0.4rem 0 0;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.caja-cambiar-impresora {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #c2571f;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: inherit;
 }
 
 .caja-elegir-impresora {
