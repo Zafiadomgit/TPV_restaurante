@@ -7,6 +7,7 @@
 // caja (https://qz.io/download/) y que se queda escuchando en segundo
 // plano para recibir estas órdenes desde la web.
 import qz from "qz-tray";
+import { api } from "./api.js";
 import { construirTicketCocina } from "./ticketCocinaTexto.js";
 
 // ESC p m 25 250 — el comando de "kick" estándar de las impresoras de
@@ -79,7 +80,29 @@ export function guardarImpresoraCocina(nombre) {
   almacenImpresoraCocina.guardar(nombre);
 }
 
+// Conexión firmada: sin esto QZ Tray trata la web como "anónima" y
+// pregunta "Allow/Block" cada vez (y en cocina cada comanda se quedaría
+// esperando a que alguien pulse "Allow"). El certificado público está en
+// /qz/override.crt — el mismo archivo que hay que copiar una vez en la
+// carpeta de QZ Tray de cada PC — y la firma la hace el servidor con la
+// clave privada (POST /api/login?accion=firmar-qz, ver api/login.js).
+let seguridadConfigurada = false;
+function configurarSeguridad() {
+  if (seguridadConfigurada) return;
+  seguridadConfigurada = true;
+  qz.security.setCertificatePromise((resolve, reject) => {
+    fetch("/qz/override.crt", { cache: "no-store" })
+      .then((r) => (r.ok ? r.text() : Promise.reject(new Error("No se pudo cargar el certificado de QZ Tray"))))
+      .then(resolve, reject);
+  });
+  qz.security.setSignatureAlgorithm("SHA512");
+  qz.security.setSignaturePromise((textoAFirmar) => (resolve, reject) => {
+    api.firmarQz(textoAFirmar).then((r) => resolve(r.firma), reject);
+  });
+}
+
 async function asegurarConexion() {
+  configurarSeguridad();
   if (!qz.websocket.isActive()) {
     await qz.websocket.connect();
   }

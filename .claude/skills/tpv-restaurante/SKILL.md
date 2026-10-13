@@ -757,7 +757,18 @@ gratuito de código abierto que hay que instalar una vez en el PC/tablet
 de caja (https://qz.io/download/) y que se queda escuchando en segundo
 plano para recibir estas órdenes desde la web.
 
-- **Sin certificado/firma configurados** (modo simple, sin confianza
+- **Conexión firmada (octubre 2026)**: `qzTray.js` configura
+  `qz.security` con el certificado público `/qz/override.crt`
+  (`client/public/qz/override.crt`, autofirmado, caduca en 2056) y firma
+  SHA512 en el servidor: `POST /api/login?accion=firmar-qz` (dentro de
+  `login.js` porque el plan de Vercel ya tiene las 12 funciones), solo con
+  sesión de caja o cocina, con la clave privada de la variable de entorno
+  `QZ_CLAVE_PRIVADA` (nunca en el repo). Cada PC tiene que tener
+  `override.crt` copiado en `C:\Program Files\QZ Tray\` — pasos para el
+  cliente en `docs/qz-tray-certificado.md`. Si se regenera el certificado
+  hay que cambiar a la vez el archivo público, la variable de Vercel y el
+  `override.crt` de cada PC.
+- **Antes (sin certificado/firma configurados)** (modo simple, sin confianza
   previa): la primera vez que la web intenta hablar con QZ Tray en cada
   sesión, QZ Tray le muestra al usuario un aviso preguntando si permite
   la conexión — hay que darle a "Allow"/"Permitir". Para que ese aviso

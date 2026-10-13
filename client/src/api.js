@@ -18,6 +18,7 @@ async function request(path, options = {}) {
 
 export const api = {
   login: (rol, pin) => request("/login", { method: "POST", body: JSON.stringify({ rol, pin }) }),
+  firmarQz: (mensaje) => request("/login?accion=firmar-qz", { method: "POST", body: JSON.stringify({ mensaje }) }),
   getMenu: () => request("/menu"),
   // `local` filtra por sede (ver client/src/sede.js) — se omite el
   // parámetro cuando no aplica (ej. el panel viendo "todas las sedes").
