@@ -4543,3 +4543,35 @@ h4,
   outline: 3px solid var(--k-naranja, #f07a26);
   outline-offset: 2px;
 }
+
+/* Pasos con mínimo (salsas: "elige al menos 1 o «Sin salsa»"). */
+.k-paso-obligatorio {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--k-naranja);
+  margin-left: auto;
+}
+.k-paso-obligatorio--ok {
+  color: #3fbf7f;
+}
+.k-paso--falta {
+  outline: 2px solid #e5484d;
+  outline-offset: 6px;
+  border-radius: 12px;
+  animation: k-paso-falta 0.4s ease 2;
+}
+.k-paso--falta .k-paso-obligatorio {
+  color: #ff6b6b;
+}
+@keyframes k-paso-falta {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+.k-boton-confirmar--falta {
+  opacity: 0.55;
+}
+.menu-wizard-siguiente:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

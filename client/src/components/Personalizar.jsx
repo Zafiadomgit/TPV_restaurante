@@ -7,6 +7,7 @@ import {
   calcularPersonalizacion,
   pasoVisible,
   recargoPorQuitar,
+  pasoIncompleto,
 } from "../personalizarCalculo.js";
 
 export default function Personalizar({ producto, idioma, onConfirmar, onCancelar }) {
@@ -24,8 +25,18 @@ export default function Personalizar({ producto, idioma, onConfirmar, onCancelar
   // coincida con lo que realmente cobra/guarda el backend.
   const { precioUnidad, detallePasos } = calcularPersonalizacion(producto, seleccion);
   const precioTotal = precioUnidad * cantidad;
+  const pasosVisibles = (producto.modificadores || []).filter((paso) => pasoVisible(paso, seleccion));
+  const incompletos = pasosVisibles.filter((paso) => pasoIncompleto(paso, seleccion));
+  const [avisarIncompletos, setAvisarIncompletos] = useState(false);
 
   const confirmar = () => {
+    // Salsas (minSeleccion): no se añade hasta elegir al menos una o "Sin
+    // salsa"; se marca en rojo el paso que falta y se lleva hasta él.
+    if (incompletos.length > 0) {
+      setAvisarIncompletos(true);
+      document.getElementById(`paso-${incompletos[0].id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
     const modificadoresTexto = detallePasos.flatMap((d) => d.textos).join(", ");
     onConfirmar({
       seleccion,
@@ -60,13 +71,22 @@ export default function Personalizar({ producto, idioma, onConfirmar, onCancelar
         </div>
 
         <div className="k-personalizar-pasos">
-          {(producto.modificadores || [])
-            .filter((paso) => pasoVisible(paso, seleccion))
-            .map((paso) => (
-              <div key={paso.id} className="k-paso">
+          {pasosVisibles.map((paso) => {
+              const falta = pasoIncompleto(paso, seleccion);
+              return (
+              <div
+                key={paso.id}
+                id={`paso-${paso.id}`}
+                className={`k-paso ${falta && avisarIncompletos ? "k-paso--falta" : ""}`}
+              >
                 <div className="k-paso-titulo">
                   <span className="k-paso-nombre">{paso.titulo}</span>
                   {paso.nota && <span className="k-paso-nota">{paso.nota}</span>}
+                  {typeof paso.minSeleccion === "number" && (
+                    <span className={`k-paso-obligatorio ${falta ? "" : "k-paso-obligatorio--ok"}`}>
+                      {falta ? (idioma === "en" ? "Required" : "Obligatorio") : "✓"}
+                    </span>
+                  )}
                 </div>
                 <div className="k-opciones">
                   {paso.opciones.map((opcion) => {
@@ -100,7 +120,8 @@ export default function Personalizar({ producto, idioma, onConfirmar, onCancelar
                   })}
                 </div>
               </div>
-            ))}
+              );
+            })}
         </div>
 
         <div className="k-modal-pie">
@@ -113,7 +134,11 @@ export default function Personalizar({ producto, idioma, onConfirmar, onCancelar
               +
             </button>
           </div>
-          <button type="button" className="k-boton-confirmar" onClick={confirmar}>
+          <button
+            type="button"
+            className={`k-boton-confirmar ${incompletos.length ? "k-boton-confirmar--falta" : ""}`}
+            onClick={confirmar}
+          >
             {t(idioma, "anadirAlPedido")} <span className="k-separador">·</span> {formatEuros(precioTotal)}
           </button>
         </div>

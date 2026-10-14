@@ -30,9 +30,19 @@ export function pasoVisible(paso, seleccion) {
 // tocar otra opción sustituye la elegida en vez de rechazar el toque por
 // haber llegado al límite — un paso de "elige uno" no debe poder
 // quedarse sin ninguna marcada, así que tocar la ya elegida no hace nada.
+// Opción "exclusiva" (ej. "Sin salsa"): al marcarla se desmarca todo lo
+// demás del paso, y al marcar cualquier otra se desmarca ella.
 export function toggleOpcionEnSeleccion(seleccion, paso, opcionId) {
   const actual = seleccion[paso.id] || [];
   const yaElegida = actual.includes(opcionId);
+  if (paso.maxSeleccion !== 1 && !yaElegida) {
+    const opcion = paso.opciones.find((o) => o.id === opcionId);
+    if (opcion?.exclusiva) return { ...seleccion, [paso.id]: [opcionId] };
+    const exclusivas = new Set(paso.opciones.filter((o) => o.exclusiva).map((o) => o.id));
+    if (exclusivas.size && actual.some((id) => exclusivas.has(id))) {
+      return { ...seleccion, [paso.id]: [...actual.filter((id) => !exclusivas.has(id)), opcionId] };
+    }
+  }
   if (paso.maxSeleccion === 1) {
     return yaElegida ? seleccion : { ...seleccion, [paso.id]: [opcionId] };
   }
@@ -43,6 +53,21 @@ export function toggleOpcionEnSeleccion(seleccion, paso, opcionId) {
     return seleccion;
   }
   return { ...seleccion, [paso.id]: [...actual, opcionId] };
+}
+
+// minSeleccion (ej. salsas: "elige al menos 1 o «Sin salsa»"): el paso
+// no deja avanzar ni añadir al pedido hasta tener ese mínimo marcado.
+export function pasoIncompleto(paso, seleccion) {
+  return typeof paso.minSeleccion === "number" && (seleccion[paso.id] || []).length < paso.minSeleccion;
+}
+
+export function textoMinimo(paso, idioma) {
+  const n = paso.minSeleccion || 1;
+  const exclusiva = paso.opciones.find((o) => o.exclusiva);
+  if (idioma === "en") {
+    return `Choose at least ${n}${exclusiva ? ` or «${exclusiva.nombreEn || exclusiva.nombre}»` : ""}`;
+  }
+  return `Elige al menos ${n}${exclusiva ? ` o «${exclusiva.nombre}»` : ""}`;
 }
 
 // Recargo que se le enseña al cliente junto a una opción de "Quitar

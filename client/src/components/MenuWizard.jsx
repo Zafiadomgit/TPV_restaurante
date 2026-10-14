@@ -3,6 +3,8 @@ import { t } from "../textos.js";
 import {
   seleccionInicial,
   toggleOpcionEnSeleccion,
+  pasoIncompleto,
+  textoMinimo,
   calcularPersonalizacion,
   pasoVisible,
   recargoPorQuitar,
@@ -36,6 +38,9 @@ export default function MenuWizard({ producto, idioma, onConfirmar, onCancelar }
   const precioTotal = precioUnidad * cantidad;
 
   const siguiente = () => setPasoIndex((i) => Math.min(i + 1, pasos.length));
+  const actualIncompleto = !enResumen && pasoIncompleto(pasoActual, seleccion);
+  // Por si se vuelve atrás y se desmarca algo después de llegar al resumen.
+  const primerIncompleto = pasos.findIndex((p) => pasoIncompleto(p, seleccion));
   const atras = () => {
     if (pasoIndex === 0) {
       onCancelar();
@@ -50,7 +55,10 @@ export default function MenuWizard({ producto, idioma, onConfirmar, onCancelar }
   // ingredientes, extras) hace falta el botón "Siguiente" de abajo.
   const elegirOpcion = (paso, opcionId) => {
     setSeleccion((prev) => toggleOpcionEnSeleccion(prev, paso, opcionId));
-    if (paso.maxSeleccion === 1) siguiente();
+    // Elegir la opción exclusiva ("Sin salsa") también deja el paso decidido.
+    const opcion = paso.opciones.find((o) => o.id === opcionId);
+    const yaElegida = (seleccion[paso.id] || []).includes(opcionId);
+    if (paso.maxSeleccion === 1 || (opcion?.exclusiva && !yaElegida)) siguiente();
   };
 
   const confirmar = () => {
@@ -198,8 +206,12 @@ export default function MenuWizard({ producto, idioma, onConfirmar, onCancelar }
 
       <div className="menu-wizard-footer">
         {!enResumen ? (
-          <button type="button" className="menu-wizard-siguiente" onClick={siguiente}>
-            Siguiente
+          <button type="button" className="menu-wizard-siguiente" onClick={siguiente} disabled={actualIncompleto}>
+            {actualIncompleto ? textoMinimo(pasoActual, idioma) : "Siguiente"}
+          </button>
+        ) : primerIncompleto >= 0 ? (
+          <button type="button" className="menu-wizard-siguiente" onClick={() => setPasoIndex(primerIncompleto)}>
+            {textoMinimo(pasos[primerIncompleto], idioma)}: {pasos[primerIncompleto].titulo}
           </button>
         ) : (
           <button type="button" className="menu-wizard-confirmar" onClick={confirmar}>
