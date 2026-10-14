@@ -1400,6 +1400,12 @@ h4,
   text-align: left;
 }
 
+/* Línea de guiones entre producto y producto, como en la comanda. */
+.recibo-items tr + tr td {
+  border-top: 1px dashed #000;
+  padding-top: 1.2mm;
+}
+
 .recibo-item-mods {
   display: block;
   font-size: 13px;

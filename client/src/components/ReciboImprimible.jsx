@@ -75,10 +75,16 @@ export default function ReciboImprimible({ venta }) {
             <tr key={i}>
               <td className="recibo-item-nombre">
                 {item.cantidad}× {item.nombre}
-                {item.modificadoresTexto && (
-                  <span className="recibo-item-mods">{item.modificadoresTexto}</span>
-                )}
-                {item.notas && <span className="recibo-item-mods">{item.notas}</span>}
+                {/* Un cambio por línea con "- ", como la comanda de cocina. */}
+                {String(item.modificadoresTexto || "")
+                  .split(", ")
+                  .filter(Boolean)
+                  .map((cambio, j) => (
+                    <span key={j} className="recibo-item-mods">
+                      - {cambio}
+                    </span>
+                  ))}
+                {item.notas && <span className="recibo-item-mods">- Nota: {item.notas}</span>}
               </td>
               <td className="recibo-item-precio">{(item.precio * item.cantidad).toFixed(2)} €</td>
             </tr>

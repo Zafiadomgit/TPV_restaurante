@@ -83,15 +83,20 @@ export function construirRecibo(venta) {
   if (venta.mesa) l.push(`${paraImpresora(venta.mesa)}\n`);
   l.push(IZQUIERDA, SEPARADOR);
 
-  for (const item of venta.items || []) {
+  // Como la comanda de cocina (a petición del cliente): cada cambio en su
+  // propia línea con "- " y una línea de guiones entre producto y producto.
+  (venta.items || []).forEach((item, i) => {
+    if (i > 0) l.push(SEPARADOR);
     l.push(NEGRITA_ON, filaConImporte(`${item.cantidad}x ${paraImpresora(item.nombre)}`, euros(item.precio * item.cantidad)), NEGRITA_OFF);
-    if (item.modificadoresTexto) {
-      for (const linea of partir(paraImpresora(item.modificadoresTexto), ANCHO - 2)) l.push(`  ${linea}\n`);
+    const cambios = String(item.modificadoresTexto || "")
+      .split(", ")
+      .map((c) => c.trim())
+      .filter(Boolean);
+    if (item.notas) cambios.push(`Nota: ${item.notas}`);
+    for (const cambio of cambios) {
+      partir(paraImpresora(cambio), ANCHO - 4).forEach((linea, j) => l.push(`${j === 0 ? " - " : "   "}${linea}\n`));
     }
-    if (item.notas) {
-      for (const linea of partir(paraImpresora(item.notas), ANCHO - 2)) l.push(`  ${linea}\n`);
-    }
-  }
+  });
 
   l.push(SEPARADOR);
   l.push(filaConImporte("Subtotal", euros(venta.subtotal)));
