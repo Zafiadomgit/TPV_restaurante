@@ -3,6 +3,7 @@ import { t } from "../textos.js";
 import {
   seleccionInicial,
   toggleOpcionEnSeleccion,
+  nombreOpcionEnPantalla,
   pasoIncompleto,
   textoMinimo,
   calcularPersonalizacion,
@@ -175,7 +176,9 @@ export default function MenuWizard({ producto, idioma, onConfirmar, onCancelar }
                   onClick={() => elegirOpcion(pasoActual, opcion.id)}
                 >
                   {fotoOpcion && <img src={fotoOpcion} alt="" className="menu-wizard-opcion-foto" />}
-                  <span className="menu-wizard-opcion-nombre">{opcion.nombre}</span>
+                  <span className="menu-wizard-opcion-nombre">
+                    {nombreOpcionEnPantalla(producto, pasoActual, opcion, idioma)}
+                  </span>
                   {precioMostrado > 0 && (
                     <span className="menu-wizard-opcion-precio">
                       {pasoActual.esSelectorTamano ? "" : "+"}
@@ -198,7 +201,14 @@ export default function MenuWizard({ producto, idioma, onConfirmar, onCancelar }
               // (que solo trae los visibles y desalinearía los índices).
               d.textos.length > 0 ? (
                 <li key={todosLosPasos[i].id}>
-                  <strong>{todosLosPasos[i].titulo}:</strong> {d.textos.join(", ")}
+                  <strong>{todosLosPasos[i].titulo}:</strong>{" "}
+                  {d.textos
+                    .map((texto) =>
+                      todosLosPasos[i].id === "menu" && texto === "Solo"
+                        ? nombreOpcionEnPantalla(producto, todosLosPasos[i], { id: "solo" }, idioma)
+                        : texto
+                    )
+                    .join(", ")}
                 </li>
               ) : null
             )}

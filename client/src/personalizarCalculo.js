@@ -79,6 +79,17 @@ export function textoMinimo(paso, idioma) {
   return `Elige al menos ${n}${exclusiva ? ` o «${exclusiva.nombre}»` : ""}`;
 }
 
+// Nombre que se enseña en pantalla para una opción. En "¿Cómo lo
+// quieres?", "Solo" se enseña con el nombre del producto (a petición del
+// cliente: "Kebab de ternera" / "Menú (patatas + bebida)"); en el ticket
+// de cocina sigue saliendo "Solo".
+export function nombreOpcionEnPantalla(producto, paso, opcion, idioma) {
+  if (paso.id === "menu" && opcion.id === "solo") {
+    return (idioma === "en" && producto.nombreEn) || producto.nombre;
+  }
+  return opcion.nombre;
+}
+
 // Recargo que se le enseña al cliente junto a una opción de "Quitar
 // ingredientes" que dispara el precio alternativo (precioSiTodoQuitado) —
 // ej. "Sin lechuga +1,00 €" en Kebab/Dürüm/Lahmacum, a petición del

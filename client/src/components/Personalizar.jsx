@@ -8,6 +8,7 @@ import {
   pasoVisible,
   recargoPorQuitar,
   pasoIncompleto,
+  nombreOpcionEnPantalla,
 } from "../personalizarCalculo.js";
 
 export default function Personalizar({ producto, idioma, onConfirmar, onCancelar }) {
@@ -113,7 +114,7 @@ export default function Personalizar({ producto, idioma, onConfirmar, onCancelar
                         className={`k-opcion ${elegida ? "elegida" : ""}`}
                         onClick={() => toggleOpcion(paso, opcion.id)}
                       >
-                        <span className="k-opcion-nombre">{opcion.nombre}</span>
+                        <span className="k-opcion-nombre">{nombreOpcionEnPantalla(producto, paso, opcion, idioma)}</span>
                         {precioMostrado > 0 && (
                           <span className="k-opcion-extra">
                             {paso.esSelectorTamano ? "" : "+"}
