@@ -18,8 +18,9 @@ export default function Recogida() {
   const [logoRecogidaUrl, setLogoRecogidaUrl] = useState(null);
   const enVuelo = useRef(false);
   // Modo pantalla completa (a petición del cliente): quita también la
-  // barra del navegador en el monitor de recogida. El navegador solo deja
-  // entrar con un gesto del usuario (botón o doble clic); se sale con Esc.
+  // barra del navegador en el monitor de recogida. Se entra con el botón
+  // (el navegador exige un gesto del usuario) y, como es un TPV táctil, se
+  // sale con doble toque en cualquier parte (o Esc si hay teclado).
   const [pantallaCompleta, setPantallaCompleta] = useState(() => Boolean(document.fullscreenElement));
   const [cursorOculto, setCursorOculto] = useState(false);
 
@@ -48,12 +49,24 @@ export default function Recogida() {
     };
   }, [pantallaCompleta]);
 
-  const alternarPantallaCompleta = () => {
-    if (document.fullscreenElement) {
+  const entrarPantallaCompleta = () => {
+    document.documentElement.requestFullscreen?.().catch(() => {});
+  };
+
+  // Doble toque (dos toques en menos de 400 ms, cerca uno del otro) =
+  // salir. Se detecta a mano con pointerup porque en pantallas táctiles no
+  // todos los navegadores convierten un doble toque en "dblclick".
+  const ultimoToque = useRef(null);
+  const alSoltarToque = (e) => {
+    if (!document.fullscreenElement) return;
+    const ahora = Date.now();
+    const previo = ultimoToque.current;
+    if (previo && ahora - previo.t < 400 && Math.hypot(e.clientX - previo.x, e.clientY - previo.y) < 60) {
+      ultimoToque.current = null;
       document.exitFullscreen?.().catch(() => {});
-    } else {
-      document.documentElement.requestFullscreen?.().catch(() => {});
+      return;
     }
+    ultimoToque.current = { t: ahora, x: e.clientX, y: e.clientY };
   };
 
   useEffect(() => {
@@ -122,7 +135,7 @@ export default function Recogida() {
     <div
       className={`kiosco k-recogida ${cursorOculto ? "k-recogida--sin-cursor" : ""}`}
       style={estiloFondo}
-      onDoubleClick={alternarPantallaCompleta}
+      onPointerUp={alSoltarToque}
     >
       {fondoRecogidaUrl && <div className="k-recogida-overlay" />}
       <div className="k-recogida-cabecera">
@@ -139,8 +152,8 @@ export default function Recogida() {
             <button
               type="button"
               className="k-recogida-pantalla-completa"
-              onClick={alternarPantallaCompleta}
-              title="También con doble clic. Para salir: Esc"
+              onClick={entrarPantallaCompleta}
+              title="Para salir: doble toque en la pantalla (o Esc)"
             >
               ⛶ Pantalla completa
             </button>
