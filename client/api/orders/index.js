@@ -238,7 +238,11 @@ export default async function handler(req, res) {
           const opcionElegida =
             paso.opciones.find((o) => seleccionValida.includes(o.id)) ||
             paso.opciones.find((o) => o.porDefecto);
-          if (opcionElegida) nombresSeleccionados.push(opcionElegida.nombre);
+          // "Solo" no se escribe: el nombre del producto ya lo dice (igual
+          // que en personalizarCalculo.js).
+          if (opcionElegida && !(paso.id === "menu" && opcionElegida.id === "solo")) {
+            nombresSeleccionados.push(opcionElegida.nombre);
+          }
         } else if (typeof umbral === "number" && seleccionadas.length >= umbral) {
           const restantes = paso.opciones.filter((o) => !seleccionValida.includes(o.id));
           if (restantes.length > 0) {

@@ -189,7 +189,9 @@ export function calcularPersonalizacion(producto, seleccion) {
       // no se imprime; lo que cuenta es lo elegido en el paso que abre.
     } else if (paso.esSelectorTamano || paso.siempreEnTexto) {
       const opcionElegida = paso.opciones.find((o) => elegidas.includes(o.id)) || paso.opciones.find((o) => o.porDefecto);
-      if (opcionElegida) textos.push(opcionElegida.nombre);
+      // "Solo" no se escribe (a petición del cliente): el nombre del
+      // producto ya lo dice; solo se escribe "Menú (...)" si lo es.
+      if (opcionElegida && !(paso.id === "menu" && opcionElegida.id === "solo")) textos.push(opcionElegida.nombre);
     } else if (typeof umbral === "number" && seleccionadas.length >= umbral) {
       const restantes = paso.opciones.filter((o) => !elegidas.includes(o.id));
       if (restantes.length > 0) {
