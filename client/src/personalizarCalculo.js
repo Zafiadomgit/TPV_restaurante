@@ -191,7 +191,11 @@ export function calcularPersonalizacion(producto, seleccion) {
       const opcionElegida = paso.opciones.find((o) => elegidas.includes(o.id)) || paso.opciones.find((o) => o.porDefecto);
       // "Solo" no se escribe (a petición del cliente): el nombre del
       // producto ya lo dice; solo se escribe "Menú (...)" si lo es.
-      if (opcionElegida && !(paso.id === "menu" && opcionElegida.id === "solo")) textos.push(opcionElegida.nombre);
+      // En "Menú (patatas + bebida)" se escribe solo "Menú": las patatas y la
+      // bebida ya salen detrás.
+      if (opcionElegida && !(paso.id === "menu" && opcionElegida.id === "solo")) {
+        textos.push(paso.id === "menu" ? opcionElegida.nombre.replace(/\s*\(.*\)\s*$/, "") : opcionElegida.nombre);
+      }
     } else if (typeof umbral === "number" && seleccionadas.length >= umbral) {
       const restantes = paso.opciones.filter((o) => !elegidas.includes(o.id));
       if (restantes.length > 0) {

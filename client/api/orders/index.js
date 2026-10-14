@@ -240,8 +240,11 @@ export default async function handler(req, res) {
             paso.opciones.find((o) => o.porDefecto);
           // "Solo" no se escribe: el nombre del producto ya lo dice (igual
           // que en personalizarCalculo.js).
+          // Y "Menú (patatas + bebida)" se escribe solo "Menú".
           if (opcionElegida && !(paso.id === "menu" && opcionElegida.id === "solo")) {
-            nombresSeleccionados.push(opcionElegida.nombre);
+            nombresSeleccionados.push(
+              paso.id === "menu" ? opcionElegida.nombre.replace(/\s*\(.*\)\s*$/, "") : opcionElegida.nombre
+            );
           }
         } else if (typeof umbral === "number" && seleccionadas.length >= umbral) {
           const restantes = paso.opciones.filter((o) => !seleccionValida.includes(o.id));
