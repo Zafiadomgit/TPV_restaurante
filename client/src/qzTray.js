@@ -9,6 +9,7 @@
 import qz from "qz-tray";
 import { api } from "./api.js";
 import { construirTicketCocina } from "./ticketCocinaTexto.js";
+import { construirRecibo } from "./ticketReciboTexto.js";
 
 // ESC p m 25 250 — el comando de "kick" estándar de las impresoras de
 // tickets con cajón conectado. Según el modelo, el cajón va al conector
@@ -151,4 +152,15 @@ export async function imprimirTicketCocina(nombreImpresora, order) {
   await conectarOExplicar();
   const config = qz.configs.create(nombreImpresora);
   await qz.print(config, [{ type: "raw", format: "plain", data: construirTicketCocina(order) }]);
+}
+
+// Recibo del cliente directo a la impresora de caja (la misma del cajón),
+// sin la ventana de imprimir del navegador. Solo texto ESC/POS (sin el
+// logo en imagen) para que funcione igual en cualquier impresora de
+// tickets. Si QZ Tray no está, lanza el error y Caja.jsx usa la impresión
+// del navegador como respaldo.
+export async function imprimirReciboQz(nombreImpresora, venta) {
+  await conectarOExplicar();
+  const config = qz.configs.create(nombreImpresora);
+  await qz.print(config, [{ type: "raw", format: "plain", data: construirRecibo(venta) }]);
 }

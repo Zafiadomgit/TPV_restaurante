@@ -18,8 +18,11 @@ export function getSesion() {
   }
 }
 
-export function guardarSesion(rol, token) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ rol, token }));
+// `sede`: solo para el panel limitado a una sede (PIN_PANEL_VILLARCAYO);
+// null = sin límite. Es informativo para la pantalla — quien lo aplica de
+// verdad es el servidor, que lo lleva dentro del token firmado.
+export function guardarSesion(rol, token, sede = null) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ rol, token, sede }));
   window.dispatchEvent(new Event(EVENTO));
 }
 

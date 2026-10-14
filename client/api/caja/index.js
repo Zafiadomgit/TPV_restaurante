@@ -1,6 +1,6 @@
 import { supabase } from "../_lib/supabaseClient.js";
 import { mapTurnoRow } from "../_lib/caja.js";
-import { exigirRol } from "../_lib/auth.js";
+import { exigirRol, sedeEfectiva } from "../_lib/auth.js";
 import { LOCALES_VALIDOS } from "../_lib/orders.js";
 
 export default async function handler(req, res) {
@@ -12,7 +12,8 @@ export default async function handler(req, res) {
     // manda solo si el dueño elige ver un local concreto en vez de todos.
     if (!exigirRol(req, res, ["caja", "panel"])) return;
 
-    const { estado, local } = req.query;
+    const { estado } = req.query;
+    const local = sedeEfectiva(req, req.query.local);
     let query = supabase.from("turnos_caja").select("*").order("abierto_en", { ascending: false });
     if (estado) query = query.eq("estado", estado);
     if (local) query = query.eq("local", local);

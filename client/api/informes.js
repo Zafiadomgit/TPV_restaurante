@@ -1,7 +1,7 @@
 import { supabase } from "./_lib/supabaseClient.js";
 import { mapRow } from "./_lib/orders.js";
 import { calcularResumen } from "./_lib/informes.js";
-import { exigirRol } from "./_lib/auth.js";
+import { exigirRol, sedeEfectiva } from "./_lib/auth.js";
 
 export default async function handler(req, res) {
   // Solo rol "panel" — a propósito distinto de "caja", ver _lib/auth.js.
@@ -16,7 +16,9 @@ export default async function handler(req, res) {
 
   // `local`: el dueño puede filtrar el panel a una sede concreta; sin
   // este parámetro se ven las dos combinadas (comportamiento de siempre).
-  const { local } = req.query;
+  // El panel de Villarcayo (PIN_PANEL_VILLARCAYO) solo ve su sede, la
+  // pida o no — ver sedeEfectiva en _lib/auth.js.
+  const local = sedeEfectiva(req, req.query.local);
   let query = supabase.from("orders").select("*").gte("creado_en", inicioHoy.toISOString());
   if (local) query = query.eq("local", local);
 

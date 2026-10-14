@@ -28,7 +28,7 @@ const MAPA_ACENTOS = {
   ñ: "n", Ñ: "N", ü: "u", Ü: "U", "€": "EUR",
 };
 
-function paraImpresora(texto) {
+export function paraImpresora(texto) {
   return String(texto ?? "").replace(/[áéíóúÁÉÍÓÚñÑüÜ€]/g, (c) => MAPA_ACENTOS[c] || c);
 }
 

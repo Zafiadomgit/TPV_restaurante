@@ -86,14 +86,16 @@ export default function App() {
               Caja
             </BotonNav>
           )}
-          {sesion?.rol === "caja" && (
-            <BotonNav to="/carta">
-              Carta
-            </BotonNav>
-          )}
           {sesion?.rol === "panel" && (
             <BotonNav to="/panel">
               Panel
+            </BotonNav>
+          )}
+          {/* La carta es la misma para las dos sedes: solo el panel
+              principal (sin sede fija) la gestiona. */}
+          {sesion?.rol === "panel" && !sesion.sede && (
+            <BotonNav to="/carta">
+              Carta
             </BotonNav>
           )}
           {(sesion?.rol === "caja" || sesion?.rol === "cocina") && (
@@ -111,6 +113,9 @@ export default function App() {
                   sitio. */}
               {(sesion.rol === "caja" || sesion.rol === "cocina") && getSede() && (
                 <span className="topbar-sede">{SEDES[getSede()].nombre}</span>
+              )}
+              {sesion.rol === "panel" && sesion.sede && SEDES[sesion.sede] && (
+                <span className="topbar-sede">{SEDES[sesion.sede].nombre}</span>
               )}
               <button className="btn-salir" onClick={salir}>
                 {NOMBRE_ROL[sesion.rol]} · Salir
@@ -157,7 +162,7 @@ export default function App() {
           <Route
             path="/carta"
             element={
-              <RutaProtegida roles={["caja"]}>
+              <RutaProtegida roles={["panel"]} sinSedeFija>
                 <GestionMenu />
               </RutaProtegida>
             }

@@ -22,9 +22,14 @@ panel).
 | `/cocina` | `Kitchen.jsx` | KDS, 3 columnas por estado | Caja o Cocina |
 | `/historial` | `Historial.jsx` | Pedidos cerrados, filtrable por estado | Solo Caja |
 | `/caja` | `Caja.jsx` | Turno de caja (apertura/cierre/arqueo) + venta rápida en mostrador | Solo Caja |
-| `/carta` | `GestionMenu.jsx` | Editar el menú: categorías y productos (crear/editar/borrar) | Solo Caja |
-| `/panel` | `Panel.jsx` | KPIs del día, ventas por hora, más vendidos | Solo Panel (no Caja — ver "Roles y acceso por PIN") |
+| `/carta` | `GestionMenu.jsx` | Editar el menú: categorías y productos (crear/editar/borrar) | Solo Panel principal (`PIN_PANEL`; ni Caja ni el panel de Villarcayo — la carta es común a las dos sedes) |
+| `/panel` | `Panel.jsx` | KPIs del día, ventas por hora, más vendidos | Solo Panel (no Caja — ver "Roles y acceso por PIN"). `PIN_PANEL` (Medina) ve las dos sedes; `PIN_PANEL_VILLARCAYO` solo Villarcayo — la sede va dentro del token firmado (`panel@villarcayo`) y la imponen `/api/informes` y `GET /api/caja` (`sedeEfectiva`) |
 | `/recogida` | `Recogida.jsx` | Tablero de pedidos preparando/listo (pantalla pública) | Público (sin login) |
+
+Imprimir: el recibo de caja va por QZ Tray en ESC/POS (`ticketReciboTexto.js`,
+`imprimirReciboQz`) a la impresora del cajón, sin diálogo del navegador; solo
+si QZ Tray no responde se usa `window.print()` (`ReciboImprimible.jsx`) como
+respaldo. La comanda de cocina también va por QZ Tray.
 
 Ver sección "Roles y acceso por PIN" más abajo para el porqué de esta
 columna y cómo está implementada.

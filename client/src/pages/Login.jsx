@@ -37,9 +37,9 @@ export default function Login() {
     setEnviando(true);
     api
       .login(rol, pin)
-      .then(({ token }) => {
+      .then(({ token, sede }) => {
         if (cancelado) return;
-        guardarSesion(rol, token);
+        guardarSesion(rol, token, sede || null);
         const destino = location.state?.from || RUTA_INICIAL[rol];
         navigate(destino, { replace: true });
       })

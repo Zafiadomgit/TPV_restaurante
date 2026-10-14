@@ -12,6 +12,7 @@ import {
   getImpresoraGuardada,
   getUltimoErrorFirma,
   guardarImpresora,
+  imprimirReciboQz,
   listarImpresoras,
   ordenarImpresoras,
 } from "../qzTray.js";
@@ -57,12 +58,18 @@ export default function Caja() {
   // Si la firma para QZ Tray falla (p. ej. falta la variable de Vercel),
   // QZ Tray vuelve a preguntar "Allow/Block": se enseña el motivo.
   const [errorFirmaQz, setErrorFirmaQz] = useState("");
+  // Qué hacer tras elegir impresora: abrir el cajón (por defecto) o
+  // imprimir el recibo que estaba pendiente.
+  const [accionTrasElegir, setAccionTrasElegir] = useState("cajon");
+  const [avisoRecibo, setAvisoRecibo] = useState("");
+  const [imprimiendoRecibo, setImprimiendoRecibo] = useState(false);
 
   const [categoriaActiva, setCategoriaActiva] = useState("");
   const [items, setItems] = useState([]);
   const [cobrando, setCobrando] = useState(false);
   const [dividirEntre, setDividirEntre] = useState("");
   const [ultimaVenta, setUltimaVenta] = useState(null);
+  useEffect(() => setAvisoRecibo(""), [ultimaVenta?.id]);
   const [productoPersonalizando, setProductoPersonalizando] = useState(null);
   const [pedidosSinCobrar, setPedidosSinCobrar] = useState([]);
   const [cobrandoPedidoId, setCobrandoPedidoId] = useState(null);
@@ -124,7 +131,8 @@ export default function Caja() {
   // Lista de impresoras para elegir (primera vez, con "Cambiar", o cuando
   // la guardada ya no está conectada): las de tickets primero y
   // preseleccionadas; PDF, XPS, Fax... al final.
-  const pedirElegirImpresora = async (motivo = "") => {
+  const pedirElegirImpresora = async (motivo = "", accion = "cajon") => {
+    setAccionTrasElegir(accion);
     setErrorCajon("");
     setAvisoCajon("");
     setAbriendoCajon(true);
@@ -180,7 +188,55 @@ export default function Caja() {
     guardarImpresora(impresoraElegida);
     setImpresoraCajon(impresoraElegida);
     setImpresorasParaElegir(null);
-    await mandarAbrirCajon(impresoraElegida);
+    if (accionTrasElegir === "recibo") await mandarImprimirRecibo(impresoraElegida);
+    else await mandarAbrirCajon(impresoraElegida);
+  };
+
+  // Recibo directo a la impresora de caja por QZ Tray, sin la ventana de
+  // imprimir del navegador (pedido del cliente). Si QZ Tray falla, se usa
+  // la impresión del navegador como respaldo para no quedarse sin recibo.
+  const mandarImprimirRecibo = async (impresora) => {
+    if (!ultimaVenta) return;
+    setImprimiendoRecibo(true);
+    setErrorCajon("");
+    setAvisoRecibo("");
+    try {
+      await imprimirReciboQz(impresora, ultimaVenta);
+      setAvisoRecibo(`Recibo enviado a «${impresora}».`);
+    } catch (e) {
+      setErrorCajon(`No se pudo imprimir directo (${e.message}). Se abre la impresión del navegador.`);
+      imprimirRecibo();
+    } finally {
+      setImprimiendoRecibo(false);
+      setErrorFirmaQz(getUltimoErrorFirma());
+    }
+  };
+
+  const clicImprimirRecibo = async () => {
+    const impresora = getImpresoraGuardada();
+    if (!impresora || esImpresoraVirtual(impresora)) {
+      await pedirElegirImpresora("Elige la impresora de tickets para imprimir el recibo:", "recibo");
+      return;
+    }
+    // Si la guardada ya no está conectada, se pide la nueva (como con el
+    // cajón). Si QZ Tray no responde, respaldo con el navegador.
+    setImprimiendoRecibo(true);
+    let conectadas;
+    try {
+      conectadas = await listarImpresoras();
+    } catch (e) {
+      setImprimiendoRecibo(false);
+      setErrorFirmaQz(getUltimoErrorFirma());
+      setErrorCajon(`No se pudo imprimir directo (${e.message}). Se abre la impresión del navegador.`);
+      imprimirRecibo();
+      return;
+    }
+    setImprimiendoRecibo(false);
+    if (!conectadas.includes(impresora)) {
+      await pedirElegirImpresora(`La impresora «${impresora}» ya no está conectada en este ordenador. Elige la nueva:`, "recibo");
+      return;
+    }
+    await mandarImprimirRecibo(impresora);
   };
 
   useEffect(() => {
@@ -487,7 +543,7 @@ export default function Caja() {
               ))}
             </select>
             <button type="button" onClick={confirmarImpresoraYAbrir} disabled={abriendoCajon}>
-              Guardar y abrir
+              {accionTrasElegir === "recibo" ? "Guardar e imprimir" : "Guardar y abrir"}
             </button>
             <button type="button" onClick={() => setImpresorasParaElegir(null)}>
               Cancelar
@@ -532,12 +588,18 @@ export default function Caja() {
               <p>
                 Cobrado {formatTicket(ultimaVenta.ticketNumero)} · {ultimaVenta.total.toFixed(2)} €
               </p>
-              <button type="button" className="btn-imprimir-recibo" onClick={imprimirRecibo}>
-                Imprimir recibo
+              <button
+                type="button"
+                className="btn-imprimir-recibo"
+                onClick={clicImprimirRecibo}
+                disabled={imprimiendoRecibo}
+              >
+                {imprimiendoRecibo ? "Imprimiendo..." : "Imprimir recibo"}
               </button>
               <button type="button" className="btn-anular" onClick={anularUltimaVenta}>
                 Anular pedido
               </button>
+              {avisoRecibo && <p className="caja-aviso-cajon">{avisoRecibo}</p>}
             </>
           )}
         </div>

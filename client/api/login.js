@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { verificarPin, crearToken, exigirRol } from "./_lib/auth.js";
+import { sesionParaPin, crearToken, exigirRol } from "./_lib/auth.js";
 
 // Firma para QZ Tray (POST /api/login?accion=firmar-qz): caja y cocina
 // mandan aquí el texto que QZ Tray pide firmar y se devuelve firmado con
@@ -74,9 +74,10 @@ export default async function handler(req, res) {
   if (!rol || !pin) {
     return res.status(400).json({ error: "Rol y PIN son obligatorios" });
   }
-  if (!verificarPin(rol, pin)) {
+  const sesion = sesionParaPin(rol, pin);
+  if (!sesion) {
     return res.status(401).json({ error: "PIN incorrecto" });
   }
 
-  res.status(200).json({ rol, token: crearToken(rol) });
+  res.status(200).json({ rol, sede: sesion.sede, token: crearToken(rol, sesion.sede) });
 }

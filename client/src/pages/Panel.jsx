@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api } from "../api.js";
 import { formatDuracion } from "../informes.js";
 import { SEDES } from "../sede.js";
+import { getSesion } from "../auth.js";
 
 const POLL_MS = 15000;
 
@@ -20,7 +21,10 @@ export default function Panel() {
   // "" = las dos sedes combinadas — el panel no está atado al dispositivo
   // como caja/cocina, el dueño puede filtrar aquí mismo a la sede que
   // quiera ver, sin que eso guarde nada en localStorage.
-  const [sedeFiltro, setSedeFiltro] = useState("");
+  // Con el PIN del panel de Villarcayo la sesión está limitada a esa sede:
+  // no hay selector y siempre se pide esa (el servidor la impone igualmente).
+  const sedeFija = getSesion()?.sede || null;
+  const [sedeFiltro, setSedeFiltro] = useState(sedeFija || "");
 
   useEffect(() => {
     let activo = true;
@@ -78,18 +82,22 @@ export default function Panel() {
     <div className="panel-page">
       <div className="panel-titulo-row">
         <h2>Panel del dueño</h2>
-        <select
-          className="panel-selector-sede"
-          value={sedeFiltro}
-          onChange={(e) => setSedeFiltro(e.target.value)}
-        >
-          <option value="">Las dos sedes</option>
-          {Object.entries(SEDES).map(([id, sede]) => (
-            <option key={id} value={id}>
-              {sede.nombre}
-            </option>
-          ))}
-        </select>
+        {sedeFija ? (
+          <span className="panel-selector-sede panel-sede-fija">{SEDES[sedeFija]?.nombre || sedeFija}</span>
+        ) : (
+          <select
+            className="panel-selector-sede"
+            value={sedeFiltro}
+            onChange={(e) => setSedeFiltro(e.target.value)}
+          >
+            <option value="">Las dos sedes</option>
+            {Object.entries(SEDES).map(([id, sede]) => (
+              <option key={id} value={id}>
+                {sede.nombre}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       <div className="panel-kpis">

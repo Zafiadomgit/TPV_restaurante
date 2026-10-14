@@ -24,15 +24,37 @@ const PINES = {
   cocina: process.env.PIN_COCINA || "5678",
   panel: process.env.PIN_PANEL || "9999",
 };
+
+// Panel por sede: PIN_PANEL (Medina de Pomar, el dueño) ve las dos sedes;
+// PIN_PANEL_VILLARCAYO entra al mismo panel pero SOLO con los datos de
+// Villarcayo. Sin valor por defecto a propósito: si no está configurada en
+// Vercel, no existe ese acceso. La sede va dentro del token firmado
+// ("panel@villarcayo"), así que el servidor la aplica aunque alguien
+// manipule la petición o el localStorage.
+const PINES_PANEL_SEDE = {
+  villarcayo: process.env.PIN_PANEL_VILLARCAYO || null,
+};
 const DURACION_MS = 12 * 60 * 60 * 1000; // 12h — una jornada de trabajo
 
 export function verificarPin(rol, pin) {
   return Boolean(PINES[rol]) && String(pin) === String(PINES[rol]);
 }
 
-export function crearToken(rol) {
+// Devuelve la sesión que abre ese PIN: { rol, sede } (sede null = sin
+// restricción), o null si el PIN no vale.
+export function sesionParaPin(rol, pin) {
+  if (verificarPin(rol, pin)) return { rol, sede: null };
+  if (rol === "panel") {
+    for (const [sede, pinSede] of Object.entries(PINES_PANEL_SEDE)) {
+      if (pinSede && String(pin) === String(pinSede)) return { rol, sede };
+    }
+  }
+  return null;
+}
+
+export function crearToken(rol, sede = null) {
   const expira = Date.now() + DURACION_MS;
-  const payload = `${rol}.${expira}`;
+  const payload = `${sede ? `${rol}@${sede}` : rol}.${expira}`;
   const firma = crypto.createHmac("sha256", SECRET).update(payload).digest("hex");
   return `${payload}.${firma}`;
 }
@@ -53,8 +75,18 @@ export function verificarToken(token, rolesPermitidos) {
     return null;
   }
   if (Date.now() > Number(expira)) return null;
-  if (rolesPermitidos && !rolesPermitidos.includes(rol)) return null;
-  return rol;
+  const [rolBase, sede = null] = rol.split("@");
+  if (rolesPermitidos && !rolesPermitidos.includes(rolBase)) return null;
+  return rolBase;
+}
+
+// Igual que verificarToken pero devuelve también la sede a la que está
+// limitada la sesión (null = todas).
+export function sesionDeToken(token, rolesPermitidos) {
+  const rol = verificarToken(token, rolesPermitidos);
+  if (!rol) return null;
+  const sede = token.split(".")[0].split("@")[1] || null;
+  return { rol, sede };
 }
 
 // Helper para los handlers: extrae el token del header Authorization y
@@ -65,10 +97,19 @@ export function verificarToken(token, rolesPermitidos) {
 export function exigirRol(req, res, rolesPermitidos) {
   const header = req.headers.authorization || "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : null;
-  const rol = verificarToken(token, rolesPermitidos);
-  if (!rol) {
+  const sesion = sesionDeToken(token, rolesPermitidos);
+  if (!sesion) {
     res.status(401).json({ error: "No autorizado" });
     return null;
   }
-  return rol;
+  // Sede a la que está limitada la sesión (null = todas), para los
+  // handlers que filtran por local (informes, caja).
+  req.sedeSesion = sesion.sede;
+  return sesion.rol;
+}
+
+// Sede efectiva para filtrar: si la sesión está limitada a una sede, esa
+// (ignorando lo que pida el cliente); si no, la que pida (o todas).
+export function sedeEfectiva(req, pedida) {
+  return req.sedeSesion || pedida || null;
 }

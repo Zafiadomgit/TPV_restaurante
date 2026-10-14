@@ -51,7 +51,11 @@ function modificadoresValidos(modificadores) {
 // las rutas dinámicas tipo [[...id]] son una convención de Next.js que
 // este proyecto (sin framework) no usa.
 export default async function handler(req, res) {
-  if (!exigirRol(req, res, ["caja"])) return;
+  // La carta se gestiona desde el Panel (antes desde Caja), y solo con el
+  // PIN del panel completo: es la misma carta para las dos sedes, así que
+  // el panel limitado a Villarcayo no la puede cambiar.
+  if (!exigirRol(req, res, ["panel"])) return;
+  if (req.sedeSesion) return res.status(403).json({ error: "La carta solo se cambia desde el panel principal" });
 
   const { id } = req.query;
 
