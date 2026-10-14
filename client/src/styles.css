@@ -2826,20 +2826,11 @@ h4,
 /* Fondo de "¿Dónde vas a comer hoy?" (a petición del cliente): collage de
    productos del kebab con un velo oscuro encima para que el título y las
    dos tarjetas sigan leyéndose igual de bien. */
-.k-inicio-fondo {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  opacity: 0.55;
-}
-
+/* Fondo liso oscuro, el mismo que el resto del kiosco (a petición del
+   cliente, sin la foto difuminada de fondo). */
+.k-inicio-fondo,
 .k-inicio-velo {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at center, rgba(15, 17, 20, 0.55) 0%, rgba(15, 17, 20, 0.82) 70%);
+  display: none;
 }
 
 .k-inicio-top,
@@ -2900,20 +2891,20 @@ h4,
   padding: 0;
 }
 
+/* Foto entera y con todo su color (sin el velo oscuro de antes), arriba;
+   el texto va debajo, sin taparla. */
 .k-servicio-foto {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.45;
+  top: 18px;
+  left: 18px;
+  width: calc(100% - 36px);
+  height: calc(100% - 128px);
+  object-fit: contain;
   display: block;
 }
 
 .k-servicio-velo {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(15, 17, 20, 0.2), rgba(15, 17, 20, 0.92));
+  display: none;
 }
 
 .k-servicio-texto {
@@ -3047,7 +3038,7 @@ h4,
 
 .k-categoria {
   position: relative;
-  height: 200px;
+  height: 240px;
   border: 1px solid var(--k-linea-media);
   border-radius: 18px;
   background: var(--k-superficie);
@@ -3061,20 +3052,20 @@ h4,
   border-color: var(--k-naranja);
 }
 
+/* Igual que en los productos: foto entera, sin oscurecer, encima del
+   nombre en vez de detrás. */
 .k-categoria-foto {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.5;
+  top: 10px;
+  left: 12px;
+  width: calc(100% - 24px);
+  height: calc(100% - 82px);
+  object-fit: contain;
   display: block;
 }
 
 .k-categoria-velo {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(15, 17, 20, 0.15), rgba(15, 17, 20, 0.92));
+  display: none;
 }
 
 .k-categoria-texto {
@@ -3179,13 +3170,12 @@ h4,
   flex-direction: column;
 }
 
-/* Fondo blanco en todas las fotos (a petición del cliente): unas venían
-   con fondo blanco y otras transparentes sobre oscuro, y no casaban. La
-   foto se ve entera (contain), nunca recortada aunque no sea 16:10
-   (antes la samosa, que es cuadrada, salía cortada). */
+/* Todas las fotos van sin fondo (transparentes) sobre el mismo fondo
+   oscuro, a petición del cliente, y se ven enteras (contain), nunca
+   recortadas aunque no sean 16:10 (antes la samosa salía cortada). */
 .k-producto-foto {
   aspect-ratio: 16 / 10;
-  background: #fff;
+  background: var(--k-hundido);
   overflow: hidden;
   position: relative;
 }
@@ -3828,10 +3818,6 @@ h4,
   aspect-ratio: 16 / 10;
   object-fit: contain;
   display: block;
-  background: #fff;
-  border-radius: 12px;
-  padding: 6px;
-  box-sizing: border-box;
 }
 
 /* "Quitar ingredientes": icono tachado apagado mientras el ingrediente
