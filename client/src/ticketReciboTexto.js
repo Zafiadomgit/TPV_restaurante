@@ -1,5 +1,6 @@
 import { formatTicket } from "./format.js";
-import { paraImpresora } from "./ticketCocinaTexto.js";
+import { paraImpresora, MARCA_SECCION } from "./ticketCocinaTexto.js";
+import { lineasCambios } from "./seccionesTicket.js";
 
 // Recibo del cliente en ESC/POS para mandarlo por QZ Tray directo a la
 // impresora de caja, sin la ventana de imprimir del navegador (a petición
@@ -88,13 +89,11 @@ export function construirRecibo(venta) {
   (venta.items || []).forEach((item, i) => {
     if (i > 0) l.push(SEPARADOR);
     l.push(NEGRITA_ON, filaConImporte(`${item.cantidad}x ${paraImpresora(item.nombre)}`, euros(item.precio * item.cantidad)), NEGRITA_OFF);
-    const cambios = String(item.modificadoresTexto || "")
-      .split(", ")
-      .map((c) => c.trim())
-      .filter(Boolean);
-    if (item.notas) cambios.push(`Nota: ${item.notas}`);
-    for (const cambio of cambios) {
-      partir(paraImpresora(cambio), ANCHO - 4).forEach((linea, j) => l.push(`${j === 0 ? " - " : "   "}${linea}\n`));
+    for (const { tipo, texto } of lineasCambios(item)) {
+      const prefijo = tipo === "punto" ? ` ${MARCA_SECCION} ` : "    - ";
+      partir(paraImpresora(texto), ANCHO - prefijo.length).forEach((linea, j) =>
+        l.push(`${j === 0 ? prefijo : " ".repeat(prefijo.length)}${linea}\n`)
+      );
     }
   });
 

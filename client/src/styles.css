@@ -1413,6 +1413,15 @@ h4,
   color: #000;
 }
 
+.recibo-item-seccion {
+  font-weight: 800;
+  margin-top: 0.6mm;
+}
+
+.recibo-item-sub {
+  padding-left: 3.5mm;
+}
+
 .recibo-item-precio {
   text-align: right;
   white-space: nowrap;

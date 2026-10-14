@@ -101,6 +101,10 @@ export default async function handler(req, res) {
       let precioSiTodoQuitadoDelta = 0;
       let baseSobrescrita = false;
       const nombresSeleccionados = [];
+      // Los mismos textos agrupados por paso ({ paso, textos }), para que
+      // la comanda y el recibo puedan separar "Solo / En menú", patatas,
+      // extras y bebida (ver client/src/seccionesTicket.js).
+      const modificadoresGrupos = [];
 
       // "¿En menú o no?" (Kebab, Dürüm...): un paso puede depender de la
       // opción elegida en OTRO paso (mostrarSi) — ej. "Tus patatas" y
@@ -126,6 +130,7 @@ export default async function handler(req, res) {
 
       for (const paso of producto.modificadores || []) {
         if (!esPasoVisible(paso)) continue;
+        const inicioTextosPaso = nombresSeleccionados.length;
         const seleccionCliente = Array.isArray(item.modificadores?.[paso.id])
           ? item.modificadores[paso.id]
           : [];
@@ -254,6 +259,8 @@ export default async function handler(req, res) {
             }
           }
         }
+        const textosPaso = nombresSeleccionados.slice(inicioTextosPaso);
+        if (textosPaso.length > 0) modificadoresGrupos.push({ paso: paso.id, textos: textosPaso });
       }
       precioBase += precioSiTodoQuitadoDelta;
 
@@ -264,6 +271,7 @@ export default async function handler(req, res) {
         cantidad,
         notas: item.notas || "",
         modificadoresTexto: nombresSeleccionados.join(", "),
+        modificadoresGrupos,
       });
     }
 

@@ -1,5 +1,6 @@
 import { createPortal } from "react-dom";
 import { formatTicket } from "../format.js";
+import { lineasCambios } from "../seccionesTicket.js";
 
 function formatFechaHora(iso) {
   if (!iso) return "";
@@ -75,16 +76,14 @@ export default function ReciboImprimible({ venta }) {
             <tr key={i}>
               <td className="recibo-item-nombre">
                 {item.cantidad}× {item.nombre}
-                {/* Un cambio por línea con "- ", como la comanda de cocina. */}
-                {String(item.modificadoresTexto || "")
-                  .split(", ")
-                  .filter(Boolean)
-                  .map((cambio, j) => (
-                    <span key={j} className="recibo-item-mods">
-                      - {cambio}
-                    </span>
-                  ))}
-                {item.notas && <span className="recibo-item-mods">- Nota: {item.notas}</span>}
+                {/* Secciones con punto (Solo/En menú, patatas, extras,
+                    bebida) y lo de dentro con guion, como la comanda. */}
+                {lineasCambios(item).map(({ tipo, texto }, j) => (
+                  <span key={j} className={`recibo-item-mods ${tipo === "punto" ? "recibo-item-seccion" : "recibo-item-sub"}`}>
+                    {tipo === "punto" ? "• " : "- "}
+                    {texto}
+                  </span>
+                ))}
               </td>
               <td className="recibo-item-precio">{(item.precio * item.cantidad).toFixed(2)} €</td>
             </tr>

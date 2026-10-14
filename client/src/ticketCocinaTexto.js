@@ -1,4 +1,10 @@
 import { formatTicket } from "./format.js";
+import { lineasCambios } from "./seccionesTicket.js";
+
+// Marca de inicio de sección (Solo/En menú, patatas, extras, bebida). Es
+// "*" y no "•" a propósito: el punto no existe en la página de códigos por
+// defecto de las impresoras de tickets (ver paraImpresora).
+export const MARCA_SECCION = "*";
 
 // Construye el texto ESC/POS del ticket de cocina — pedido por el dueño
 // para tener comandas en papel "claras y separadas" en una impresora
@@ -51,11 +57,12 @@ export function construirTicketCocina(order) {
   for (const item of order.items || []) {
     lineas.push(GRANDE, NEGRITA_ON, `${item.cantidad}x ${paraImpresora(item.nombre)}\n`, NEGRITA_OFF);
     lineas.push(ALTO);
-    const cambios = String(item.modificadoresTexto || "")
-      .split(", ")
-      .map((c) => c.trim())
-      .filter(Boolean);
-    for (const cambio of cambios) lineas.push(` - ${paraImpresora(cambio)}\n`);
+    // Secciones con marca (ver seccionesTicket.js): la cabecera en negrita
+    // y lo de dentro con guion, un poco metido.
+    for (const { tipo, texto } of lineasCambios({ ...item, notas: "" })) {
+      if (tipo === "punto") lineas.push(NEGRITA_ON, `${MARCA_SECCION} ${paraImpresora(texto)}\n`, NEGRITA_OFF);
+      else lineas.push(`   - ${paraImpresora(texto)}\n`);
+    }
     if (item.notas) lineas.push(NEGRITA_ON, ` NOTA: ${paraImpresora(item.notas)}\n`, NEGRITA_OFF);
     lineas.push(NORMAL, SEPARADOR);
   }
