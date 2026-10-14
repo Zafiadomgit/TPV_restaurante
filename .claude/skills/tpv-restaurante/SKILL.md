@@ -855,6 +855,16 @@ puede ser un dispositivo físico distinto del de caja.
   que reiniciar el intervalo al cambiar de impresora no duplica avisos ni
   impresiones de pedidos que ya se habían visto.
 
+### Pantalla de recogida: modo pantalla completa (octubre 2026)
+`Recogida.jsx` tiene un botón "⛶ Pantalla completa" junto al reloj (y doble
+clic en cualquier parte) que usa la Fullscreen API para quitar también la
+barra del navegador; el botón se oculta mientras está activo, el cursor se
+esconde a los 3 s sin mover el ratón y se sale con Esc o doble clic. El
+navegador no deja entrar solo al cargar (exige un gesto del usuario): tras
+recargar la página hay que volver a pulsarlo. Si se quiere que arranque
+siempre a pantalla completa sin tocar nada, es el modo kiosco del navegador
+(`chrome --kiosk https://…/recogida`), no algo de la web.
+
 ### Pantalla de recogida personalizable: fondo y logo (`ajustes` por sede)
 A petición del cliente: `/recogida` (monitor de cara al cliente, ver
 sección "Pantalla de recogida") admite una imagen de fondo y un logo

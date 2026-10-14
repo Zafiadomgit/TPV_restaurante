@@ -17,6 +17,44 @@ export default function Recogida() {
   const [fondoRecogidaUrl, setFondoRecogidaUrl] = useState(null);
   const [logoRecogidaUrl, setLogoRecogidaUrl] = useState(null);
   const enVuelo = useRef(false);
+  // Modo pantalla completa (a petición del cliente): quita también la
+  // barra del navegador en el monitor de recogida. El navegador solo deja
+  // entrar con un gesto del usuario (botón o doble clic); se sale con Esc.
+  const [pantallaCompleta, setPantallaCompleta] = useState(() => Boolean(document.fullscreenElement));
+  const [cursorOculto, setCursorOculto] = useState(false);
+
+  useEffect(() => {
+    const alCambiar = () => setPantallaCompleta(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", alCambiar);
+    return () => document.removeEventListener("fullscreenchange", alCambiar);
+  }, []);
+
+  // En pantalla completa el cursor se esconde a los 3 s sin mover el ratón.
+  useEffect(() => {
+    if (!pantallaCompleta) {
+      setCursorOculto(false);
+      return undefined;
+    }
+    let id = setTimeout(() => setCursorOculto(true), 3000);
+    const alMover = () => {
+      setCursorOculto(false);
+      clearTimeout(id);
+      id = setTimeout(() => setCursorOculto(true), 3000);
+    };
+    window.addEventListener("mousemove", alMover);
+    return () => {
+      clearTimeout(id);
+      window.removeEventListener("mousemove", alMover);
+    };
+  }, [pantallaCompleta]);
+
+  const alternarPantallaCompleta = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen?.().catch(() => {});
+    } else {
+      document.documentElement.requestFullscreen?.().catch(() => {});
+    }
+  };
 
   useEffect(() => {
     if (!sede) return;
@@ -81,7 +119,11 @@ export default function Recogida() {
     : undefined;
 
   return (
-    <div className="kiosco k-recogida" style={estiloFondo}>
+    <div
+      className={`kiosco k-recogida ${cursorOculto ? "k-recogida--sin-cursor" : ""}`}
+      style={estiloFondo}
+      onDoubleClick={alternarPantallaCompleta}
+    >
       {fondoRecogidaUrl && <div className="k-recogida-overlay" />}
       <div className="k-recogida-cabecera">
         <div className="k-recogida-marca">
@@ -92,9 +134,21 @@ export default function Recogida() {
           />
           <span className="k-recogida-titulo">TU PEDIDO · YOUR ORDER</span>
         </div>
-        <span className="k-recogida-reloj">
-          {hora.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-        </span>
+        <div className="k-recogida-derecha">
+          {!pantallaCompleta && (
+            <button
+              type="button"
+              className="k-recogida-pantalla-completa"
+              onClick={alternarPantallaCompleta}
+              title="También con doble clic. Para salir: Esc"
+            >
+              ⛶ Pantalla completa
+            </button>
+          )}
+          <span className="k-recogida-reloj">
+            {hora.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        </div>
       </div>
       <div className="k-recogida-columnas">
         <div className="k-recogida-col k-recogida-col--preparando">
