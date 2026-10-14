@@ -3179,9 +3179,13 @@ h4,
   flex-direction: column;
 }
 
+/* Fondo blanco en todas las fotos (a petición del cliente): unas venían
+   con fondo blanco y otras transparentes sobre oscuro, y no casaban. La
+   foto se ve entera (contain), nunca recortada aunque no sea 16:10
+   (antes la samosa, que es cuadrada, salía cortada). */
 .k-producto-foto {
   aspect-ratio: 16 / 10;
-  background: var(--k-hundido);
+  background: #fff;
   overflow: hidden;
   position: relative;
 }
@@ -3189,7 +3193,9 @@ h4,
 .k-producto-foto img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  padding: 6px;
+  box-sizing: border-box;
   display: block;
 }
 
@@ -3822,6 +3828,10 @@ h4,
   aspect-ratio: 16 / 10;
   object-fit: contain;
   display: block;
+  background: #fff;
+  border-radius: 12px;
+  padding: 6px;
+  box-sizing: border-box;
 }
 
 /* "Quitar ingredientes": icono tachado apagado mientras el ingrediente
