@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { api } from "../api.js";
 import { calcularTotales } from "../totales.js";
 import { getIdioma, guardarIdioma } from "../idioma.js";
@@ -404,9 +404,9 @@ export default function Order() {
         </div>
         {/* Sustituye al "Acceso personal" de la barra superior, que en
             las pantallas de cliente ya no se muestra (ver App.jsx). */}
-        <Link to="/login" className="k-acceso-personal">
+        <button type="button" className="k-acceso-personal" onClick={() => navigate("/login")}>
           Acceso personal
-        </Link>
+        </button>
       </div>
     );
   }
