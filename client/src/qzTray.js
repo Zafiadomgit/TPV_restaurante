@@ -87,6 +87,13 @@ export function guardarImpresoraCocina(nombre) {
 // carpeta de QZ Tray de cada PC — y la firma la hace el servidor con la
 // clave privada (POST /api/login?accion=firmar-qz, ver api/login.js).
 let seguridadConfigurada = false;
+// Último error al pedir la firma al servidor (o "" si la última fue bien):
+// Caja.jsx lo enseña, porque si la firma falla QZ Tray no da error, solo
+// vuelve a preguntar "Allow/Block" como si no hubiera certificado.
+let ultimoErrorFirma = "";
+export function getUltimoErrorFirma() {
+  return ultimoErrorFirma;
+}
 function configurarSeguridad() {
   if (seguridadConfigurada) return;
   seguridadConfigurada = true;
@@ -97,7 +104,16 @@ function configurarSeguridad() {
   });
   qz.security.setSignatureAlgorithm("SHA512");
   qz.security.setSignaturePromise((textoAFirmar) => (resolve, reject) => {
-    api.firmarQz(textoAFirmar).then((r) => resolve(r.firma), reject);
+    api.firmarQz(textoAFirmar).then(
+      (r) => {
+        ultimoErrorFirma = "";
+        resolve(r.firma);
+      },
+      (e) => {
+        ultimoErrorFirma = e.message;
+        reject(e);
+      }
+    );
   });
 }
 

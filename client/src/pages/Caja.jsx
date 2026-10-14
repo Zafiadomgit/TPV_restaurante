@@ -1,59 +1,3 @@
-  const mandarAbrirCajon = async (impresora) => {
-    setAbriendoCajon(true);
-    setErrorCajon("");
-    setAvisoCajon("");
-    try {
-      await abrirCajon(impresora);
-      setAvisoCajon(`Orden de abrir enviada a «${impresora}».`);
-    } catch (e) {
-      setErrorCajon(e.message);
-    } finally {
-      setAbriendoCajon(false);
-    }
-  };
-
-  // Lista de impresoras para elegir (primera vez, o con "Cambiar
-  // impresora"): las de tickets primero y preseleccionadas; PDF, XPS,
-  // Fax... al final.
-  const pedirElegirImpresora = async () => {
-    setErrorCajon("");
-    setAvisoCajon("");
-    setAbriendoCajon(true);
-    try {
-      const impresoras = await listarImpresoras();
-      if (!impresoras || impresoras.length === 0) {
-        setErrorCajon("QZ Tray no encontró ninguna impresora instalada en este dispositivo.");
-        return;
-      }
-      const ordenadas = ordenarImpresoras(impresoras);
-      const guardada = getImpresoraGuardada();
-      setImpresorasParaElegir(ordenadas);
-      setImpresoraElegida(guardada && ordenadas.includes(guardada) && !esImpresoraVirtual(guardada) ? guardada : ordenadas[0]);
-    } catch (e) {
-      setErrorCajon(e.message);
-    } finally {
-      setAbriendoCajon(false);
-    }
-  };
-
-  const clicAbrirCajon = async () => {
-    const impresoraGuardada = getImpresoraGuardada();
-    // Una impresora virtual (PDF, Fax...) guardada de antes nunca abre el
-    // cajón: se vuelve a pedir que se elija la buena.
-    if (impresoraGuardada && !esImpresoraVirtual(impresoraGuardada)) {
-      await mandarAbrirCajon(impresoraGuardada);
-      return;
-    }
-    await pedirElegirImpresora();
-  };
-
-  const confirmarImpresoraYAbrir = async () => {
-    if (!impresoraElegida) return;
-    guardarImpresora(impresoraElegida);
-    setImpresorasParaElegir(null);
-    await mandarAbrirCajon(impresoraElegida);
-  };
-
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../api.js";
 import { calcularTotales } from "../totales.js";
@@ -66,6 +10,7 @@ import {
   abrirCajon,
   esImpresoraVirtual,
   getImpresoraGuardada,
+  getUltimoErrorFirma,
   guardarImpresora,
   listarImpresoras,
   ordenarImpresoras,
@@ -105,6 +50,13 @@ export default function Caja() {
   // Tras mandar la orden se enseña a qué impresora fue, para que si el
   // cajón no abre se vea enseguida si era la impresora equivocada.
   const [avisoCajon, setAvisoCajon] = useState("");
+  const [motivoElegirImpresora, setMotivoElegirImpresora] = useState("");
+  // Impresora guardada para el cajón, siempre a la vista con "Cambiar"
+  // (antes, una vez elegida, no había forma de cambiarla).
+  const [impresoraCajon, setImpresoraCajon] = useState(() => getImpresoraGuardada());
+  // Si la firma para QZ Tray falla (p. ej. falta la variable de Vercel),
+  // QZ Tray vuelve a preguntar "Allow/Block": se enseña el motivo.
+  const [errorFirmaQz, setErrorFirmaQz] = useState("");
 
   const [categoriaActiva, setCategoriaActiva] = useState("");
   const [items, setItems] = useState([]);
@@ -154,23 +106,27 @@ export default function Caja() {
     }
   };
 
-  const clicAbrirCajon = async () => {
+  const mandarAbrirCajon = async (impresora) => {
+    setAbriendoCajon(true);
     setErrorCajon("");
-    const impresoraGuardada = getImpresoraGuardada();
-    if (impresoraGuardada) {
-      setAbriendoCajon(true);
-      try {
-        await abrirCajon(impresoraGuardada);
-      } catch (e) {
-        setErrorCajon(e.message);
-      } finally {
-        setAbriendoCajon(false);
-      }
-      return;
+    setAvisoCajon("");
+    try {
+      await abrirCajon(impresora);
+      setAvisoCajon(`Orden de abrir enviada a «${impresora}».`);
+    } catch (e) {
+      setErrorCajon(e.message);
+    } finally {
+      setAbriendoCajon(false);
+      setErrorFirmaQz(getUltimoErrorFirma());
     }
+  };
 
-    // Primera vez en este dispositivo: hay que elegir a qué impresora
-    // mandarle el comando antes de poder abrir el cajón.
+  // Lista de impresoras para elegir (primera vez, con "Cambiar", o cuando
+  // la guardada ya no está conectada): las de tickets primero y
+  // preseleccionadas; PDF, XPS, Fax... al final.
+  const pedirElegirImpresora = async (motivo = "") => {
+    setErrorCajon("");
+    setAvisoCajon("");
     setAbriendoCajon(true);
     try {
       const impresoras = await listarImpresoras();
@@ -178,28 +134,53 @@ export default function Caja() {
         setErrorCajon("QZ Tray no encontró ninguna impresora instalada en este dispositivo.");
         return;
       }
-      setImpresorasParaElegir(impresoras);
-      setImpresoraElegida(impresoras[0]);
+      const ordenadas = ordenarImpresoras(impresoras);
+      const guardada = getImpresoraGuardada();
+      setMotivoElegirImpresora(motivo);
+      setImpresorasParaElegir(ordenadas);
+      setImpresoraElegida(guardada && ordenadas.includes(guardada) && !esImpresoraVirtual(guardada) ? guardada : ordenadas[0]);
     } catch (e) {
       setErrorCajon(e.message);
     } finally {
       setAbriendoCajon(false);
+      setErrorFirmaQz(getUltimoErrorFirma());
     }
+  };
+
+  const clicAbrirCajon = async () => {
+    const impresoraGuardada = getImpresoraGuardada();
+    // Una impresora virtual (PDF, Fax...) guardada de antes nunca abre el
+    // cajón: se vuelve a pedir que se elija la buena.
+    if (!impresoraGuardada || esImpresoraVirtual(impresoraGuardada)) {
+      await pedirElegirImpresora();
+      return;
+    }
+    // Si la impresora guardada ya no está (se desconectó y se puso otra),
+    // en vez de mandarle la orden a una que no existe se pide elegir.
+    setAbriendoCajon(true);
+    let conectadas;
+    try {
+      conectadas = await listarImpresoras();
+    } catch (e) {
+      setErrorCajon(e.message);
+      setAbriendoCajon(false);
+      setErrorFirmaQz(getUltimoErrorFirma());
+      return;
+    }
+    if (!conectadas.includes(impresoraGuardada)) {
+      setAbriendoCajon(false);
+      await pedirElegirImpresora(`La impresora «${impresoraGuardada}» ya no está conectada en este ordenador. Elige la nueva:`);
+      return;
+    }
+    await mandarAbrirCajon(impresoraGuardada);
   };
 
   const confirmarImpresoraYAbrir = async () => {
     if (!impresoraElegida) return;
     guardarImpresora(impresoraElegida);
+    setImpresoraCajon(impresoraElegida);
     setImpresorasParaElegir(null);
-    setAbriendoCajon(true);
-    setErrorCajon("");
-    try {
-      await abrirCajon(impresoraElegida);
-    } catch (e) {
-      setErrorCajon(e.message);
-    } finally {
-      setAbriendoCajon(false);
-    }
+    await mandarAbrirCajon(impresoraElegida);
   };
 
   useEffect(() => {
@@ -450,11 +431,33 @@ export default function Caja() {
           </button>
         </div>
       </div>
-      {errorCajon && <p className="error">{errorCajon}</p>}
+      {impresoraCajon && !impresorasParaElegir && (
+        <p className="caja-aviso-cajon">
+          Impresora del cajón: <strong>{impresoraCajon}</strong> ·{" "}
+          <button type="button" className="caja-cambiar-impresora" onClick={() => pedirElegirImpresora()}>
+            Cambiar
+          </button>
+        </p>
+      )}
+      {errorCajon && (
+        <p className="error">
+          {errorCajon}{" "}
+          {impresoraCajon && (
+            <button type="button" className="caja-cambiar-impresora" onClick={() => pedirElegirImpresora()}>
+              Cambiar impresora
+            </button>
+          )}
+        </p>
+      )}
+      {errorFirmaQz && (
+        <p className="error">
+          QZ Tray seguirá pidiendo «Allow» porque la firma falló: {errorFirmaQz}
+        </p>
+      )}
       {avisoCajon && !impresorasParaElegir && (
         <p className="caja-aviso-cajon">
           {avisoCajon} ¿No se ha abierto?{" "}
-          <button type="button" className="caja-cambiar-impresora" onClick={pedirElegirImpresora}>
+          <button type="button" className="caja-cambiar-impresora" onClick={() => pedirElegirImpresora()}>
             Cambiar impresora
           </button>
         </p>
@@ -463,6 +466,12 @@ export default function Caja() {
       {impresorasParaElegir && (
         <div className="caja-elegir-impresora">
           <label htmlFor="impresora-cajon">
+            {motivoElegirImpresora && (
+              <>
+                {motivoElegirImpresora}
+                <br />
+              </>
+            )}
             Elige la impresora de tickets a la que está conectado el cajón (no «PDF», «XPS» ni «Fax»)
           </label>
           <div className="caja-elegir-impresora-row">

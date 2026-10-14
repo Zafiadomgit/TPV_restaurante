@@ -798,7 +798,15 @@ no abrir nunca sin dar error. Ahora `ordenarImpresoras()` pone primero las
 de tickets y al final las virtuales (`esImpresoraVirtual()`); una virtual
 guardada se ignora y se vuelve a pedir; tras abrir se enseña a qué
 impresora se mandó, con enlace "Cambiar impresora"; y el kick va a los dos
-conectores (pin 2 y pin 5).
+conectores (pin 2 y pin 5). Ojo: en ese primer cambio el bloque nuevo de handlers se pegó por error
+al principio de `Caja.jsx` (fuera del componente) y en producción seguía la
+lógica antigua — compilaba igual. Arreglado al día siguiente: ahora además
+la impresora guardada y "Cambiar" se ven siempre, si la guardada ya no está
+entre las conectadas se pide elegir otra, y si falla la firma de QZ Tray se
+enseña el motivo (`getUltimoErrorFirma()`). Para probar sin hardware:
+alias de `qz-tray` a un módulo falso en una config de Vite aparte
+(`esbuild: { jsx: "automatic" }`, sin plugin de React) — así se probaron
+los casos impresora desconectada / conectada / sin variable de Vercel.
 
 ### Tickets de cocina impresos, en impresora aparte de caja (`ticketCocinaTexto.js` + `qzTray.js`)
 A petición del cliente ("tickets de cocina claros y separados, necesidad
