@@ -309,6 +309,7 @@ export default function Caja() {
       const pagado = await api.pagarOrder(pedido.id, metodoPago);
       setUltimaVenta(pagado);
       setPedidosSinCobrar((prev) => prev.filter((p) => p.id !== pedido.id));
+      if (metodoPago === "efectivo") clicAbrirCajon();
     } catch (e) {
       setError(e.message);
     } finally {
@@ -439,6 +440,9 @@ export default function Caja() {
       const pagado = await api.pagarOrder(nuevoPedido.id, metodoPago);
       setUltimaVenta(pagado);
       setItems([]);
+      // Cobro en efectivo: se abre el cajón solo (a petición del cliente),
+      // igual que con el botón "Abrir cajón".
+      if (metodoPago === "efectivo") clicAbrirCajon();
       setDividirEntre("");
     } catch (e) {
       setError(e.message);

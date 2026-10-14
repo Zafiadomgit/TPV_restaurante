@@ -4528,3 +4528,18 @@ h4,
     opacity: 0;
   }
 }
+
+/* Tarjeta de producto personalizable: se toca entera (foto incluida) para
+   abrir el asistente, sin botón "Personalizar". */
+.k-producto--tocable {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s ease;
+}
+.k-producto--tocable:active {
+  transform: scale(0.98);
+}
+.k-producto--tocable:focus-visible {
+  outline: 3px solid var(--k-naranja, #f07a26);
+  outline-offset: 2px;
+}

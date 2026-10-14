@@ -39,11 +39,32 @@ export default function MenuItemCard({ producto, idioma, onAdd, cantidadEnPedido
     return () => clearTimeout(id);
   }, [efecto]);
 
+  // Productos personalizables: sin botón "Personalizar" (a petición del
+  // cliente) — se toca la tarjeta/foto y se abre directamente el asistente.
+  const personalizable = Boolean(producto.modificadores);
+  const abrir = (e) => onAdd(producto, e.currentTarget.closest(".k-producto"));
+
   return (
     // Dos clases alternas para que el brillo vuelva a empezar si se añade
     // otra vez antes de que termine (un cambio de animation-name reinicia
     // la animación en CSS; repetir la misma clase no).
-    <div className={`k-producto ${efecto ? `k-producto--anadido-${efecto % 2}` : ""}`}>
+    <div
+      className={`k-producto ${personalizable ? "k-producto--tocable" : ""} ${efecto ? `k-producto--anadido-${efecto % 2}` : ""}`}
+      {...(personalizable
+        ? {
+            role: "button",
+            tabIndex: 0,
+            "aria-label": `${t(idioma, "personalizar")}: ${nombre}`,
+            onClick: abrir,
+            onKeyDown: (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                abrir(e);
+              }
+            },
+          }
+        : {})}
+    >
       <div className="k-producto-foto">
         {producto.imagen && <img src={producto.imagen} alt="" loading="lazy" />}
         {producto.modificadores && <span className="k-badge">{t(idioma, "personalizable")}</span>}
@@ -80,17 +101,15 @@ export default function MenuItemCard({ producto, idioma, onAdd, cantidadEnPedido
         )}
         <div className="k-producto-pie">
           {!tamanos && <span className="k-producto-precio">{formatEuros(producto.precio)}</span>}
-          <button
-            type="button"
-            className={`k-boton-anadir ${efecto ? "k-boton-anadir--hecho" : ""}`}
-            onClick={(e) => onAdd(producto, e.currentTarget.closest(".k-producto"))}
-          >
-            {efecto
-              ? `✓ ${t(idioma, "anadido")}`
-              : producto.modificadores
-                ? t(idioma, "personalizar")
-                : t(idioma, "anadir")}
-          </button>
+          {!personalizable && (
+            <button
+              type="button"
+              className={`k-boton-anadir ${efecto ? "k-boton-anadir--hecho" : ""}`}
+              onClick={abrir}
+            >
+              {efecto ? `✓ ${t(idioma, "anadido")}` : t(idioma, "anadir")}
+            </button>
+          )}
         </div>
       </div>
     </div>
