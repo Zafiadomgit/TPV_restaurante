@@ -39,10 +39,13 @@ export function paraImpresora(texto) {
 export function construirTicketCocina(order) {
   const lineas = [];
   lineas.push(INIT);
-  lineas.push(CENTRO, NEGRITA_ON, GRANDE, "COCINA\n");
-  lineas.push(formatTicket(order.ticketNumero), "\n", NEGRITA_OFF);
-  lineas.push(ALTO, paraImpresora(order.mesa), "\n");
-  lineas.push(NORMAL, new Date(order.creadoEn).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }), "\n");
+  // Cabecera en UNA sola línea, a petición del cliente: "#A-81 Mostrador
+  // 14:32" (antes eran 4 líneas: COCINA, número, origen y hora). En letra
+  // grande si cabe (24 caracteres a doble ancho en 80 mm); si no, a doble
+  // alto con el ancho normal, para que nunca se parta en dos.
+  const hora = new Date(order.creadoEn).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+  const cabecera = [formatTicket(order.ticketNumero), paraImpresora(order.mesa), hora].filter(Boolean).join(" ");
+  lineas.push(CENTRO, NEGRITA_ON, cabecera.length <= 24 ? GRANDE : ALTO, cabecera, "\n", NEGRITA_OFF, NORMAL);
   lineas.push(IZQUIERDA, SEPARADOR);
 
   for (const item of order.items || []) {
