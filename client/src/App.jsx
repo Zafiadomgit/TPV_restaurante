@@ -48,7 +48,12 @@ export default function App() {
   // la bienvenida o directamente en /login. Con sesión (caja usando el
   // kiosco) la barra se queda para poder navegar.
   const pantallaCliente = pathname === "/" || pathname === "/recogida";
-  const mostrarTopbar = !pantallaCliente || !!sesion;
+  // La pantalla del ticket al terminar el pedido (/pago/:id) también es
+  // del cliente: sin sesión no lleva barra (a petición del dueño, el
+  // cliente no debe ver "Acceso personal"). No se le pone app-kiosco
+  // porque tiene su propio diseño claro.
+  const pantallaPago = pathname.startsWith("/pago/");
+  const mostrarTopbar = !(pantallaCliente || pantallaPago) || !!sesion;
 
   useEffect(() => onSesionCambio(() => setSesion(getSesion())), []);
 
