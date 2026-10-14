@@ -88,7 +88,18 @@ export default function MenuWizard({ producto, idioma, onConfirmar, onCancelar }
       {!enResumen ? (
         <div className="menu-wizard-paso">
           <h2 className="menu-wizard-titulo">{pasoActual.titulo}</h2>
-          {pasoActual.nota && <p className="menu-wizard-nota">{pasoActual.nota}</p>}
+          {pasoActual.nota && (
+            <p
+              className={`menu-wizard-nota ${
+                typeof pasoActual.minSeleccion === "number"
+                  ? `menu-wizard-nota--obligatoria ${actualIncompleto ? "" : "menu-wizard-nota--ok"}`
+                  : ""
+              }`}
+            >
+              {typeof pasoActual.minSeleccion === "number" && !actualIncompleto ? "✓ " : ""}
+              {pasoActual.nota}
+            </p>
+          )}
           <div
             className={`menu-wizard-opciones ${
               pasoActual.opciones.some((o) => o.imagen) ? "menu-wizard-opciones--fotos" : ""

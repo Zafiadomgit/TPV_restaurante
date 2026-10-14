@@ -4575,3 +4575,37 @@ h4,
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* Nota de los pasos obligatorios (salsas): bien visible, en naranja
+   mientras falta elegir y en verde cuando ya está. */
+.menu-wizard-nota--obligatoria {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: var(--k-naranja);
+  box-shadow: 0 0 0 4px rgba(233, 112, 47, 0.25);
+  animation: nota-obligatoria 1.6s ease-in-out infinite;
+}
+.menu-wizard-nota--obligatoria.menu-wizard-nota--ok,
+.k-paso-nota--obligatoria.k-paso-nota--ok {
+  background: #2f9e65;
+  box-shadow: none;
+  animation: none;
+}
+.k-paso-nota--obligatoria {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--k-naranja);
+}
+@keyframes nota-obligatoria {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(233, 112, 47, 0.25); }
+  50% { box-shadow: 0 0 0 10px rgba(233, 112, 47, 0.08); }
+}

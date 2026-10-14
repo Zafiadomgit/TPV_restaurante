@@ -81,10 +81,15 @@ export default function Personalizar({ producto, idioma, onConfirmar, onCancelar
               >
                 <div className="k-paso-titulo">
                   <span className="k-paso-nombre">{paso.titulo}</span>
-                  {paso.nota && <span className="k-paso-nota">{paso.nota}</span>}
-                  {typeof paso.minSeleccion === "number" && (
-                    <span className={`k-paso-obligatorio ${falta ? "" : "k-paso-obligatorio--ok"}`}>
-                      {falta ? (idioma === "en" ? "Required" : "Obligatorio") : "✓"}
+                  {paso.nota && (
+                    <span
+                      className={`k-paso-nota ${
+                        typeof paso.minSeleccion === "number"
+                          ? `k-paso-nota--obligatoria ${falta ? "" : "k-paso-nota--ok"}`
+                          : ""
+                      }`}
+                    >
+                      {paso.nota}
                     </span>
                   )}
                 </div>
