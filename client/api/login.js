@@ -20,8 +20,29 @@ function firmarQz(req, res) {
   if (!clave) {
     return res.status(500).json({ error: "Falta configurar QZ_CLAVE_PRIVADA en Vercel" });
   }
-  const firma = crypto.createSign("RSA-SHA512").update(mensaje).sign(clave.replace(/\\n/g, "\n"), "base64");
-  return res.status(200).json({ firma });
+  try {
+    const firma = crypto.createSign("RSA-SHA512").update(mensaje).sign(normalizarClavePem(clave), "base64");
+    return res.status(200).json({ firma });
+  } catch (e) {
+    console.error("firmar-qz:", e.message);
+    return res.status(500).json({
+      error: "La clave QZ_CLAVE_PRIVADA de Vercel no tiene un formato válido (revisa que esté completa, de BEGIN a END)",
+    });
+  }
+}
+
+// Al pegar la clave en el panel de Vercel es fácil que se pierdan los
+// saltos de línea (quedan espacios), que queden "\n" literales o comillas
+// alrededor — y entonces OpenSSL no la entiende ("DECODER routines::
+// unsupported"). Se reconstruye el PEM: cabecera, cuerpo en base64 sin
+// nada más, en líneas de 64, y pie.
+function normalizarClavePem(valor) {
+  const texto = String(valor).trim().replace(/^["']+|["']+$/g, "").replace(/\\n/g, "\n");
+  const m = texto.match(/-----BEGIN ([A-Z ]+)-----([\s\S]*?)-----END \1-----/);
+  if (!m) return texto;
+  const cuerpo = m[2].replace(/[^A-Za-z0-9+/=]/g, "");
+  const lineas = cuerpo.match(/.{1,64}/g) || [];
+  return `-----BEGIN ${m[1]}-----\n${lineas.join("\n")}\n-----END ${m[1]}-----\n`;
 }
 
 export default async function handler(req, res) {
