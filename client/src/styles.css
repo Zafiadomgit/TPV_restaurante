@@ -54,18 +54,33 @@ h4,
   gap: 1.5rem;
 }
 
-.topbar nav a {
+.topbar nav a,
+.topbar nav .nav-boton {
   color: #cbd2d9;
   text-decoration: none;
   margin-left: 1.5rem;
   font-weight: 500;
 }
 
-.topbar nav a:first-child {
+/* Las opciones del menú son botones (ver BotonNav en App.jsx): sin
+   aspecto de botón, igual que antes cuando eran enlaces. */
+.topbar nav .nav-boton {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.topbar nav a:first-child,
+.topbar nav .nav-boton:first-child {
   margin-left: 0;
 }
 
-.topbar nav a.active {
+.topbar nav a.active,
+.topbar nav .nav-boton.active {
   color: white;
   border-bottom: 2px solid #d1622f;
 }

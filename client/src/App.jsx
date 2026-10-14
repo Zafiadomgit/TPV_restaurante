@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import Order from "./pages/Order.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import Kitchen from "./pages/Kitchen.jsx";
@@ -12,6 +12,29 @@ import Login from "./pages/Login.jsx";
 import RutaProtegida from "./components/RutaProtegida.jsx";
 import { getSesion, cerrarSesion, onSesionCambio, NOMBRE_ROL } from "./auth.js";
 import { getSede, SEDES } from "./sede.js";
+
+// Opción del menú del personal. Es un <button> y no un enlace <a> a
+// propósito: en el TPV táctil, ciertos gestos (mantener pulsado, el "clic
+// central" de algunos drivers táctiles, Ctrl) abrían Caja/Panel/Recogida
+// en pestañas o ventanas nuevas y se acumulaban pantallas. Un botón
+// siempre navega dentro de la misma ventana.
+function BotonNav({ to, end = false, className = "", children }) {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const activo = end ? pathname === to : pathname === to || pathname.startsWith(`${to}/`);
+  return (
+    <button
+      type="button"
+      className={`nav-boton ${activo ? "active" : ""} ${className}`.trim()}
+      aria-current={activo ? "page" : undefined}
+      onClick={() => {
+        if (pathname !== to) navigate(to);
+      }}
+    >
+      {children}
+    </button>
+  );
+}
 
 export default function App() {
   const [sesion, setSesion] = useState(getSesion());
@@ -44,39 +67,39 @@ export default function App() {
           <div className="topbar-derecha">
           <nav>
             {(!sesion || sesion.rol === "caja") && (
-              <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
+              <BotonNav to="/" end>
                 Pedidos
-              </NavLink>
+              </BotonNav>
           )}
           {(sesion?.rol === "caja" || sesion?.rol === "cocina") && (
-            <NavLink to="/cocina" className={({ isActive }) => (isActive ? "active" : "")}>
+            <BotonNav to="/cocina">
               Cocina
-            </NavLink>
+            </BotonNav>
           )}
           {sesion?.rol === "caja" && (
-            <NavLink to="/historial" className={({ isActive }) => (isActive ? "active" : "")}>
+            <BotonNav to="/historial">
               Historial
-            </NavLink>
+            </BotonNav>
           )}
           {sesion?.rol === "caja" && (
-            <NavLink to="/caja" className={({ isActive }) => (isActive ? "active" : "")}>
+            <BotonNav to="/caja">
               Caja
-            </NavLink>
+            </BotonNav>
           )}
           {sesion?.rol === "caja" && (
-            <NavLink to="/carta" className={({ isActive }) => (isActive ? "active" : "")}>
+            <BotonNav to="/carta">
               Carta
-            </NavLink>
+            </BotonNav>
           )}
           {sesion?.rol === "panel" && (
-            <NavLink to="/panel" className={({ isActive }) => (isActive ? "active" : "")}>
+            <BotonNav to="/panel">
               Panel
-            </NavLink>
+            </BotonNav>
           )}
           {(sesion?.rol === "caja" || sesion?.rol === "cocina") && (
-            <NavLink to="/recogida" className={({ isActive }) => (isActive ? "active" : "")}>
+            <BotonNav to="/recogida">
               Recogida
-            </NavLink>
+            </BotonNav>
           )}
         </nav>
         <div className="topbar-sesion">
@@ -94,9 +117,9 @@ export default function App() {
               </button>
             </>
           ) : (
-            <NavLink to="/login" className="btn-acceso">
+            <BotonNav to="/login" className="btn-acceso">
               Acceso personal
-            </NavLink>
+            </BotonNav>
           )}
         </div>
         </div>
