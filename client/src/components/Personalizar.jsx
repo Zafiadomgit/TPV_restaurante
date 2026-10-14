@@ -25,7 +25,7 @@ export default function Personalizar({ producto, idioma, onConfirmar, onCancelar
   // coincida con lo que realmente cobra/guarda el backend.
   const { precioUnidad, detallePasos } = calcularPersonalizacion(producto, seleccion);
   const precioTotal = precioUnidad * cantidad;
-  const pasosVisibles = (producto.modificadores || []).filter((paso) => pasoVisible(paso, seleccion));
+  const pasosVisibles = (producto.modificadores || []).filter((paso) => pasoVisible(paso, seleccion, producto.modificadores));
   const incompletos = pasosVisibles.filter((paso) => pasoIncompleto(paso, seleccion));
   const [avisarIncompletos, setAvisarIncompletos] = useState(false);
 

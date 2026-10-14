@@ -29,7 +29,7 @@ export default function MenuWizard({ producto, idioma, onConfirmar, onCancelar }
   // bebida...) según lo elegido — pasos se recalcula en cada render a
   // partir de la selección actual, así que al elegir "En menú" esos
   // pasos aparecen en el recorrido, y al elegir "Solo" desaparecen.
-  const pasos = todosLosPasos.filter((paso) => pasoVisible(paso, seleccion));
+  const pasos = todosLosPasos.filter((paso) => pasoVisible(paso, seleccion, todosLosPasos));
 
   const enResumen = pasoIndex >= pasos.length;
   const pasoActual = pasos[pasoIndex];

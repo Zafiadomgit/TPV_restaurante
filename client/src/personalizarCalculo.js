@@ -20,10 +20,19 @@ export function seleccionInicial(producto) {
 // "Elige tu bebida" solo existen si en el paso "menu" se eligió
 // "en-menu". Sin mostrarSi, el paso siempre está visible (compatible
 // con todos los productos que no usan esta opción).
-export function pasoVisible(paso, seleccion) {
+//
+// `pasos` (todos los del producto): si se pasa, la dependencia es en
+// cadena — el paso del que depende también tiene que estar visible. Así
+// "Tarrinas aparte" (depende de "¿Agregar tarrinas?", que depende de "En
+// menú") desaparece si se vuelve atrás y se elige "Solo", aunque siga
+// marcado "Sí" en el paso intermedio.
+export function pasoVisible(paso, seleccion, pasos = null, profundidad = 0) {
   if (!paso.mostrarSi) return true;
   const elegidasDelPasoDelQueDepende = seleccion[paso.mostrarSi.paso] || [];
-  return elegidasDelPasoDelQueDepende.includes(paso.mostrarSi.opcion);
+  if (!elegidasDelPasoDelQueDepende.includes(paso.mostrarSi.opcion)) return false;
+  if (!pasos || profundidad > 10) return true;
+  const padre = pasos.find((p) => p.id === paso.mostrarSi.paso);
+  return padre ? pasoVisible(padre, seleccion, pasos, profundidad + 1) : true;
 }
 
 // Selección única tipo radio (ej. tamaño de pizza, carne de pedrata):
@@ -116,7 +125,7 @@ export function calcularPersonalizacion(producto, seleccion) {
   let precioBase = producto.precio;
   let precioSiTodoQuitadoDelta = 0;
   for (const paso of producto.modificadores || []) {
-    if (!pasoVisible(paso, seleccion)) continue;
+    if (!pasoVisible(paso, seleccion, producto.modificadores)) continue;
     const elegidas = seleccion[paso.id] || [];
     if (typeof paso.precioSiTodoQuitado === "number" && paso.opciones.length > 0) {
       const disparadores = paso.disparadoresPrecioAlternativo;
@@ -140,7 +149,7 @@ export function calcularPersonalizacion(producto, seleccion) {
     // Un paso oculto (ej. "Tus patatas" cuando se eligió "Solo" en vez de
     // "En menú") no debe sumar precio ni aparecer en el ticket de cocina,
     // aunque tenga una opción por defecto marcada en la selección.
-    if (!pasoVisible(paso, seleccion)) return { extra: 0, textos: [] };
+    if (!pasoVisible(paso, seleccion, producto.modificadores)) return { extra: 0, textos: [] };
 
     const elegidas = seleccion[paso.id] || [];
     const seleccionadas = elegidas.map((optId) => paso.opciones.find((o) => o.id === optId)).filter(Boolean);
@@ -164,7 +173,10 @@ export function calcularPersonalizacion(producto, seleccion) {
 
     const textos = [];
     const umbral = paso.resumenQuitarMuchos?.umbral;
-    if (paso.esSelectorTamano || paso.siempreEnTexto) {
+    if (paso.ocultarEnTexto) {
+      // Paso que solo sirve para abrir otro (ej. "¿Agregar tarrinas?"):
+      // no se imprime; lo que cuenta es lo elegido en el paso que abre.
+    } else if (paso.esSelectorTamano || paso.siempreEnTexto) {
       const opcionElegida = paso.opciones.find((o) => elegidas.includes(o.id)) || paso.opciones.find((o) => o.porDefecto);
       if (opcionElegida) textos.push(opcionElegida.nombre);
     } else if (typeof umbral === "number" && seleccionadas.length >= umbral) {

@@ -110,15 +110,18 @@ export default async function handler(req, res) {
       // pasos por su cuenta, se ignoran aquí pase lo que pase si no
       // corresponde mostrarlos.
       const modificadoresPorId = new Map((producto.modificadores || []).map((p) => [p.id, p]));
-      const esPasoVisible = (paso) => {
+      // En cadena: el paso del que depende también tiene que estar visible
+      // (ver pasoVisible en personalizarCalculo.js).
+      const esPasoVisible = (paso, profundidad = 0) => {
         if (!paso.mostrarSi) return true;
+        if (profundidad > 10) return false;
         const pasoDelQueDepende = modificadoresPorId.get(paso.mostrarSi.paso);
         if (!pasoDelQueDepende) return false;
         if (!pasoDelQueDepende.opciones.some((o) => o.id === paso.mostrarSi.opcion)) return false;
         const seleccionDelQueDepende = Array.isArray(item.modificadores?.[paso.mostrarSi.paso])
           ? item.modificadores[paso.mostrarSi.paso]
           : [];
-        return seleccionDelQueDepende.includes(paso.mostrarSi.opcion);
+        return seleccionDelQueDepende.includes(paso.mostrarSi.opcion) && esPasoVisible(pasoDelQueDepende, profundidad + 1);
       };
 
       for (const paso of producto.modificadores || []) {
@@ -224,7 +227,9 @@ export default async function handler(req, res) {
         //     cuenta como "añadida" si se marca, así que este modo
         //     reproduce el comportamiento de siempre para esos pasos.
         const umbral = paso.resumenQuitarMuchos?.umbral;
-        if (paso.esSelectorTamano || paso.siempreEnTexto) {
+        if (paso.ocultarEnTexto) {
+          // Paso que solo abre otro (ej. "¿Agregar tarrinas?"): no va al ticket.
+        } else if (paso.esSelectorTamano || paso.siempreEnTexto) {
           const opcionElegida =
             paso.opciones.find((o) => seleccionValida.includes(o.id)) ||
             paso.opciones.find((o) => o.porDefecto);
