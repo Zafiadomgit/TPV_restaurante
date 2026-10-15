@@ -68,6 +68,13 @@ export default function Caja() {
   const [items, setItems] = useState([]);
   const [cobrando, setCobrando] = useState(false);
   const [dividirEntre, setDividirEntre] = useState("");
+  // Venta en mostrador: comer aquí o para llevar (a petición del cliente),
+  // con dirección opcional para llevar. Mismos textos exactos que el kiosco
+  // ("Comer aquí" / "Para llevar"): la pantalla de cocina marca así los
+  // pedidos para llevar. La dirección va en la nota del pedido, que ya sale
+  // en cocina, en la comanda y en el recibo.
+  const [tipoServicio, setTipoServicio] = useState("aqui");
+  const [direccion, setDireccion] = useState("");
   const [ultimaVenta, setUltimaVenta] = useState(null);
   useEffect(() => setAvisoRecibo(""), [ultimaVenta?.id]);
   const [productoPersonalizando, setProductoPersonalizando] = useState(null);
@@ -427,9 +434,9 @@ export default function Caja() {
     setCobrando(true);
     try {
       const nuevoPedido = await api.createOrder({
-        mesa: "Mostrador",
+        mesa: tipoServicio === "llevar" ? "Para llevar" : "Comer aquí",
         local: sede,
-        notasGenerales: "",
+        notasGenerales: tipoServicio === "llevar" && direccion.trim() ? `Dirección: ${direccion.trim()}` : "",
         items: items.map((i) => ({
           productId: i.productId,
           cantidad: i.cantidad,
@@ -444,6 +451,8 @@ export default function Caja() {
       // igual que con el botón "Abrir cajón".
       if (metodoPago === "efectivo") clicAbrirCajon();
       setDividirEntre("");
+      setTipoServicio("aqui");
+      setDireccion("");
     } catch (e) {
       setError(e.message);
     } finally {
@@ -726,6 +735,35 @@ export default function Caja() {
                 <span>Total</span>
                 <span>{total.toFixed(2)} €</span>
               </div>
+            </div>
+
+            <div className="caja-servicio">
+              <div className="caja-servicio-botones" role="group" aria-label="Tipo de pedido">
+                {[
+                  ["aqui", "Comer aquí"],
+                  ["llevar", "Para llevar"],
+                ].map(([valor, texto]) => (
+                  <button
+                    key={valor}
+                    type="button"
+                    className={tipoServicio === valor ? "activo" : ""}
+                    aria-pressed={tipoServicio === valor}
+                    onClick={() => setTipoServicio(valor)}
+                  >
+                    {texto}
+                  </button>
+                ))}
+              </div>
+              {tipoServicio === "llevar" && (
+                <input
+                  type="text"
+                  className="caja-servicio-direccion"
+                  placeholder="Dirección (opcional)"
+                  maxLength={200}
+                  value={direccion}
+                  onChange={(e) => setDireccion(e.target.value)}
+                />
+              )}
             </div>
 
             <div className="caja-dividir">

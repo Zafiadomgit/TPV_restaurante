@@ -82,6 +82,10 @@ export function construirRecibo(venta) {
   l.push(NEGRITA_ON, GRANDE, `${formatTicket(venta.ticketNumero)}\n`, NORMAL, NEGRITA_OFF);
   l.push(`${fechaHora(venta.pagadoEn || venta.creadoEn)}\n`);
   if (venta.mesa) l.push(`${paraImpresora(venta.mesa)}\n`);
+  // Dirección del pedido para llevar (nota del pedido desde caja).
+  if (venta.notasGenerales) {
+    for (const linea of partir(paraImpresora(venta.notasGenerales), ANCHO)) l.push(`${linea}\n`);
+  }
   l.push(IZQUIERDA, SEPARADOR);
 
   // Como la comanda de cocina (a petición del cliente): cada cambio en su

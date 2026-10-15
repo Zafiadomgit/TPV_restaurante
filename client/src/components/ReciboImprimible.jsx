@@ -67,6 +67,7 @@ export default function ReciboImprimible({ venta }) {
       <p className="recibo-ticket">{formatTicket(venta.ticketNumero)}</p>
       <p className="recibo-fecha">{formatFechaHora(venta.pagadoEn || venta.creadoEn)}</p>
       <p className="recibo-origen">{venta.mesa}</p>
+      {venta.notasGenerales && <p className="recibo-origen">{venta.notasGenerales}</p>}
 
       <hr />
 

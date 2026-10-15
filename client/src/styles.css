@@ -1450,6 +1450,46 @@ h4,
   font-size: 14px;
 }
 
+/* Comer aquí / Para llevar (+ dirección) en la venta de mostrador. */
+.caja-servicio {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+
+.caja-servicio-botones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.caja-servicio-botones button {
+  padding: 10px 8px;
+  border-radius: 10px;
+  border: 1px solid #d6d3cc;
+  background: #fff;
+  color: #333;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.caja-servicio-botones button.activo {
+  background: #e9702f;
+  border-color: #e9702f;
+  color: #fff;
+}
+
+.caja-servicio-direccion {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #d6d3cc;
+  font-size: 15px;
+}
+
 .caja-dividir {
   margin-top: 0.8rem;
   display: flex;

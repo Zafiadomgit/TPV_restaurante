@@ -31,11 +31,11 @@ const SEPARADOR = "--------------------------------\n";
 const MAPA_ACENTOS = {
   á: "a", é: "e", í: "i", ó: "o", ú: "u",
   Á: "A", É: "E", Í: "I", Ó: "O", Ú: "U",
-  ñ: "n", Ñ: "N", ü: "u", Ü: "U", "€": "EUR",
+  ñ: "n", Ñ: "N", ü: "u", Ü: "U", "€": "EUR", "º": "o", "ª": "a",
 };
 
 export function paraImpresora(texto) {
-  return String(texto ?? "").replace(/[áéíóúÁÉÍÓÚñÑüÜ€]/g, (c) => MAPA_ACENTOS[c] || c);
+  return String(texto ?? "").replace(/[áéíóúÁÉÍÓÚñÑüÜ€ºª]/g, (c) => MAPA_ACENTOS[c] || c);
 }
 
 // Letra grande a petición del cliente ("habría que aumentar las letras de
