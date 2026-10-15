@@ -29,6 +29,15 @@ export function calcularTotales(items) {
   return { subtotal, iva, total };
 }
 
+// Teléfono del cliente: solo cifras (y el + inicial si lo hay), para poder
+// buscar al mismo cliente aunque se escriba con espacios o guiones.
+export function normalizarTelefono(valor) {
+  const texto = String(valor || "").trim();
+  const cifras = texto.replace(/\D/g, "");
+  if (!cifras) return "";
+  return (texto.startsWith("+") ? "+" : "") + cifras.slice(0, 15);
+}
+
 export function mapRow(row) {
   return {
     id: row.id,
@@ -49,6 +58,11 @@ export function mapRow(row) {
     turnoCajaId: row.turno_caja_id || null,
     listoEn: row.listo_en || null,
     telefonoWhatsapp: row.telefono_whatsapp || null,
+    // Datos del cliente que apunta caja en "Para llevar" / "Recoger en
+    // tienda" (ver supabase/orders_datos_cliente.sql).
+    clienteNombre: row.cliente_nombre || null,
+    clienteTelefono: row.cliente_telefono || null,
+    clienteDireccion: row.cliente_direccion || null,
     anulado: row.anulado || false,
     anuladoMotivo: row.anulado_motivo || null,
     anuladoEn: row.anulado_en || null,

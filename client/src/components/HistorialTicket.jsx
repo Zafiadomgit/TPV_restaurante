@@ -1,4 +1,5 @@
 import { formatTicket } from "../format.js";
+import { lineasCliente } from "../seccionesTicket.js";
 
 const ESTADOS_LABEL = {
   pendiente: "Recibido",
@@ -57,6 +58,9 @@ export default function HistorialTicket({ order, onRevertir, onAnular }) {
           </li>
         ))}
       </ul>
+      {lineasCliente(order).length > 0 && (
+        <p className="nota-general">{lineasCliente(order).join(" · ")}</p>
+      )}
       {order.notasGenerales && <p className="nota-general">Nota: {order.notasGenerales}</p>}
       <p className="historial-total">Total: {order.total.toFixed(2)} €</p>
 

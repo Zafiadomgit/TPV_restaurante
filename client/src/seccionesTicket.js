@@ -70,3 +70,13 @@ export function lineasCambios(item) {
 export function nombreCocina(nombre) {
   return String(nombre || "").replace(/\s*\(([^()]*)\)/g, (todo, dentro) => (/\d/.test(dentro) ? todo : "")).trim();
 }
+
+// Datos del cliente del pedido (caja, "Para llevar" / "Recoger en
+// tienda"), una línea por dato, para cocina, comanda, recibo e historial.
+export function lineasCliente(order) {
+  const lineas = [];
+  if (order?.clienteNombre) lineas.push(`Cliente: ${order.clienteNombre}`);
+  if (order?.clienteTelefono) lineas.push(`Tel: ${order.clienteTelefono}`);
+  if (order?.clienteDireccion) lineas.push(`Dirección: ${order.clienteDireccion}`);
+  return lineas;
+}

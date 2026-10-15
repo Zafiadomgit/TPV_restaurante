@@ -1,5 +1,5 @@
 import { formatTicket } from "../format.js";
-import { nombreCocina } from "../seccionesTicket.js";
+import { nombreCocina, lineasCliente } from "../seccionesTicket.js";
 
 const SIGUIENTE_ESTADO = {
   pendiente: "en_preparacion",
@@ -29,7 +29,7 @@ function formatTranscurrido(iso) {
 export default function OrderTicket({ order, onAvanzar, onReimprimir, imprimiendo }) {
   const siguiente = SIGUIENTE_ESTADO[order.estado];
   const urgente = minutosDesde(order.creadoEn) >= MINUTOS_URGENTE;
-  const paraLlevar = order.mesa === "Para llevar";
+  const paraLlevar = order.mesa === "Para llevar" || order.mesa === "Recoger en tienda";
   const mostrador = order.mesa === "Mostrador";
   const origenClass = paraLlevar ? "kds-ticket-llevar" : mostrador ? "kds-ticket-mostrador" : "";
 
@@ -42,6 +42,13 @@ export default function OrderTicket({ order, onAvanzar, onReimprimir, imprimiend
         </span>
       </div>
       <div className="kds-ticket-origen">{order.mesa}</div>
+      {lineasCliente(order).length > 0 && (
+        <div className="kds-cliente">
+          {lineasCliente(order).map((linea) => (
+            <span key={linea}>{linea}</span>
+          ))}
+        </div>
+      )}
       <ul>
         {order.items.map((item) => (
           <li key={item.productId}>

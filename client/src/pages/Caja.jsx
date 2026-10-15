@@ -68,13 +68,44 @@ export default function Caja() {
   const [items, setItems] = useState([]);
   const [cobrando, setCobrando] = useState(false);
   const [dividirEntre, setDividirEntre] = useState("");
-  // Venta en mostrador: comer aquí o para llevar (a petición del cliente),
-  // con dirección opcional para llevar. Mismos textos exactos que el kiosco
-  // ("Comer aquí" / "Para llevar"): la pantalla de cocina marca así los
-  // pedidos para llevar. La dirección va en la nota del pedido, que ya sale
-  // en cocina, en la comanda y en el recibo.
+  // Venta en mostrador (a petición del cliente): Comer aquí / Para llevar
+  // (a domicilio: nombre, teléfono y dirección) / Recoger en tienda
+  // (nombre y teléfono). Los datos del cliente se guardan con el pedido
+  // (columnas cliente_* de orders) y salen en cocina, comanda y recibo.
+  // Con el teléfono de un cliente que ya pidió se rellenan solos su nombre
+  // y dirección.
   const [tipoServicio, setTipoServicio] = useState("aqui");
-  const [direccion, setDireccion] = useState("");
+  const [cliente, setCliente] = useState({ nombre: "", telefono: "", direccion: "" });
+  const [clienteEncontrado, setClienteEncontrado] = useState(false);
+  const cambiarCliente = (campo, valor) => setCliente((prev) => ({ ...prev, [campo]: valor }));
+
+  useEffect(() => {
+    const cifras = cliente.telefono.replace(/\D/g, "");
+    if (tipoServicio === "aqui" || cifras.length < 9) {
+      setClienteEncontrado(false);
+      return undefined;
+    }
+    let cancelado = false;
+    const id = setTimeout(() => {
+      api
+        .buscarClientePorTelefono(cliente.telefono)
+        .then((datos) => {
+          if (cancelado || !datos) return;
+          setClienteEncontrado(true);
+          // Solo rellena lo que esté vacío: nunca pisa lo ya escrito.
+          setCliente((prev) => ({
+            ...prev,
+            nombre: prev.nombre || datos.nombre || "",
+            direccion: prev.direccion || datos.direccion || "",
+          }));
+        })
+        .catch(() => {});
+    }, 400);
+    return () => {
+      cancelado = true;
+      clearTimeout(id);
+    };
+  }, [cliente.telefono, tipoServicio]);
   const [ultimaVenta, setUltimaVenta] = useState(null);
   useEffect(() => setAvisoRecibo(""), [ultimaVenta?.id]);
   const [productoPersonalizando, setProductoPersonalizando] = useState(null);
@@ -434,9 +465,17 @@ export default function Caja() {
     setCobrando(true);
     try {
       const nuevoPedido = await api.createOrder({
-        mesa: tipoServicio === "llevar" ? "Para llevar" : "Comer aquí",
+        mesa: { aqui: "Comer aquí", llevar: "Para llevar", recoger: "Recoger en tienda" }[tipoServicio],
         local: sede,
-        notasGenerales: tipoServicio === "llevar" && direccion.trim() ? `Dirección: ${direccion.trim()}` : "",
+        notasGenerales: "",
+        cliente:
+          tipoServicio === "aqui"
+            ? null
+            : {
+                nombre: cliente.nombre,
+                telefono: cliente.telefono,
+                direccion: tipoServicio === "llevar" ? cliente.direccion : "",
+              },
         items: items.map((i) => ({
           productId: i.productId,
           cantidad: i.cantidad,
@@ -452,7 +491,7 @@ export default function Caja() {
       if (metodoPago === "efectivo") clicAbrirCajon();
       setDividirEntre("");
       setTipoServicio("aqui");
-      setDireccion("");
+      setCliente({ nombre: "", telefono: "", direccion: "" });
     } catch (e) {
       setError(e.message);
     } finally {
@@ -742,6 +781,7 @@ export default function Caja() {
                 {[
                   ["aqui", "Comer aquí"],
                   ["llevar", "Para llevar"],
+                  ["recoger", "Recoger en tienda"],
                 ].map(([valor, texto]) => (
                   <button
                     key={valor}
@@ -754,15 +794,36 @@ export default function Caja() {
                   </button>
                 ))}
               </div>
-              {tipoServicio === "llevar" && (
-                <input
-                  type="text"
-                  className="caja-servicio-direccion"
-                  placeholder="Dirección (opcional)"
-                  maxLength={200}
-                  value={direccion}
-                  onChange={(e) => setDireccion(e.target.value)}
-                />
+              {tipoServicio !== "aqui" && (
+                <div className="caja-servicio-cliente">
+                  <input
+                    type="tel"
+                    className="caja-servicio-direccion"
+                    placeholder="Teléfono"
+                    maxLength={20}
+                    value={cliente.telefono}
+                    onChange={(e) => cambiarCliente("telefono", e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    className="caja-servicio-direccion"
+                    placeholder="Nombre del cliente"
+                    maxLength={120}
+                    value={cliente.nombre}
+                    onChange={(e) => cambiarCliente("nombre", e.target.value)}
+                  />
+                  {tipoServicio === "llevar" && (
+                    <input
+                      type="text"
+                      className="caja-servicio-direccion"
+                      placeholder="Dirección"
+                      maxLength={250}
+                      value={cliente.direccion}
+                      onChange={(e) => cambiarCliente("direccion", e.target.value)}
+                    />
+                  )}
+                  {clienteEncontrado && <span className="caja-cliente-encontrado">✓ Cliente conocido: datos rellenados</span>}
+                </div>
               )}
             </div>
 

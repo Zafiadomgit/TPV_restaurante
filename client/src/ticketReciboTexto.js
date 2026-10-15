@@ -1,6 +1,6 @@
 import { formatTicket } from "./format.js";
 import { paraImpresora, MARCA_SECCION } from "./ticketCocinaTexto.js";
-import { lineasCambios } from "./seccionesTicket.js";
+import { lineasCambios, lineasCliente } from "./seccionesTicket.js";
 
 // Recibo del cliente en ESC/POS para mandarlo por QZ Tray directo a la
 // impresora de caja, sin la ventana de imprimir del navegador (a petición
@@ -82,7 +82,10 @@ export function construirRecibo(venta) {
   l.push(NEGRITA_ON, GRANDE, `${formatTicket(venta.ticketNumero)}\n`, NORMAL, NEGRITA_OFF);
   l.push(`${fechaHora(venta.pagadoEn || venta.creadoEn)}\n`);
   if (venta.mesa) l.push(`${paraImpresora(venta.mesa)}\n`);
-  // Dirección del pedido para llevar (nota del pedido desde caja).
+  // Datos del cliente (para llevar / recoger en tienda).
+  for (const linea of lineasCliente(venta)) {
+    for (const trozo of partir(paraImpresora(linea), ANCHO)) l.push(`${trozo}\n`);
+  }
   if (venta.notasGenerales) {
     for (const linea of partir(paraImpresora(venta.notasGenerales), ANCHO)) l.push(`${linea}\n`);
   }

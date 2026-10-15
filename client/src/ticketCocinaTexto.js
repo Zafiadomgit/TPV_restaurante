@@ -1,5 +1,5 @@
 import { formatTicket } from "./format.js";
-import { lineasCambios, nombreCocina } from "./seccionesTicket.js";
+import { lineasCambios, nombreCocina, lineasCliente } from "./seccionesTicket.js";
 
 // Marca de inicio de sección (Solo/En menú, patatas, extras, bebida). Es
 // "*" y no "•" a propósito: el punto no existe en la página de códigos por
@@ -52,6 +52,8 @@ export function construirTicketCocina(order) {
   const hora = new Date(order.creadoEn).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
   const cabecera = [formatTicket(order.ticketNumero), paraImpresora(order.mesa), hora].filter(Boolean).join(" ");
   lineas.push(CENTRO, NEGRITA_ON, cabecera.length <= 24 ? GRANDE : ALTO, cabecera, "\n", NEGRITA_OFF, NORMAL);
+  // Datos del cliente (para llevar / recoger), a doble alto y en negrita.
+  for (const linea of lineasCliente(order)) lineas.push(IZQUIERDA, NEGRITA_ON, ALTO, `${paraImpresora(linea)}\n`, NORMAL, NEGRITA_OFF);
   lineas.push(IZQUIERDA, SEPARADOR);
 
   for (const item of order.items || []) {

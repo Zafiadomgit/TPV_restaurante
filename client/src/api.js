@@ -35,6 +35,8 @@ export const api = {
     return request(`/orders?${params.toString()}`);
   },
   getOrder: (id) => request(`/orders/${id}`),
+  // Caja: datos del último pedido de ese teléfono (nombre y dirección).
+  buscarClientePorTelefono: (telefono) => request(`/orders?telefono=${encodeURIComponent(telefono)}`),
   guardarTelefonoWhatsapp: (id, telefonoWhatsapp) =>
     request(`/orders/${id}`, { method: "PATCH", body: JSON.stringify({ telefonoWhatsapp }) }),
   createOrder: (payload) =>

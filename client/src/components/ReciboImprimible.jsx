@@ -1,6 +1,6 @@
 import { createPortal } from "react-dom";
 import { formatTicket } from "../format.js";
-import { lineasCambios } from "../seccionesTicket.js";
+import { lineasCambios, lineasCliente } from "../seccionesTicket.js";
 
 function formatFechaHora(iso) {
   if (!iso) return "";
@@ -67,6 +67,11 @@ export default function ReciboImprimible({ venta }) {
       <p className="recibo-ticket">{formatTicket(venta.ticketNumero)}</p>
       <p className="recibo-fecha">{formatFechaHora(venta.pagadoEn || venta.creadoEn)}</p>
       <p className="recibo-origen">{venta.mesa}</p>
+      {lineasCliente(venta).map((linea) => (
+        <p key={linea} className="recibo-origen">
+          {linea}
+        </p>
+      ))}
       {venta.notasGenerales && <p className="recibo-origen">{venta.notasGenerales}</p>}
 
       <hr />

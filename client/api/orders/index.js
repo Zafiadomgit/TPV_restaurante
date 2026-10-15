@@ -1,6 +1,6 @@
 import { supabase } from "../_lib/supabaseClient.js";
 import { findProducts } from "../_lib/menu.js";
-import { calcularTotales, mapRow, LOCALES_VALIDOS } from "../_lib/orders.js";
+import { calcularTotales, mapRow, LOCALES_VALIDOS, normalizarTelefono } from "../_lib/orders.js";
 import { verificarToken } from "../_lib/auth.js";
 
 export default async function handler(req, res) {
@@ -34,6 +34,26 @@ export default async function handler(req, res) {
       if (error) return res.status(500).json({ error: error.message });
       return res.status(200).json(
         data.map((row) => ({ id: row.id, ticketNumero: row.ticket_numero, estado: row.estado }))
+      );
+    }
+
+    // Caja: ?telefono=... devuelve los datos del último pedido de ese
+    // cliente (nombre y dirección) para rellenarlos solos. Solo caja.
+    if (req.query.telefono !== undefined) {
+      if (rol !== "caja") return res.status(401).json({ error: "No autorizado" });
+      const telefono = normalizarTelefono(req.query.telefono);
+      if (telefono.replace("+", "").length < 6) return res.status(200).json(null);
+      const { data, error } = await supabase
+        .from("orders")
+        .select("cliente_nombre, cliente_telefono, cliente_direccion")
+        .eq("cliente_telefono", telefono)
+        .order("creado_en", { ascending: false })
+        .limit(1);
+      // Sin las columnas todavía (SQL sin ejecutar): como si no hubiera datos.
+      if (error) return res.status(200).json(null);
+      const fila = data?.[0];
+      return res.status(200).json(
+        fila ? { nombre: fila.cliente_nombre || "", telefono: fila.cliente_telefono, direccion: fila.cliente_direccion || "" } : null
       );
     }
 
@@ -286,21 +306,40 @@ export default async function handler(req, res) {
 
     const { subtotal, iva, total } = calcularTotales(itemsResueltos);
 
-    const { data, error } = await supabase
+    const fila = {
+      mesa: mesa.trim(),
+      local: local || null,
+      items: itemsResueltos,
+      notas_generales: notasGenerales || "",
+      estado: "pendiente",
+      pagado: false,
+      subtotal,
+      iva,
+      total,
+    };
+
+    // Datos del cliente (caja, "Para llevar" / "Recoger en tienda").
+    const { cliente } = req.body || {};
+    const texto = (v, max) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+    const datosCliente = {
+      cliente_nombre: texto(cliente?.nombre, 120) || null,
+      cliente_telefono: normalizarTelefono(cliente?.telefono) || null,
+      cliente_direccion: texto(cliente?.direccion, 250) || null,
+    };
+    const hayCliente = Object.values(datosCliente).some(Boolean);
+
+    let { data, error } = await supabase
       .from("orders")
-      .insert({
-        mesa: mesa.trim(),
-        local: local || null,
-        items: itemsResueltos,
-        notas_generales: notasGenerales || "",
-        estado: "pendiente",
-        pagado: false,
-        subtotal,
-        iva,
-        total,
-      })
+      .insert(hayCliente ? { ...fila, ...datosCliente } : fila)
       .select()
       .single();
+    // Si las columnas del cliente aún no existen (falta ejecutar
+    // supabase/orders_datos_cliente.sql), el pedido se guarda igual sin
+    // esos datos: nunca se pierde una venta por esto.
+    if (error && hayCliente && /cliente_|column|42703|PGRST204/i.test(`${error.code} ${error.message}`)) {
+      console.error("orders: sin columnas de cliente, se guarda sin ellas:", error.message);
+      ({ data, error } = await supabase.from("orders").insert(fila).select().single());
+    }
 
     if (error) return res.status(500).json({ error: error.message });
     return res.status(201).json(mapRow(data));

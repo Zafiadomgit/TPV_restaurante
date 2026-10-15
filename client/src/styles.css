@@ -803,6 +803,20 @@ h4,
   font-size: 0.85rem;
 }
 
+/* Datos del cliente (para llevar / recoger en tienda) en cocina. */
+.kds-cliente {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 4px 0 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(233, 112, 47, 0.12);
+  color: #f2925c;
+  font-weight: 700;
+  font-size: 14px;
+}
+
 .kds-nota-general {
   font-size: 0.95rem;
   font-weight: 600;
@@ -1460,7 +1474,7 @@ h4,
 
 .caja-servicio-botones {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
 }
 
@@ -1479,6 +1493,18 @@ h4,
   background: #e9702f;
   border-color: #e9702f;
   color: #fff;
+}
+
+.caja-servicio-cliente {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.caja-cliente-encontrado {
+  font-size: 13px;
+  color: #2f9e65;
+  font-weight: 600;
 }
 
 .caja-servicio-direccion {
