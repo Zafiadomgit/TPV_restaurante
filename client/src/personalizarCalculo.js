@@ -210,7 +210,9 @@ export function calcularPersonalizacion(producto, seleccion) {
       for (const opcion of seleccionadas) {
         if (!porDefectoIds.has(opcion.id)) textos.push(opcion.nombre);
       }
-      for (const opcion of paso.opciones) {
+      // En un paso de elegir uno (ej. "¿Con verduras o solo carne?") no se
+      // escribe "Sin <la de por defecto>": lo elegido ya lo dice.
+      for (const opcion of paso.maxSeleccion === 1 ? [] : paso.opciones) {
         if (porDefectoIds.has(opcion.id) && !elegidas.includes(opcion.id)) {
           textos.push(`Sin ${opcion.ingrediente || opcion.nombre}`);
         }

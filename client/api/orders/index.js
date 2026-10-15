@@ -260,7 +260,9 @@ export default async function handler(req, res) {
           for (const opcion of seleccionadas) {
             if (!porDefectoIds.has(opcion.id)) nombresSeleccionados.push(opcion.nombre);
           }
-          for (const opcion of paso.opciones) {
+          // En un paso de elegir uno no se escribe "Sin <la de por defecto>"
+          // (igual que en personalizarCalculo.js).
+          for (const opcion of paso.maxSeleccion === 1 ? [] : paso.opciones) {
             if (porDefectoIds.has(opcion.id) && !seleccionValida.includes(opcion.id)) {
               nombresSeleccionados.push(`Sin ${opcion.ingrediente || opcion.nombre}`);
             }
