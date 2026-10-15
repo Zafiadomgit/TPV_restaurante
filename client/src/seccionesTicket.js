@@ -62,3 +62,11 @@ export function lineasCambios(item) {
   if (item.notas) lineas.push({ tipo: "guion", texto: `NOTA: ${item.notas}` });
   return lineas;
 }
+
+// Nombre del producto para cocina (pantalla y comanda), a petición del
+// cliente: sin el paréntesis descriptivo — "Dürüm loco (con patatas
+// dentro)" -> "Dürüm loco", "Burrito (chicken wrap)" -> "Burrito" —, pero
+// conservando el de unidades, que a cocina sí le sirve: "Samosa (3 uds)".
+export function nombreCocina(nombre) {
+  return String(nombre || "").replace(/\s*\(([^()]*)\)/g, (todo, dentro) => (/\d/.test(dentro) ? todo : "")).trim();
+}

@@ -1,4 +1,5 @@
 import { formatTicket } from "../format.js";
+import { nombreCocina } from "../seccionesTicket.js";
 
 const SIGUIENTE_ESTADO = {
   pendiente: "en_preparacion",
@@ -46,7 +47,7 @@ export default function OrderTicket({ order, onAvanzar, onReimprimir, imprimiend
           <li key={item.productId}>
             <span className="kds-cantidad">{item.cantidad}x</span>
             <div className="kds-item-texto">
-              <span className="kds-item-nombre">{item.nombre}</span>
+              <span className="kds-item-nombre">{nombreCocina(item.nombre)}</span>
               {(item.modificadoresTexto || item.notas) && (
                 <span className="kds-nota">
                   {[item.modificadoresTexto, item.notas].filter(Boolean).join(" · ")}

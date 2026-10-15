@@ -1,5 +1,5 @@
 import { formatTicket } from "./format.js";
-import { lineasCambios } from "./seccionesTicket.js";
+import { lineasCambios, nombreCocina } from "./seccionesTicket.js";
 
 // Marca de inicio de sección (Solo/En menú, patatas, extras, bebida). Es
 // "*" y no "•" a propósito: el punto no existe en la página de códigos por
@@ -55,7 +55,7 @@ export function construirTicketCocina(order) {
   lineas.push(IZQUIERDA, SEPARADOR);
 
   for (const item of order.items || []) {
-    lineas.push(GRANDE, NEGRITA_ON, `${item.cantidad}x ${paraImpresora(item.nombre)}\n`, NEGRITA_OFF);
+    lineas.push(GRANDE, NEGRITA_ON, `${item.cantidad}x ${paraImpresora(nombreCocina(item.nombre))}\n`, NEGRITA_OFF);
     lineas.push(ALTO);
     // Secciones con marca (ver seccionesTicket.js): la cabecera en negrita
     // y lo de dentro con guion, un poco metido.
