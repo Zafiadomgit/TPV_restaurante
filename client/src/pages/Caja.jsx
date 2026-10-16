@@ -233,13 +233,13 @@ export default function Caja() {
   // Recibo directo a la impresora de caja por QZ Tray, sin la ventana de
   // imprimir del navegador (pedido del cliente). Si QZ Tray falla, se usa
   // la impresión del navegador como respaldo para no quedarse sin recibo.
-  const mandarImprimirRecibo = async (impresora) => {
-    if (!ultimaVenta) return;
+  const mandarImprimirRecibo = async (impresora, venta = ultimaVenta) => {
+    if (!venta) return;
     setImprimiendoRecibo(true);
     setErrorCajon("");
     setAvisoRecibo("");
     try {
-      await imprimirReciboQz(impresora, ultimaVenta);
+      await imprimirReciboQz(impresora, venta);
       setAvisoRecibo(`Recibo enviado a «${impresora}».`);
     } catch (e) {
       setErrorCajon(`No se pudo imprimir directo (${e.message}). Se abre la impresión del navegador.`);
@@ -250,7 +250,9 @@ export default function Caja() {
     }
   };
 
-  const clicImprimirRecibo = async () => {
+  // `venta`: por defecto la última; "Enviar sin cobrar" pasa el pedido recién
+  // creado porque el estado todavía no se ha actualizado en ese momento.
+  const clicImprimirRecibo = async (venta = ultimaVenta) => {
     const impresora = getImpresoraGuardada();
     if (!impresora || esImpresoraVirtual(impresora)) {
       await pedirElegirImpresora("Elige la impresora de tickets para imprimir el recibo:", "recibo");
@@ -274,7 +276,7 @@ export default function Caja() {
       await pedirElegirImpresora(`La impresora «${impresora}» ya no está conectada en este ordenador. Elige la nueva:`, "recibo");
       return;
     }
-    await mandarImprimirRecibo(impresora);
+    await mandarImprimirRecibo(impresora, venta);
   };
 
   useEffect(() => {
@@ -460,11 +462,8 @@ export default function Caja() {
   const personas = Number(dividirEntre);
   const porPersona = personas > 1 ? Number((total / personas).toFixed(2)) : null;
 
-  const cobrar = async (metodoPago) => {
-    setError("");
-    setCobrando(true);
-    try {
-      const nuevoPedido = await api.createOrder({
+  const crearPedidoCaja = () =>
+    api.createOrder({
         mesa: { aqui: "Comer aquí", llevar: "Para llevar", recoger: "Recoger en tienda" }[tipoServicio],
         local: sede,
         notasGenerales: "",
@@ -483,15 +482,45 @@ export default function Caja() {
           modificadores: i.modificadores,
         })),
       });
+
+  const limpiarVenta = () => {
+    setItems([]);
+    setDividirEntre("");
+    setTipoServicio("aqui");
+    setCliente({ nombre: "", telefono: "", direccion: "" });
+  };
+
+  // "Recoger en tienda" / "Para llevar" (a petición del cliente): el pedido
+  // va a cocina y sale su ticket, pero se cobra cuando el cliente llega. Se
+  // queda en "Pedidos sin cobrar" de esta misma pantalla para cobrarlo
+  // después con Efectivo o Tarjeta.
+  const enviarSinCobrar = async () => {
+    setError("");
+    setCobrando(true);
+    try {
+      const pedido = await crearPedidoCaja();
+      setUltimaVenta(pedido);
+      limpiarVenta();
+      setPedidosSinCobrar((prev) => (prev.some((p) => p.id === pedido.id) ? prev : [...prev, pedido]));
+      clicImprimirRecibo(pedido);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setCobrando(false);
+    }
+  };
+
+  const cobrar = async (metodoPago) => {
+    setError("");
+    setCobrando(true);
+    try {
+      const nuevoPedido = await crearPedidoCaja();
       const pagado = await api.pagarOrder(nuevoPedido.id, metodoPago);
       setUltimaVenta(pagado);
-      setItems([]);
+      limpiarVenta();
       // Cobro en efectivo: se abre el cajón solo (a petición del cliente),
       // igual que con el botón "Abrir cajón".
       if (metodoPago === "efectivo") clicAbrirCajon();
-      setDividirEntre("");
-      setTipoServicio("aqui");
-      setCliente({ nombre: "", telefono: "", direccion: "" });
     } catch (e) {
       setError(e.message);
     } finally {
@@ -638,19 +667,22 @@ export default function Caja() {
           ) : (
             <>
               <p>
-                Cobrado {formatTicket(ultimaVenta.ticketNumero)} · {ultimaVenta.total.toFixed(2)} €
+                {ultimaVenta.pagado ? "Cobrado" : "Enviado a cocina, pendiente de cobro:"}{" "}
+                {formatTicket(ultimaVenta.ticketNumero)} · {ultimaVenta.total.toFixed(2)} €
               </p>
               <button
                 type="button"
                 className="btn-imprimir-recibo"
-                onClick={clicImprimirRecibo}
+                onClick={() => clicImprimirRecibo()}
                 disabled={imprimiendoRecibo}
               >
-                {imprimiendoRecibo ? "Imprimiendo..." : "Imprimir recibo"}
+                {imprimiendoRecibo ? "Imprimiendo..." : ultimaVenta.pagado ? "Imprimir recibo" : "Imprimir ticket"}
               </button>
-              <button type="button" className="btn-anular" onClick={anularUltimaVenta}>
-                Anular pedido
-              </button>
+              {ultimaVenta.pagado && (
+                <button type="button" className="btn-anular" onClick={anularUltimaVenta}>
+                  Anular pedido
+                </button>
+              )}
               {avisoRecibo && <p className="caja-aviso-cajon">{avisoRecibo}</p>}
             </>
           )}
@@ -660,14 +692,18 @@ export default function Caja() {
       {pedidosSinCobrar.length > 0 && (
         <div className="pedidos-sin-cobrar">
           <h3 className="pedidos-sin-cobrar-titulo">
-            Pedidos del kiosco sin cobrar ({pedidosSinCobrar.length})
+            Pedidos sin cobrar ({pedidosSinCobrar.length})
           </h3>
           <div className="pedidos-sin-cobrar-lista">
             {pedidosSinCobrar.map((pedido) => (
               <div key={pedido.id} className="pedido-sin-cobrar-card">
                 <div className="pedido-sin-cobrar-info">
                   <span className="pedido-sin-cobrar-ticket">{formatTicket(pedido.ticketNumero)}</span>
-                  <span className="pedido-sin-cobrar-origen">{pedido.mesa}</span>
+                  <span className="pedido-sin-cobrar-origen">
+                    {pedido.mesa}
+                    {pedido.clienteNombre ? ` · ${pedido.clienteNombre}` : ""}
+                    {pedido.clienteTelefono ? ` · ${pedido.clienteTelefono}` : ""}
+                  </span>
                   <p className="pedido-sin-cobrar-items">
                     {pedido.items.map((i) => `${i.cantidad}x ${i.nombre}`).join(", ")}
                   </p>
@@ -844,6 +880,16 @@ export default function Caja() {
               )}
             </div>
 
+            {tipoServicio !== "aqui" && (
+              <button
+                type="button"
+                className="caja-enviar-sin-cobrar"
+                disabled={items.length === 0 || cobrando}
+                onClick={enviarSinCobrar}
+              >
+                {cobrando ? "Enviando..." : "Enviar a cocina sin cobrar"}
+              </button>
+            )}
             <div className="caja-pago-botones">
               <button disabled={items.length === 0 || cobrando} onClick={() => cobrar("efectivo")}>
                 {cobrando ? "Cobrando..." : "Efectivo"}

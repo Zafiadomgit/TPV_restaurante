@@ -1465,6 +1465,24 @@ h4,
 }
 
 /* Comer aquí / Para llevar (+ dirección) en la venta de mostrador. */
+.caja-enviar-sin-cobrar {
+  width: 100%;
+  margin: 10px 0 6px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 2px solid #e9702f;
+  background: #fff4ec;
+  color: #b4521c;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.caja-enviar-sin-cobrar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .caja-servicio {
   display: flex;
   flex-direction: column;

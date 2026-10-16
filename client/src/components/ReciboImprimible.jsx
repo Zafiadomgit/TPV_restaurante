@@ -114,6 +114,7 @@ export default function ReciboImprimible({ venta }) {
         </div>
       </div>
 
+      {!venta.pagado && !venta.metodoPago && <p className="recibo-total-final">PENDIENTE DE PAGO</p>}
       {venta.metodoPago && (
         <p className="recibo-pago">Pagado con {NOMBRE_METODO_PAGO[venta.metodoPago] || venta.metodoPago}</p>
       )}

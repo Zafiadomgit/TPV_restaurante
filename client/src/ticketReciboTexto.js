@@ -112,6 +112,9 @@ export function construirRecibo(venta) {
   l.push(NEGRITA_ON, ALTO, filaConImporte("TOTAL", euros(venta.total)), NORMAL, NEGRITA_OFF);
 
   l.push(CENTRO);
+  if (!venta.pagado && !venta.metodoPago) {
+    l.push(NEGRITA_ON, GRANDE, "\nPENDIENTE\nDE PAGO\n", NORMAL, NEGRITA_OFF);
+  }
   if (venta.metodoPago) {
     l.push(`\nPagado con ${NOMBRE_METODO_PAGO[venta.metodoPago] || paraImpresora(venta.metodoPago)}\n`);
   }
