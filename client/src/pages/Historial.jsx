@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { api } from "../api.js";
 import { getSede } from "../sede.js";
 import HistorialTicket from "../components/HistorialTicket.jsx";
+import ReciboImprimible, { imprimirRecibo } from "../components/ReciboImprimible.jsx";
+import { getImpresoraGuardada, esImpresoraVirtual, imprimirReciboQz } from "../qzTray.js";
 
 const POLL_MS = 5000;
 
@@ -73,6 +75,40 @@ export default function Historial() {
     }
   };
 
+  // Volver a imprimir el ticket del cliente (a petición del cliente, por si
+  // se pierde): directo a la impresora de caja por QZ Tray; si no hay
+  // impresora elegida en este equipo o QZ Tray no responde, con la
+  // impresión del navegador.
+  const [reimprimiendo, setReimprimiendo] = useState(null);
+  const [aviso, setAviso] = useState("");
+  const [paraNavegador, setParaNavegador] = useState(null);
+  const reimprimir = async (order) => {
+    setError("");
+    setAviso("");
+    const impresora = getImpresoraGuardada();
+    if (impresora && !esImpresoraVirtual(impresora)) {
+      setReimprimiendo(order.id);
+      try {
+        await imprimirReciboQz(impresora, order);
+        setAviso(`Ticket ${order.ticketNumero ? `#A-${order.ticketNumero}` : ""} enviado a «${impresora}».`);
+        return;
+      } catch {
+        // cae a la impresión del navegador
+      } finally {
+        setReimprimiendo(null);
+      }
+    }
+    setParaNavegador(order);
+  };
+  useEffect(() => {
+    if (!paraNavegador) return undefined;
+    const id = setTimeout(() => {
+      imprimirRecibo();
+      setParaNavegador(null);
+    }, 50);
+    return () => clearTimeout(id);
+  }, [paraNavegador]);
+
   const visibles = orders
     .filter((o) => {
       if (filtro === "todos") return true;
@@ -98,13 +134,22 @@ export default function Historial() {
       </div>
 
       {error && <p className="error">{error}</p>}
+      {aviso && <p className="caja-aviso-cajon">{aviso}</p>}
+      <ReciboImprimible venta={paraNavegador} />
 
       {visibles.length === 0 ? (
         <p className="empty">No hay pedidos que mostrar</p>
       ) : (
         <div className="tickets-grid">
           {visibles.map((order) => (
-            <HistorialTicket key={order.id} order={order} onRevertir={revertir} onAnular={anular} />
+            <HistorialTicket
+              key={order.id}
+              order={order}
+              onRevertir={revertir}
+              onAnular={anular}
+              onReimprimir={reimprimir}
+              reimprimiendo={reimprimiendo === order.id}
+            />
           ))}
         </div>
       )}

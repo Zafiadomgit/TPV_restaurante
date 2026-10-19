@@ -1,6 +1,7 @@
 import { formatTicket } from "./format.js";
 import { paraImpresora, MARCA_SECCION } from "./ticketCocinaTexto.js";
 import { lineasCambios, lineasCliente } from "./seccionesTicket.js";
+import { datosTicketSede } from "./sede.js";
 
 // Recibo del cliente en ESC/POS para mandarlo por QZ Tray directo a la
 // impresora de caja, sin la ventana de imprimir del navegador (a petición
@@ -24,9 +25,9 @@ const SEPARADOR = "-".repeat(ANCHO) + "\n";
 const DATOS_NEGOCIO = {
   cif: "X6995146H",
   telefono: "605 665 040",
-  direccion: "Calle Mayor, 90, 09500 Medina de Pomar",
-  email: "Kebabcali21@gmail.com",
 };
+// Dirección y correo: los de la sede del pedido (ver datosTicketSede en
+// sede.js).
 
 const NOMBRE_METODO_PAGO = { efectivo: "Efectivo", tarjeta: "Tarjeta" };
 
@@ -76,9 +77,10 @@ export function construirRecibo(venta) {
   l.push(NEGRITA_ON, GRANDE, "CALIFORNIA\n", NORMAL, NEGRITA_OFF);
   l.push("Kebab - Hamburgueseria - Pizzeria\n");
   l.push(`CIF ${DATOS_NEGOCIO.cif}\n`);
-  l.push(`${paraImpresora(DATOS_NEGOCIO.direccion)}\n`);
+  const sede = datosTicketSede(venta.local);
+  l.push(`${paraImpresora(sede.direccion)}\n`);
   l.push(`Tel. ${DATOS_NEGOCIO.telefono}\n`);
-  l.push(`${DATOS_NEGOCIO.email}\n\n`);
+  l.push(`${sede.email}\n\n`);
   l.push(NEGRITA_ON, GRANDE, `${formatTicket(venta.ticketNumero)}\n`, NORMAL, NEGRITA_OFF);
   l.push(`${fechaHora(venta.pagadoEn || venta.creadoEn)}\n`);
   if (venta.mesa) l.push(`${paraImpresora(venta.mesa)}\n`);

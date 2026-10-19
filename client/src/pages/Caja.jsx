@@ -15,9 +15,34 @@ import {
   imprimirReciboQz,
   listarImpresoras,
   ordenarImpresoras,
+  getImpresoraCocinaGuardada,
+  imprimirTicketCocina,
 } from "../qzTray.js";
 
 const POLL_MS = 3000;
+
+// Tipos de pedido de caja que piden datos del cliente (y permiten "Enviar a
+// cocina sin cobrar"): se cobran cuando el cliente recoge o al entregar.
+const CON_CLIENTE = ["recoger", "domicilio"];
+
+// Impresión automática al cobrar (a petición del cliente), con interruptor
+// por dispositivo: ticket del cliente y comanda de cocina.
+const CLAVE_AUTO_TICKET = "tpv_auto_ticket_cliente";
+const CLAVE_AUTO_COMANDA = "tpv_auto_comanda";
+function leerInterruptor(clave) {
+  try {
+    return localStorage.getItem(clave) !== "0";
+  } catch {
+    return true;
+  }
+}
+function guardarInterruptor(clave, valor) {
+  try {
+    localStorage.setItem(clave, valor ? "1" : "0");
+  } catch {
+    // sin localStorage: vale solo mientras esté abierta la pantalla
+  }
+}
 
 function nuevoLineId() {
   return typeof crypto !== "undefined" && crypto.randomUUID
@@ -68,9 +93,9 @@ export default function Caja() {
   const [items, setItems] = useState([]);
   const [cobrando, setCobrando] = useState(false);
   const [dividirEntre, setDividirEntre] = useState("");
-  // Venta en mostrador (a petición del cliente): Comer aquí / Para llevar
-  // (a domicilio: nombre, teléfono y dirección) / Recoger en tienda
-  // (nombre y teléfono). Los datos del cliente se guardan con el pedido
+  // Venta en mostrador (a petición del cliente): Comer aquí / Para llevar /
+  // Recoger en tienda (nombre y teléfono) / A domicilio (nombre, teléfono y
+  // dirección). Los datos del cliente se guardan con el pedido
   // (columnas cliente_* de orders) y salen en cocina, comanda y recibo.
   // Con el teléfono de un cliente que ya pidió se rellenan solos su nombre
   // y dirección.
@@ -81,7 +106,7 @@ export default function Caja() {
 
   useEffect(() => {
     const cifras = cliente.telefono.replace(/\D/g, "");
-    if (tipoServicio === "aqui" || cifras.length < 9) {
+    if (!CON_CLIENTE.includes(tipoServicio) || cifras.length < 9) {
       setClienteEncontrado(false);
       return undefined;
     }
@@ -107,6 +132,8 @@ export default function Caja() {
     };
   }, [cliente.telefono, tipoServicio]);
   const [ultimaVenta, setUltimaVenta] = useState(null);
+  const [autoTicket, setAutoTicket] = useState(() => leerInterruptor(CLAVE_AUTO_TICKET));
+  const [autoComanda, setAutoComanda] = useState(() => leerInterruptor(CLAVE_AUTO_COMANDA));
   useEffect(() => setAvisoRecibo(""), [ultimaVenta?.id]);
   const [productoPersonalizando, setProductoPersonalizando] = useState(null);
   const [pedidosSinCobrar, setPedidosSinCobrar] = useState([]);
@@ -279,6 +306,27 @@ export default function Caja() {
     await mandarImprimirRecibo(impresora, venta);
   };
 
+  // Comanda de cocina desde caja: a la impresora de cocina de este equipo si
+  // tiene una elegida; si no, a la de caja.
+  const imprimirComandaDesdeCaja = async (pedido) => {
+    const impresora = getImpresoraCocinaGuardada() || getImpresoraGuardada();
+    if (!impresora || esImpresoraVirtual(impresora)) return;
+    try {
+      await imprimirTicketCocina(impresora, pedido);
+    } catch (e) {
+      setErrorCajon(`No se pudo imprimir la comanda (${e.message}).`);
+    }
+  };
+
+  // Lo que se hace solo después de cobrar o de enviar sin cobrar: abrir el
+  // cajón (efectivo), ticket del cliente y comanda, según los interruptores.
+  // En orden, para no mandar tres cosas a la vez a la misma impresora.
+  const trasCrearOCobrar = async (pedido, { metodoPago = null, comanda = true } = {}) => {
+    if (metodoPago === "efectivo") await clicAbrirCajon();
+    if (autoTicket) await clicImprimirRecibo(pedido);
+    if (comanda && autoComanda) await imprimirComandaDesdeCaja(pedido);
+  };
+
   useEffect(() => {
     if (!sede) return;
     const cargar = async () => {
@@ -349,7 +397,8 @@ export default function Caja() {
       const pagado = await api.pagarOrder(pedido.id, metodoPago);
       setUltimaVenta(pagado);
       setPedidosSinCobrar((prev) => prev.filter((p) => p.id !== pedido.id));
-      if (metodoPago === "efectivo") clicAbrirCajon();
+      // Ya estaba en cocina: solo cajón y ticket del cliente.
+      trasCrearOCobrar(pagado, { metodoPago, comanda: false });
     } catch (e) {
       setError(e.message);
     } finally {
@@ -464,16 +513,16 @@ export default function Caja() {
 
   const crearPedidoCaja = () =>
     api.createOrder({
-        mesa: { aqui: "Comer aquí", llevar: "Para llevar", recoger: "Recoger en tienda" }[tipoServicio],
+        mesa: { aqui: "Comer aquí", llevar: "Para llevar", recoger: "Recoger en tienda", domicilio: "A domicilio" }[tipoServicio],
         local: sede,
         notasGenerales: "",
         cliente:
-          tipoServicio === "aqui"
+          !CON_CLIENTE.includes(tipoServicio)
             ? null
             : {
                 nombre: cliente.nombre,
                 telefono: cliente.telefono,
-                direccion: tipoServicio === "llevar" ? cliente.direccion : "",
+                direccion: tipoServicio === "domicilio" ? cliente.direccion : "",
               },
         items: items.map((i) => ({
           productId: i.productId,
@@ -502,7 +551,10 @@ export default function Caja() {
       setUltimaVenta(pedido);
       limpiarVenta();
       setPedidosSinCobrar((prev) => (prev.some((p) => p.id === pedido.id) ? prev : [...prev, pedido]));
-      clicImprimirRecibo(pedido);
+      // El ticket "Pendiente de pago" sale siempre (es lo que se le da al
+      // cliente); la comanda, según el interruptor.
+      await clicImprimirRecibo(pedido);
+      if (autoComanda) await imprimirComandaDesdeCaja(pedido);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -519,8 +571,8 @@ export default function Caja() {
       setUltimaVenta(pagado);
       limpiarVenta();
       // Cobro en efectivo: se abre el cajón solo (a petición del cliente),
-      // igual que con el botón "Abrir cajón".
-      if (metodoPago === "efectivo") clicAbrirCajon();
+      // igual que con el botón "Abrir cajón"; y los tickets automáticos.
+      trasCrearOCobrar(pagado, { metodoPago });
     } catch (e) {
       setError(e.message);
     } finally {
@@ -567,6 +619,31 @@ export default function Caja() {
             Cambiar sede
           </button>
         </div>
+      </div>
+      <div className="caja-auto-impresion">
+        <span>Al cobrar, imprimir solo:</span>
+        <label>
+          <input
+            type="checkbox"
+            checked={autoTicket}
+            onChange={(e) => {
+              setAutoTicket(e.target.checked);
+              guardarInterruptor(CLAVE_AUTO_TICKET, e.target.checked);
+            }}
+          />
+          Ticket del cliente
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={autoComanda}
+            onChange={(e) => {
+              setAutoComanda(e.target.checked);
+              guardarInterruptor(CLAVE_AUTO_COMANDA, e.target.checked);
+            }}
+          />
+          Comanda de cocina
+        </label>
       </div>
       {impresoraCajon && !impresorasParaElegir && (
         <p className="caja-aviso-cajon">
@@ -762,6 +839,7 @@ export default function Caja() {
 
           {productoPersonalizando && (
             <Personalizar
+              salsaBlancaAPatatas
               producto={productoPersonalizando}
               onConfirmar={confirmarPersonalizacion}
               onCancelar={() => setProductoPersonalizando(null)}
@@ -818,6 +896,7 @@ export default function Caja() {
                   ["aqui", "Comer aquí"],
                   ["llevar", "Para llevar"],
                   ["recoger", "Recoger en tienda"],
+                  ["domicilio", "A domicilio"],
                 ].map(([valor, texto]) => (
                   <button
                     key={valor}
@@ -830,7 +909,7 @@ export default function Caja() {
                   </button>
                 ))}
               </div>
-              {tipoServicio !== "aqui" && (
+              {CON_CLIENTE.includes(tipoServicio) && (
                 <div className="caja-servicio-cliente">
                   <input
                     type="tel"
@@ -848,7 +927,7 @@ export default function Caja() {
                     value={cliente.nombre}
                     onChange={(e) => cambiarCliente("nombre", e.target.value)}
                   />
-                  {tipoServicio === "llevar" && (
+                  {tipoServicio === "domicilio" && (
                     <input
                       type="text"
                       className="caja-servicio-direccion"
@@ -880,7 +959,7 @@ export default function Caja() {
               )}
             </div>
 
-            {tipoServicio !== "aqui" && (
+            {CON_CLIENTE.includes(tipoServicio) && (
               <button
                 type="button"
                 className="caja-enviar-sin-cobrar"

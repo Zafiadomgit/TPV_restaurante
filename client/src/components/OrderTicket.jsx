@@ -29,7 +29,7 @@ function formatTranscurrido(iso) {
 export default function OrderTicket({ order, onAvanzar, onReimprimir, imprimiendo }) {
   const siguiente = SIGUIENTE_ESTADO[order.estado];
   const urgente = minutosDesde(order.creadoEn) >= MINUTOS_URGENTE;
-  const paraLlevar = order.mesa === "Para llevar" || order.mesa === "Recoger en tienda";
+  const paraLlevar = ["Para llevar", "Recoger en tienda", "A domicilio"].includes(order.mesa);
   const mostrador = order.mesa === "Mostrador";
   const origenClass = paraLlevar ? "kds-ticket-llevar" : mostrador ? "kds-ticket-mostrador" : "";
 

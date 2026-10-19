@@ -1465,6 +1465,35 @@ h4,
 }
 
 /* Comer aquí / Para llevar (+ dirección) en la venta de mostrador. */
+.btn-reimprimir-historial {
+  background: #fff;
+  color: #333;
+  border: 1px solid #ccc;
+}
+
+.caja-auto-impresion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 18px;
+  margin: 4px 0 8px;
+  font-size: 14px;
+  color: #444;
+}
+
+.caja-auto-impresion label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.caja-auto-impresion input {
+  width: 18px;
+  height: 18px;
+}
+
 .caja-enviar-sin-cobrar {
   width: 100%;
   margin: 10px 0 6px;
@@ -1492,7 +1521,7 @@ h4,
 
 .caja-servicio-botones {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 
@@ -4193,6 +4222,39 @@ h4,
   font-size: clamp(56px, 6.4vw, 84px);
   line-height: 1;
   white-space: nowrap;
+}
+
+/* Recogida: más pedidos -> más columnas y números más pequeños, para que
+   se vean todos sin scroll (ver densidad en Recogida.jsx). */
+.k-recogida-lista--d2,
+.k-recogida-lista--d3,
+.k-recogida-lista--d4 {
+  display: grid;
+  gap: 10px;
+}
+.k-recogida-lista--d2 { grid-template-columns: 1fr 1fr; }
+.k-recogida-lista--d3 { grid-template-columns: 1fr 1fr; }
+.k-recogida-lista--d4 { grid-template-columns: 1fr 1fr 1fr; }
+.k-recogida-lista--d2 .k-recogida-fila { padding: 10px 14px; }
+.k-recogida-lista--d3 .k-recogida-fila,
+.k-recogida-lista--d4 .k-recogida-fila { padding: 6px 10px; }
+.k-recogida-lista--d2 .k-recogida-num { font-size: 38px; }
+.k-recogida-lista--d3 .k-recogida-num { font-size: 28px; }
+.k-recogida-lista--d4 .k-recogida-num { font-size: 22px; }
+.k-recogida-lista--d3 .k-recogida-estado,
+.k-recogida-lista--d4 .k-recogida-estado { display: none; }
+
+.k-recogida-listos--d2 { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.k-recogida-listos--d3 { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.k-recogida-listos--d4 { grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.k-recogida-listos--d2 .k-recogida-listo { height: 120px; font-size: clamp(36px, 3.6vw, 56px); }
+.k-recogida-listos--d3 .k-recogida-listo { height: 86px; font-size: clamp(26px, 2.6vw, 40px); border-radius: 14px; }
+.k-recogida-listos--d4 .k-recogida-listo { height: 64px; font-size: clamp(20px, 2vw, 30px); border-radius: 12px; }
+
+/* En pantalla completa, la pantalla de recogida ocupa todo: sin la barra
+   del personal aunque haya una sesión abierta en ese equipo. */
+:fullscreen .app-recogida .topbar {
+  display: none;
 }
 
 /* ---- Pantallas más estrechas que el kiosco de 1280 px ---- */

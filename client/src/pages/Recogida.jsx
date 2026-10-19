@@ -126,6 +126,11 @@ export default function Recogida() {
 
   const preparando = orders.filter((o) => o.estado === "en_preparacion");
   const listos = orders.filter((o) => o.estado === "listo");
+  // Que siempre quepan todos en pantalla (a petición del cliente): cuantos
+  // más pedidos, más columnas y números más pequeños, sin tener que hacer
+  // scroll en un monitor que nadie toca.
+  const densidadListos = listos.length <= 4 ? 1 : listos.length <= 9 ? 2 : listos.length <= 16 ? 3 : 4;
+  const densidadPreparando = preparando.length <= 6 ? 1 : preparando.length <= 12 ? 2 : preparando.length <= 24 ? 3 : 4;
 
   const estiloFondo = fondoRecogidaUrl
     ? { backgroundImage: `url(${fondoRecogidaUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
@@ -166,7 +171,7 @@ export default function Recogida() {
       <div className="k-recogida-columnas">
         <div className="k-recogida-col k-recogida-col--preparando">
           <span className="k-recogida-etiqueta k-recogida-etiqueta--preparando">PREPARANDO · IN PROGRESS</span>
-          <div className="k-recogida-lista">
+          <div className={`k-recogida-lista k-recogida-lista--d${densidadPreparando}`}>
             {preparando.map((o) => (
               <div key={o.id} className="k-recogida-fila">
                 <span className="k-recogida-num">{formatTicket(o.ticketNumero)}</span>
@@ -177,7 +182,7 @@ export default function Recogida() {
         </div>
         <div className="k-recogida-col">
           <span className="k-recogida-etiqueta k-recogida-etiqueta--listo">LISTO · READY</span>
-          <div className="k-recogida-listos">
+          <div className={`k-recogida-listos k-recogida-listos--d${densidadListos}`}>
             {listos.map((o) => (
               <div key={o.id} className="k-recogida-listo">
                 {formatTicket(o.ticketNumero)}

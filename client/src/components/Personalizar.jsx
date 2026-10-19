@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { t, conIdioma } from "../textos.js";
 import { formatEuros } from "../format.js";
 import {
@@ -11,12 +11,25 @@ import {
   nombreOpcionEnPantalla,
 } from "../personalizarCalculo.js";
 
-export default function Personalizar({ producto, idioma, onConfirmar, onCancelar }) {
+// `salsaBlancaAPatatas` (solo caja, a petición del cliente): si en "Salsas"
+// queda marcada únicamente la blanca, "¿Salsa en tus patatas?" se marca
+// sola también con solo blanca — mientras el cajero no toque a mano ese
+// paso de las patatas.
+export default function Personalizar({ producto, idioma, onConfirmar, onCancelar, salsaBlancaAPatatas = false }) {
   const [seleccion, setSeleccion] = useState(() => seleccionInicial(producto));
   const [cantidad, setCantidad] = useState(1);
+  const patatasTocadas = useRef(false);
 
   const toggleOpcion = (paso, opcionId) => {
-    setSeleccion((prev) => toggleOpcionEnSeleccion(prev, paso, opcionId));
+    if (paso.id === "salsa-patatas") patatasTocadas.current = true;
+    setSeleccion((prev) => {
+      const nueva = toggleOpcionEnSeleccion(prev, paso, opcionId);
+      if (!salsaBlancaAPatatas || paso.id !== "salsas" || patatasTocadas.current) return nueva;
+      const pasoPatatas = (producto.modificadores || []).find((p) => p.id === "salsa-patatas");
+      if (!pasoPatatas?.opciones.some((o) => o.id === "salsa-blanca")) return nueva;
+      const soloBlanca = (nueva.salsas || []).length === 1 && nueva.salsas[0] === "salsa-blanca";
+      return { ...nueva, "salsa-patatas": soloBlanca ? ["salsa-blanca"] : [] };
+    });
   };
 
   // Cálculo de precio/texto compartido con MenuWizard.jsx — ver

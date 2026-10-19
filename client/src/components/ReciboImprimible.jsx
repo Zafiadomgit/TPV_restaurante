@@ -1,6 +1,7 @@
 import { createPortal } from "react-dom";
 import { formatTicket } from "../format.js";
 import { lineasCambios, lineasCliente } from "../seccionesTicket.js";
+import { datosTicketSede } from "../sede.js";
 
 function formatFechaHora(iso) {
   if (!iso) return "";
@@ -16,9 +17,9 @@ const NOMBRE_METODO_PAGO = { efectivo: "Efectivo", tarjeta: "Tarjeta" };
 const DATOS_NEGOCIO = {
   cif: "X6995146H",
   telefono: "605 665 040",
-  direccion: "Calle Mayor, 90, 09500 Medina de Pomar",
-  email: "Kebabcali21@gmail.com",
 };
+// Dirección y correo: los de la sede del pedido (ver datosTicketSede en
+// sede.js).
 
 // Imprime el recibo ajustando el largo del papel al del ticket (a
 // petición del cliente: "que salga menos ticket"). Sin esto el navegador
@@ -57,9 +58,9 @@ export default function ReciboImprimible({ venta }) {
         <p className="recibo-tagline">Kebab · Hamburguesería · Pizzería</p>
         <div className="recibo-datos-fiscales">
           <p>CIF {DATOS_NEGOCIO.cif}</p>
-          <p>{DATOS_NEGOCIO.direccion}</p>
+          <p>{datosTicketSede(venta.local).direccion}</p>
           <p>
-            Tel. {DATOS_NEGOCIO.telefono} · {DATOS_NEGOCIO.email}
+            Tel. {DATOS_NEGOCIO.telefono} · {datosTicketSede(venta.local).email}
           </p>
         </div>
       </div>
