@@ -25,6 +25,21 @@ const POLL_MS = 3000;
 // cocina sin cobrar"): se cobran cuando el cliente recoge o al entregar.
 const CON_CLIENTE = ["recoger", "domicilio"];
 
+// Datos del cliente que pide caja según el tipo de pedido, en el orden en
+// que salen en pantalla (a petición del cliente). En "Comer aquí" y "Para
+// llevar" son opcionales (para llamarle por su nombre).
+const CAMPOS_CLIENTE = {
+  aqui: ["nombre", "telefono"],
+  llevar: ["nombre", "telefono"],
+  recoger: ["nombre", "telefono"],
+  domicilio: ["direccion", "telefono", "nombre"],
+};
+const CAMPO_CLIENTE = {
+  nombre: { type: "text", placeholder: "Nombre del cliente", maxLength: 120 },
+  telefono: { type: "tel", placeholder: "Teléfono", maxLength: 20 },
+  direccion: { type: "text", placeholder: "Dirección", maxLength: 250 },
+};
+
 // Impresión automática al cobrar (a petición del cliente), con interruptor
 // por dispositivo: ticket del cliente y comanda de cocina.
 const CLAVE_AUTO_TICKET = "tpv_auto_ticket_cliente";
@@ -106,7 +121,7 @@ export default function Caja() {
 
   useEffect(() => {
     const cifras = cliente.telefono.replace(/\D/g, "");
-    if (!CON_CLIENTE.includes(tipoServicio) || cifras.length < 9) {
+    if (cifras.length < 9) {
       setClienteEncontrado(false);
       return undefined;
     }
@@ -516,14 +531,11 @@ export default function Caja() {
         mesa: { aqui: "Comer aquí", llevar: "Para llevar", recoger: "Recoger en tienda", domicilio: "A domicilio" }[tipoServicio],
         local: sede,
         notasGenerales: "",
-        cliente:
-          !CON_CLIENTE.includes(tipoServicio)
-            ? null
-            : {
-                nombre: cliente.nombre,
-                telefono: cliente.telefono,
-                direccion: tipoServicio === "domicilio" ? cliente.direccion : "",
-              },
+        cliente: {
+          nombre: cliente.nombre,
+          telefono: cliente.telefono,
+          direccion: tipoServicio === "domicilio" ? cliente.direccion : "",
+        },
         items: items.map((i) => ({
           productId: i.productId,
           cantidad: i.cantidad,
@@ -909,37 +921,20 @@ export default function Caja() {
                   </button>
                 ))}
               </div>
-              {CON_CLIENTE.includes(tipoServicio) && (
-                <div className="caja-servicio-cliente">
+              <div className="caja-servicio-cliente">
+                {CAMPOS_CLIENTE[tipoServicio].map((campo) => (
                   <input
-                    type="tel"
+                    key={campo}
+                    type={CAMPO_CLIENTE[campo].type}
                     className="caja-servicio-direccion"
-                    placeholder="Teléfono"
-                    maxLength={20}
-                    value={cliente.telefono}
-                    onChange={(e) => cambiarCliente("telefono", e.target.value)}
+                    placeholder={CAMPO_CLIENTE[campo].placeholder}
+                    maxLength={CAMPO_CLIENTE[campo].maxLength}
+                    value={cliente[campo]}
+                    onChange={(e) => cambiarCliente(campo, e.target.value)}
                   />
-                  <input
-                    type="text"
-                    className="caja-servicio-direccion"
-                    placeholder="Nombre del cliente"
-                    maxLength={120}
-                    value={cliente.nombre}
-                    onChange={(e) => cambiarCliente("nombre", e.target.value)}
-                  />
-                  {tipoServicio === "domicilio" && (
-                    <input
-                      type="text"
-                      className="caja-servicio-direccion"
-                      placeholder="Dirección"
-                      maxLength={250}
-                      value={cliente.direccion}
-                      onChange={(e) => cambiarCliente("direccion", e.target.value)}
-                    />
-                  )}
-                  {clienteEncontrado && <span className="caja-cliente-encontrado">✓ Cliente conocido: datos rellenados</span>}
-                </div>
-              )}
+                ))}
+                {clienteEncontrado && <span className="caja-cliente-encontrado">✓ Cliente conocido: datos rellenados</span>}
+              </div>
             </div>
 
             <div className="caja-dividir">
