@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { api } from "../api.js";
 import { formatDuracion } from "../informes.js";
 import { SEDES, getSede, guardarSede } from "../sede.js";
-import { getSesion } from "../auth.js";
+import { getSesion, guardarSesion } from "../auth.js";
 
 const POLL_MS = 15000;
 
@@ -21,17 +21,62 @@ export default function Panel() {
   // "" = las dos sedes combinadas — el panel no está atado al dispositivo
   // como caja/cocina, el dueño puede filtrar aquí mismo a la sede que
   // quiera ver, sin que eso guarde nada en localStorage.
-  // Con el PIN del panel de Villarcayo la sesión está limitada a esa sede:
-  // no hay selector y siempre se pide esa (el servidor la impone igualmente).
-  const sedeFija = getSesion()?.sede || null;
+  // Con el PIN del panel de Villarcayo la sesión está limitada a esa sede
+  // (el servidor la impone igualmente). Se ven las dos sedes en los
+  // selectores, pero pasar a Medina de Pomar (la principal) o a "las dos"
+  // pide el PIN del panel principal; si es correcto, la sesión pasa a ser
+  // la del panel principal.
+  const [sesion, setSesion] = useState(() => getSesion());
+  const sedeFija = sesion?.sede || null;
   const [sedeFiltro, setSedeFiltro] = useState(sedeFija || "");
   // Sede de ESTE dispositivo (caja/cocina/kiosco/recogida). Antes se
   // cambiaba con un botón en caja; a petición del dueño solo se cambia
-  // aquí, para que nadie más pueda moverla. Cualquier PIN de panel (también
-  // el de Villarcayo) puede elegir cualquier sede: esto no da acceso a los
-  // datos de la otra, solo dice en qué local está el equipo.
+  // aquí, para que nadie más pueda moverla.
   const [sedeDispositivo, setSedeDispositivo] = useState(() => getSede() || "");
-  const sedesDispositivo = Object.keys(SEDES);
+  // Cambio que espera el PIN principal: { tipo: "filtro" | "dispositivo", valor }.
+  const [pendientePin, setPendientePin] = useState(null);
+  const [pinPrincipal, setPinPrincipal] = useState("");
+  const [errorPin, setErrorPin] = useState("");
+  const [comprobandoPin, setComprobandoPin] = useState(false);
+
+  const aplicarCambio = ({ tipo, valor }) => {
+    if (tipo === "filtro") {
+      setSedeFiltro(valor);
+    } else {
+      guardarSede(valor);
+      setSedeDispositivo(valor);
+    }
+  };
+
+  const pedirCambio = (tipo, valor) => {
+    const necesitaPin = sedeFija && valor !== sedeFija;
+    if (!necesitaPin) return aplicarCambio({ tipo, valor });
+    setPendientePin({ tipo, valor });
+    setPinPrincipal("");
+    setErrorPin("");
+  };
+
+  const confirmarPin = async (e) => {
+    e.preventDefault();
+    if (!pinPrincipal) return;
+    setComprobandoPin(true);
+    setErrorPin("");
+    try {
+      const { token, sede } = await api.login("panel", pinPrincipal);
+      if (sede) {
+        setErrorPin("Ese PIN no es el del panel principal");
+        return;
+      }
+      guardarSesion("panel", token, null);
+      setSesion(getSesion());
+      aplicarCambio(pendientePin);
+      setPendientePin(null);
+    } catch {
+      setErrorPin("PIN incorrecto");
+    } finally {
+      setComprobandoPin(false);
+    }
+  };
 
   useEffect(() => {
     let activo = true;
@@ -89,23 +134,46 @@ export default function Panel() {
     <div className="panel-page">
       <div className="panel-titulo-row">
         <h2>Panel del dueño</h2>
-        {sedeFija ? (
-          <span className="panel-selector-sede panel-sede-fija">{SEDES[sedeFija]?.nombre || sedeFija}</span>
-        ) : (
-          <select
-            className="panel-selector-sede"
-            value={sedeFiltro}
-            onChange={(e) => setSedeFiltro(e.target.value)}
-          >
-            <option value="">Las dos sedes</option>
-            {Object.entries(SEDES).map(([id, sede]) => (
-              <option key={id} value={id}>
-                {sede.nombre}
-              </option>
-            ))}
-          </select>
-        )}
+        <select
+          className="panel-selector-sede"
+          value={sedeFiltro}
+          onChange={(e) => pedirCambio("filtro", e.target.value)}
+        >
+          <option value="">Las dos sedes</option>
+          {Object.entries(SEDES).map(([id, sede]) => (
+            <option key={id} value={id}>
+              {sede.nombre}
+            </option>
+          ))}
+        </select>
       </div>
+
+      {pendientePin && (
+        <form className="panel-pin-principal" onSubmit={confirmarPin}>
+          <span>
+            Para ver o elegir{" "}
+            <strong>
+              {pendientePin.valor ? SEDES[pendientePin.valor]?.nombre : "las dos sedes"}
+            </strong>{" "}
+            introduce el PIN del panel principal
+          </span>
+          <input
+            type="password"
+            inputMode="numeric"
+            autoFocus
+            value={pinPrincipal}
+            onChange={(e) => setPinPrincipal(e.target.value)}
+            placeholder="PIN"
+          />
+          <button type="submit" disabled={comprobandoPin || !pinPrincipal}>
+            {comprobandoPin ? "Comprobando..." : "Confirmar"}
+          </button>
+          <button type="button" className="panel-pin-cancelar" onClick={() => setPendientePin(null)}>
+            Cancelar
+          </button>
+          {errorPin && <span className="error">{errorPin}</span>}
+        </form>
+      )}
 
       <div className="panel-kpis">
         <div className="panel-kpi">
@@ -220,15 +288,12 @@ export default function Panel() {
         <select
           className="panel-selector-sede"
           value={sedeDispositivo}
-          onChange={(e) => {
-            guardarSede(e.target.value);
-            setSedeDispositivo(e.target.value);
-          }}
+          onChange={(e) => pedirCambio("dispositivo", e.target.value)}
         >
           {!sedeDispositivo && <option value="">Sin elegir</option>}
-          {sedesDispositivo.map((id) => (
+          {Object.entries(SEDES).map(([id, sede]) => (
             <option key={id} value={id}>
-              {SEDES[id]?.nombre || id}
+              {sede.nombre}
             </option>
           ))}
         </select>

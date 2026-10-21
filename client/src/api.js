@@ -9,7 +9,9 @@ async function request(path, options = {}) {
 
   const res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
   const data = await res.json().catch(() => null);
-  if (res.status === 401 && sesion) cerrarSesion();
+  // Un 401 de /login es solo un PIN incorrecto (p. ej. el PIN principal que
+  // pide el panel de Villarcayo): no debe cerrar la sesión que ya hay.
+  if (res.status === 401 && sesion && !path.startsWith("/login")) cerrarSesion();
   if (!res.ok) {
     throw new Error(data?.error || "Error en la petición");
   }

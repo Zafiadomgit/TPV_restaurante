@@ -5084,3 +5084,44 @@ h4,
 .panel-sede-dispositivo .panel-selector-sede {
   align-self: flex-start;
 }
+
+/* Panel de Villarcayo: pasar a Medina / las dos sedes pide el PIN principal */
+.panel-pin-principal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  background: #fdf0e8;
+  border: 2px solid #d1622f;
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.panel-pin-principal input {
+  width: 8rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #e4e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.panel-pin-principal button {
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  border: none;
+  background: #1f2933;
+  color: #fff;
+  cursor: pointer;
+}
+
+.panel-pin-principal .panel-pin-cancelar {
+  background: none;
+  color: #1f2933;
+  text-decoration: underline;
+}
+
+.panel-pin-principal .error {
+  margin: 0;
+  width: 100%;
+}
