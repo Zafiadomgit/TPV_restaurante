@@ -1,5 +1,5 @@
 import { formatTicket } from "../format.js";
-import { nombreCocina, lineasCliente } from "../seccionesTicket.js";
+import { nombreCocina, lineasCliente, lineasCambios } from "../seccionesTicket.js";
 
 const SIGUIENTE_ESTADO = {
   pendiente: "en_preparacion",
@@ -55,10 +55,17 @@ export default function OrderTicket({ order, onAvanzar, onReimprimir, imprimiend
             <span className="kds-cantidad">{item.cantidad}x</span>
             <div className="kds-item-texto">
               <span className="kds-item-nombre">{nombreCocina(item.nombre)}</span>
+              {/* Mismo formato que la comanda impresa: secciones con punto
+                  (Menú, patatas, extras, bebida) y lo de dentro con guion. */}
               {(item.modificadoresTexto || item.notas) && (
-                <span className="kds-nota">
-                  {[item.modificadoresTexto, item.notas].filter(Boolean).join(" · ")}
-                </span>
+                <div className="kds-cambios">
+                  {lineasCambios(item).map(({ tipo, texto }, i) => (
+                    <span key={i} className={tipo === "punto" ? "kds-cambio-seccion" : "kds-cambio"}>
+                      {tipo === "punto" ? "• " : "- "}
+                      {texto}
+                    </span>
+                  ))}
+                </div>
               )}
             </div>
           </li>

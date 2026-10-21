@@ -803,6 +803,38 @@ h4,
   font-size: 0.85rem;
 }
 
+/* Cambios del producto en cocina, con el formato de la comanda impresa:
+   "• Menú" / "- Sin cebolla"... en un bloque que destaca. */
+.kds-cambios {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  align-self: stretch;
+  padding: 0.3rem 0.55rem;
+  border-radius: 6px;
+  background: rgba(255, 107, 107, 0.16);
+  color: #ff9a9a;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.25;
+}
+.kds-cambio-seccion {
+  color: #ffd0d0;
+  font-weight: 800;
+}
+.kds-cambio {
+  padding-left: 0.8rem;
+}
+.kds-compacto .kds-cambios {
+  font-size: 0.85rem;
+  padding: 0.2rem 0.45rem;
+}
+@media (min-width: 1600px) {
+  .kds-cambios {
+    font-size: 1.15rem;
+  }
+}
+
 /* Datos del cliente (para llevar / recoger en tienda) en cocina. */
 .kds-cliente {
   display: flex;
