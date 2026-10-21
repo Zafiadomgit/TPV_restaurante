@@ -25,6 +25,9 @@ const POLL_MS = 3000;
 // Tipos de pedido de caja que piden datos del cliente (y permiten "Enviar a
 // cocina sin cobrar"): se cobran cuando el cliente recoge o al entregar.
 const CON_CLIENTE = ["recoger", "domicilio"];
+// Tipos con "Enviar a cocina sin cobrar" (se cobra después: al recoger, al
+// entregar o al terminar de comer). Programar hora, solo recoger/domicilio.
+const SIN_COBRAR = ["aqui", "recoger", "domicilio"];
 
 // Datos del cliente que pide caja según el tipo de pedido, en el orden en
 // que salen en pantalla (a petición del cliente). En "Comer aquí" y "Para
@@ -800,7 +803,8 @@ export default function Caja() {
           {[
             ["Recoger en tienda", pedidosSinCobrar.filter((p) => p.mesa === "Recoger en tienda")],
             ["A domicilio", pedidosSinCobrar.filter((p) => p.mesa === "A domicilio")],
-            ["Otros (kiosco, comer aquí, para llevar)", pedidosSinCobrar.filter((p) => !["Recoger en tienda", "A domicilio"].includes(p.mesa))],
+            ["Comer aquí", pedidosSinCobrar.filter((p) => p.mesa === "Comer aquí")],
+            ["Para llevar y otros", pedidosSinCobrar.filter((p) => !["Recoger en tienda", "A domicilio", "Comer aquí"].includes(p.mesa))],
           ]
             .filter(([, lista]) => lista.length > 0)
             .map(([titulo, lista]) => (
@@ -1001,7 +1005,7 @@ export default function Caja() {
               )}
             </div>
 
-            {CON_CLIENTE.includes(tipoServicio) && (
+            {SIN_COBRAR.includes(tipoServicio) && (
               <button
                 type="button"
                 className="caja-enviar-sin-cobrar"
