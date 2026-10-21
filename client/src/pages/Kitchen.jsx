@@ -22,6 +22,38 @@ const COLUMNAS = [
 ];
 
 const CLAVE_COMPACTO = "tpv_cocina_compacto";
+// Ancho mínimo de una comanda en la vista compacta.
+const ANCHO_COMANDA = 195;
+
+// Vista compacta: las comandas se reparten en N columnas por turno (1ª, 2ª,
+// 3ª... y vuelta a la 1ª), y cada una se apila justo debajo de la anterior
+// de su columna. Así se leen en orden de izquierda a derecha y no quedan
+// huecos cuando una comanda es más larga que las de al lado (a petición del
+// cliente; con una rejilla normal, cada fila medía lo que la más alta).
+function ColumnasCompactas({ pedidos, render }) {
+  const ref = useRef(null);
+  const [n, setN] = useState(1);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const medir = () => setN(Math.max(1, Math.floor((el.clientWidth + 6) / (ANCHO_COMANDA + 6))));
+    medir();
+    const obs = new ResizeObserver(medir);
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  const columnas = Array.from({ length: n }, () => []);
+  pedidos.forEach((p, i) => columnas[i % n].push(p));
+  return (
+    <div ref={ref} className="kds-compacto-columnas">
+      {columnas.map((col, i) => (
+        <div key={i} className="kds-compacto-columna">
+          {col.map(render)}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function Kitchen() {
   const [orders, setOrders] = useState([]);
@@ -192,6 +224,15 @@ export default function Kitchen() {
   }
 
   const ordenadas = [...orders].sort((a, b) => new Date(a.creadoEn) - new Date(b.creadoEn));
+  const renderComanda = (order) => (
+    <OrderTicket
+      key={order.id}
+      order={order}
+      onAvanzar={avanzarEstado}
+      onReimprimir={imprimirComanda}
+      imprimiendo={idsImprimiendo.has(order.id)}
+    />
+  );
 
   return (
     <div className={`kds-page ${compacto ? "kds-compacto" : ""} ${pantallaCompleta ? "kds-pantalla-completa" : ""}`}>
@@ -247,16 +288,10 @@ export default function Kitchen() {
               <div className="kds-columna-body">
                 {pedidos.length === 0 ? (
                   <p className="kds-empty">Sin comandas</p>
+                ) : compacto ? (
+                  <ColumnasCompactas pedidos={pedidos} render={renderComanda} />
                 ) : (
-                  pedidos.map((order) => (
-                    <OrderTicket
-                      key={order.id}
-                      order={order}
-                      onAvanzar={avanzarEstado}
-                      onReimprimir={imprimirComanda}
-                      imprimiendo={idsImprimiendo.has(order.id)}
-                    />
-                  ))
+                  pedidos.map(renderComanda)
                 )}
               </div>
             </div>
