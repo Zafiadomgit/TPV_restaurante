@@ -1,3 +1,4 @@
+import { horaProgramada } from "./programado.js";
 // Ordena los cambios de un producto en secciones para la comanda de
 // cocina y el recibo, a petición del cliente: una marca de punto al
 // empezar cada parte — cómo es (Solo / En menú), las patatas, los extras
@@ -75,6 +76,7 @@ export function nombreCocina(nombre) {
 // tienda"), una línea por dato, para cocina, comanda, recibo e historial.
 export function lineasCliente(order) {
   const lineas = [];
+  if (order?.programadoPara) lineas.push(`Programado para las ${horaProgramada(order)}`);
   if (order?.clienteNombre) lineas.push(`Cliente: ${order.clienteNombre}`);
   if (order?.clienteTelefono) lineas.push(`Tel: ${order.clienteTelefono}`);
   if (order?.clienteDireccion) lineas.push(`Dirección: ${order.clienteDireccion}`);

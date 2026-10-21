@@ -1471,6 +1471,30 @@ h4,
   border: 1px solid #ccc;
 }
 
+.caja-programar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-weight: 700;
+  font-size: 14px;
+  color: #333;
+}
+
+.caja-programar input {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #d6d3cc;
+  font-size: 16px;
+}
+
+.caja-programar small,
+.caja-programar-nota {
+  font-weight: 500;
+  color: #777;
+  font-size: 12px;
+}
+
 .caja-auto-impresion {
   display: flex;
   flex-wrap: wrap;

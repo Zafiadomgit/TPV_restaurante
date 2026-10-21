@@ -4,6 +4,7 @@ import { calcularTotales } from "../totales.js";
 import { formatTicket } from "../format.js";
 import { getSede, guardarSede, borrarSede, SEDES } from "../sede.js";
 import ReciboImprimible, { imprimirRecibo } from "../components/ReciboImprimible.jsx";
+import { isoDesdeHora, horaProgramada, MINUTOS_ANTES_COCINA } from "../programado.js";
 import Personalizar from "../components/Personalizar.jsx";
 import SelectorSede from "../components/SelectorSede.jsx";
 import {
@@ -115,6 +116,8 @@ export default function Caja() {
   // Con el teléfono de un cliente que ya pidió se rellenan solos su nombre
   // y dirección.
   const [tipoServicio, setTipoServicio] = useState("aqui");
+  // Hora programada ("HH:MM", vacío = cuanto antes) para recoger/domicilio.
+  const [horaProgramar, setHoraProgramar] = useState("");
   const [cliente, setCliente] = useState({ nombre: "", telefono: "", direccion: "" });
   const [clienteEncontrado, setClienteEncontrado] = useState(false);
   const cambiarCliente = (campo, valor) => setCliente((prev) => ({ ...prev, [campo]: valor }));
@@ -339,7 +342,9 @@ export default function Caja() {
   const trasCrearOCobrar = async (pedido, { metodoPago = null, comanda = true } = {}) => {
     if (metodoPago === "efectivo") await clicAbrirCajon();
     if (autoTicket) await clicImprimirRecibo(pedido);
-    if (comanda && autoComanda) await imprimirComandaDesdeCaja(pedido);
+    // Un programado no va a cocina ahora: su comanda sale en cocina cuando
+    // aparece, 15 min antes de la hora.
+    if (comanda && autoComanda && !pedido.programadoPara) await imprimirComandaDesdeCaja(pedido);
   };
 
   useEffect(() => {
@@ -531,6 +536,7 @@ export default function Caja() {
         mesa: { aqui: "Comer aquí", llevar: "Para llevar", recoger: "Recoger en tienda", domicilio: "A domicilio" }[tipoServicio],
         local: sede,
         notasGenerales: "",
+        programadoPara: CON_CLIENTE.includes(tipoServicio) ? isoDesdeHora(horaProgramar) : null,
         cliente: {
           nombre: cliente.nombre,
           telefono: cliente.telefono,
@@ -549,6 +555,7 @@ export default function Caja() {
     setDividirEntre("");
     setTipoServicio("aqui");
     setCliente({ nombre: "", telefono: "", direccion: "" });
+    setHoraProgramar("");
   };
 
   // "Recoger en tienda" / "Para llevar" (a petición del cliente): el pedido
@@ -566,7 +573,7 @@ export default function Caja() {
       // El ticket "Pendiente de pago" sale siempre (es lo que se le da al
       // cliente); la comanda, según el interruptor.
       await clicImprimirRecibo(pedido);
-      if (autoComanda) await imprimirComandaDesdeCaja(pedido);
+      if (autoComanda && !pedido.programadoPara) await imprimirComandaDesdeCaja(pedido);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -756,7 +763,11 @@ export default function Caja() {
           ) : (
             <>
               <p>
-                {ultimaVenta.pagado ? "Cobrado" : "Enviado a cocina, pendiente de cobro:"}{" "}
+                {ultimaVenta.pagado
+                  ? "Cobrado"
+                  : ultimaVenta.programadoPara
+                    ? `Programado para las ${horaProgramada(ultimaVenta)} (cocina lo verá ${MINUTOS_ANTES_COCINA} min antes), pendiente de cobro:`
+                    : "Enviado a cocina, pendiente de cobro:"}{" "}
                 {formatTicket(ultimaVenta.ticketNumero)} · {ultimaVenta.total.toFixed(2)} €
               </p>
               <button
@@ -792,6 +803,7 @@ export default function Caja() {
                     {pedido.mesa}
                     {pedido.clienteNombre ? ` · ${pedido.clienteNombre}` : ""}
                     {pedido.clienteTelefono ? ` · ${pedido.clienteTelefono}` : ""}
+                    {pedido.programadoPara ? ` · ⏰ ${horaProgramada(pedido)}` : ""}
                   </span>
                   <p className="pedido-sin-cobrar-items">
                     {pedido.items.map((i) => `${i.cantidad}x ${i.nombre}`).join(", ")}
@@ -933,6 +945,24 @@ export default function Caja() {
                     onChange={(e) => cambiarCliente(campo, e.target.value)}
                   />
                 ))}
+                {CON_CLIENTE.includes(tipoServicio) && (
+                  <label className="caja-programar">
+                    <span>⏰ Programar para</span>
+                    <input type="time" value={horaProgramar} onChange={(e) => setHoraProgramar(e.target.value)} />
+                    {horaProgramar ? (
+                      <button type="button" className="caja-cambiar-impresora" onClick={() => setHoraProgramar("")}>
+                        Quitar
+                      </button>
+                    ) : (
+                      <small>vacío = lo antes posible</small>
+                    )}
+                  </label>
+                )}
+                {CON_CLIENTE.includes(tipoServicio) && horaProgramar && (
+                  <small className="caja-programar-nota">
+                    Cocina lo verá {MINUTOS_ANTES_COCINA} min antes de esa hora.
+                  </small>
+                )}
                 {clienteEncontrado && <span className="caja-cliente-encontrado">✓ Cliente conocido: datos rellenados</span>}
               </div>
             </div>

@@ -63,6 +63,9 @@ export function mapRow(row) {
     clienteNombre: row.cliente_nombre || null,
     clienteTelefono: row.cliente_telefono || null,
     clienteDireccion: row.cliente_direccion || null,
+    // Hora para la que está programado (caja: recoger / domicilio); cocina
+    // no lo ve hasta 15 min antes (ver client/src/programado.js).
+    programadoPara: row.programado_para || null,
     anulado: row.anulado || false,
     anuladoMotivo: row.anulado_motivo || null,
     anuladoEn: row.anulado_en || null,

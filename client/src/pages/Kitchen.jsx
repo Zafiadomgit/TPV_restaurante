@@ -3,6 +3,7 @@ import { api } from "../api.js";
 import OrderTicket from "../components/OrderTicket.jsx";
 import { getSede, guardarSede, SEDES } from "../sede.js";
 import SelectorSede from "../components/SelectorSede.jsx";
+import { visibleEnCocina } from "../programado.js";
 import { desbloquearSonido, reproducirSonidoNuevoPedido } from "../sonidoCocina.js";
 import {
   getImpresoraCocinaGuardada,
@@ -98,7 +99,9 @@ export default function Kitchen() {
       enVuelo.current = true;
       try {
         const data = await api.getOrders(undefined, sede);
-        const activos = data.filter((o) => COLUMNAS.some((c) => c.estado === o.estado));
+        // Los programados no se ven hasta 15 min antes de su hora; entonces
+        // cuentan como nuevos (aviso + comanda), ver programado.js.
+        const activos = data.filter((o) => COLUMNAS.some((c) => c.estado === o.estado) && visibleEnCocina(o));
         setOrders(activos);
 
         const pendientesAhora = activos.filter((o) => o.estado === "pendiente");

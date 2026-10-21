@@ -326,6 +326,13 @@ export default async function handler(req, res) {
       cliente_telefono: normalizarTelefono(cliente?.telefono) || null,
       cliente_direccion: texto(cliente?.direccion, 250) || null,
     };
+    // Pedido programado: solo fechas válidas entre ahora y 7 días.
+    const { programadoPara } = req.body || {};
+    const programado = programadoPara ? new Date(programadoPara) : null;
+    if (programado && !Number.isNaN(programado.getTime())) {
+      const ms = programado.getTime() - Date.now();
+      if (ms > -5 * 60000 && ms < 7 * 24 * 3600000) datosCliente.programado_para = programado.toISOString();
+    }
     const hayCliente = Object.values(datosCliente).some(Boolean);
 
     let { data, error } = await supabase
@@ -336,7 +343,7 @@ export default async function handler(req, res) {
     // Si las columnas del cliente aún no existen (falta ejecutar
     // supabase/orders_datos_cliente.sql), el pedido se guarda igual sin
     // esos datos: nunca se pierde una venta por esto.
-    if (error && hayCliente && /cliente_|column|42703|PGRST204/i.test(`${error.code} ${error.message}`)) {
+    if (error && hayCliente && /cliente_|programado_|column|42703|PGRST204/i.test(`${error.code} ${error.message}`)) {
       console.error("orders: sin columnas de cliente, se guarda sin ellas:", error.message);
       ({ data, error } = await supabase.from("orders").insert(fila).select().single());
     }
