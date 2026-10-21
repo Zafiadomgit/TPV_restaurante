@@ -11,10 +11,10 @@ import {
   nombreOpcionEnPantalla,
 } from "../personalizarCalculo.js";
 
-// `salsaBlancaAPatatas` (solo caja, a petición del cliente): si en "Salsas"
-// queda marcada únicamente la blanca, "¿Salsa en tus patatas?" se marca
-// sola también con solo blanca — mientras el cajero no toque a mano ese
-// paso de las patatas.
+// `salsaBlancaAPatatas` (solo caja, a petición del cliente): lo que se marque
+// en "Salsas" (blanca, roja, picante o "Sin salsa") se marca solo igual en
+// "¿Salsa en tus patatas?" — mientras el cajero no toque a mano ese paso
+// de las patatas.
 export default function Personalizar({ producto, idioma, onConfirmar, onCancelar, salsaBlancaAPatatas = false }) {
   const [seleccion, setSeleccion] = useState(() => seleccionInicial(producto));
   const [cantidad, setCantidad] = useState(1);
@@ -26,9 +26,11 @@ export default function Personalizar({ producto, idioma, onConfirmar, onCancelar
       const nueva = toggleOpcionEnSeleccion(prev, paso, opcionId);
       if (!salsaBlancaAPatatas || paso.id !== "salsas" || patatasTocadas.current) return nueva;
       const pasoPatatas = (producto.modificadores || []).find((p) => p.id === "salsa-patatas");
-      if (!pasoPatatas?.opciones.some((o) => o.id === "salsa-blanca")) return nueva;
-      const soloBlanca = (nueva.salsas || []).length === 1 && nueva.salsas[0] === "salsa-blanca";
-      return { ...nueva, "salsa-patatas": soloBlanca ? ["salsa-blanca"] : [] };
+      if (!pasoPatatas) return nueva;
+      // Mismas ids en los dos pasos (salsa-blanca, salsa-roja, salsa-picante,
+      // sin-salsa); solo se copian las que existen en el de patatas.
+      const idsPatatas = new Set(pasoPatatas.opciones.map((o) => o.id));
+      return { ...nueva, "salsa-patatas": (nueva.salsas || []).filter((id) => idsPatatas.has(id)) };
     });
   };
 
