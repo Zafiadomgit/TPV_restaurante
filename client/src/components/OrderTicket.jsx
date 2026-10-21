@@ -39,6 +39,9 @@ export default function OrderTicket({ order, onAvanzar, onReimprimir, imprimiend
     <div className={`kds-ticket ${origenClass}`}>
       <div className="kds-ticket-top">
         <span className="kds-ticket-id">{formatTicket(order.ticketNumero)}</span>
+        {typeof order.total === "number" && (
+          <span className="kds-ticket-total">{order.total.toFixed(2).replace(".", ",")} €</span>
+        )}
         <span className={`kds-ticket-tiempo ${urgente ? "urgente" : ""}`}>
           {formatTranscurrido(order.creadoEn)}
         </span>

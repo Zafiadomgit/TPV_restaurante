@@ -736,6 +736,15 @@ h4,
   font-size: 1.4rem;
 }
 
+.kds-ticket-total {
+  margin-left: auto;
+  margin-right: 0.6rem;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #f2c14e;
+}
+
 .kds-ticket-tiempo {
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.9rem;
