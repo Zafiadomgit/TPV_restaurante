@@ -27,10 +27,11 @@ export default function Panel() {
   const [sedeFiltro, setSedeFiltro] = useState(sedeFija || "");
   // Sede de ESTE dispositivo (caja/cocina/kiosco/recogida). Antes se
   // cambiaba con un botón en caja; a petición del dueño solo se cambia
-  // aquí, para que nadie más pueda moverla. El panel de Villarcayo solo
-  // puede fijar su propia sede.
+  // aquí, para que nadie más pueda moverla. Cualquier PIN de panel (también
+  // el de Villarcayo) puede elegir cualquier sede: esto no da acceso a los
+  // datos de la otra, solo dice en qué local está el equipo.
   const [sedeDispositivo, setSedeDispositivo] = useState(() => getSede() || "");
-  const sedesDispositivo = sedeFija ? [sedeFija] : Object.keys(SEDES);
+  const sedesDispositivo = Object.keys(SEDES);
 
   useEffect(() => {
     let activo = true;
