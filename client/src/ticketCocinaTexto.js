@@ -52,6 +52,11 @@ export function construirTicketCocina(order) {
   const hora = new Date(order.creadoEn).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
   const cabecera = [formatTicket(order.ticketNumero), paraImpresora(order.mesa), hora].filter(Boolean).join(" ");
   lineas.push(CENTRO, NEGRITA_ON, cabecera.length <= 24 ? GRANDE : ALTO, cabecera, "\n", NEGRITA_OFF, NORMAL);
+  // Importe del pedido (a petición del cliente; solo en papel, no en la
+  // pantalla de cocina).
+  if (typeof order.total === "number") {
+    lineas.push(CENTRO, NEGRITA_ON, ALTO, `TOTAL ${order.total.toFixed(2).replace(".", ",")} EUR`, "\n", NORMAL, NEGRITA_OFF);
+  }
   // Datos del cliente (para llevar / recoger), a doble alto y en negrita.
   for (const linea of lineasCliente(order)) lineas.push(IZQUIERDA, NEGRITA_ON, ALTO, `${paraImpresora(linea)}\n`, NORMAL, NEGRITA_OFF);
   lineas.push(IZQUIERDA, SEPARADOR);
