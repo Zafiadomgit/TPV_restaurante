@@ -38,6 +38,7 @@ export default function Panel() {
   const [pinPrincipal, setPinPrincipal] = useState("");
   const [errorPin, setErrorPin] = useState("");
   const [comprobandoPin, setComprobandoPin] = useState(false);
+  const [sedeGuardadaOk, setSedeGuardadaOk] = useState(false);
 
   const aplicarCambio = ({ tipo, valor }) => {
     if (tipo === "filtro") {
@@ -45,6 +46,7 @@ export default function Panel() {
     } else {
       guardarSede(valor);
       setSedeDispositivo(valor);
+      setSedeGuardadaOk(true);
     }
   };
 
@@ -52,6 +54,7 @@ export default function Panel() {
     const necesitaPin = sedeFija && valor !== sedeFija;
     if (!necesitaPin) return aplicarCambio({ tipo, valor });
     setPendientePin({ tipo, valor });
+    setSedeGuardadaOk(false);
     setPinPrincipal("");
     setErrorPin("");
   };
@@ -124,6 +127,34 @@ export default function Panel() {
     };
   }, [sedeFiltro]);
 
+  // El recuadro del PIN sale junto al selector que se ha tocado, para que
+  // se vea (antes salía siempre arriba y desde la sede del dispositivo
+  // pasaba desapercibido: el cambio no se guardaba hasta confirmar).
+  const formPin = (tipo) =>
+    pendientePin?.tipo === tipo && (
+      <form className="panel-pin-principal" onSubmit={confirmarPin}>
+        <span>
+          Para ver o elegir <strong>{pendientePin.valor ? SEDES[pendientePin.valor]?.nombre : "las dos sedes"}</strong>{" "}
+          introduce el PIN del panel principal
+        </span>
+        <input
+          type="password"
+          inputMode="numeric"
+          autoFocus
+          value={pinPrincipal}
+          onChange={(e) => setPinPrincipal(e.target.value)}
+          placeholder="PIN"
+        />
+        <button type="submit" disabled={comprobandoPin || !pinPrincipal}>
+          {comprobandoPin ? "Comprobando..." : "Confirmar"}
+        </button>
+        <button type="button" className="panel-pin-cancelar" onClick={() => setPendientePin(null)}>
+          Cancelar
+        </button>
+        {errorPin && <span className="error">{errorPin}</span>}
+      </form>
+    );
+
   if (error) return <p className="error">{error}</p>;
   if (!resumen) return <p className="loading">Cargando panel...</p>;
 
@@ -134,46 +165,24 @@ export default function Panel() {
     <div className="panel-page">
       <div className="panel-titulo-row">
         <h2>Panel del dueño</h2>
-        <select
-          className="panel-selector-sede"
-          value={sedeFiltro}
-          onChange={(e) => pedirCambio("filtro", e.target.value)}
-        >
-          <option value="">Las dos sedes</option>
-          {Object.entries(SEDES).map(([id, sede]) => (
-            <option key={id} value={id}>
-              {sede.nombre}
-            </option>
-          ))}
-        </select>
+        <label className="panel-ver-ventas">
+          Ver ventas de
+          <select
+            className="panel-selector-sede"
+            value={sedeFiltro}
+            onChange={(e) => pedirCambio("filtro", e.target.value)}
+          >
+            <option value="">Las dos sedes</option>
+            {Object.entries(SEDES).map(([id, sede]) => (
+              <option key={id} value={id}>
+                {sede.nombre}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
-      {pendientePin && (
-        <form className="panel-pin-principal" onSubmit={confirmarPin}>
-          <span>
-            Para ver o elegir{" "}
-            <strong>
-              {pendientePin.valor ? SEDES[pendientePin.valor]?.nombre : "las dos sedes"}
-            </strong>{" "}
-            introduce el PIN del panel principal
-          </span>
-          <input
-            type="password"
-            inputMode="numeric"
-            autoFocus
-            value={pinPrincipal}
-            onChange={(e) => setPinPrincipal(e.target.value)}
-            placeholder="PIN"
-          />
-          <button type="submit" disabled={comprobandoPin || !pinPrincipal}>
-            {comprobandoPin ? "Comprobando..." : "Confirmar"}
-          </button>
-          <button type="button" className="panel-pin-cancelar" onClick={() => setPendientePin(null)}>
-            Cancelar
-          </button>
-          {errorPin && <span className="error">{errorPin}</span>}
-        </form>
-      )}
+      {formPin("filtro")}
 
       <div className="panel-kpis">
         <div className="panel-kpi">
@@ -205,7 +214,9 @@ export default function Panel() {
                 <div key={h.hora} className="panel-barra-col">
                   <div
                     className="panel-barra"
-                    style={{ height: `${Math.max(2, (h.total / maxVentaHora) * 100)}%` }}
+                    style={{
+                      height: `${Math.max(2, (h.total / maxVentaHora) * 100)}%`,
+                    }}
                     title={`${h.total.toFixed(2)} €`}
                   />
                   <span className="panel-barra-label">{h.hora}h</span>
@@ -227,10 +238,7 @@ export default function Panel() {
                   <span>{p.cantidad}</span>
                 </div>
                 <div className="panel-top-barra-fondo">
-                  <div
-                    className="panel-top-barra"
-                    style={{ width: `${(p.cantidad / maxTopProducto) * 100}%` }}
-                  />
+                  <div className="panel-top-barra" style={{ width: `${(p.cantidad / maxTopProducto) * 100}%` }} />
                 </div>
               </div>
             ))
@@ -245,9 +253,7 @@ export default function Panel() {
             {turnosCerrados.map((t) => (
               <div
                 key={t.id}
-                className={`card-caja historial-turno ${
-                  t.diferencia === 0 ? "diferencia-ok" : "diferencia-alerta"
-                }`}
+                className={`card-caja historial-turno ${t.diferencia === 0 ? "diferencia-ok" : "diferencia-alerta"}`}
               >
                 <span className="badge-estado badge-cerrado-caja">Cerrado</span>
                 <p className="caja-detalle">
@@ -282,9 +288,7 @@ export default function Panel() {
 
       <div className="panel-card panel-sede-dispositivo">
         <span className="panel-card-titulo">Sede de este dispositivo</span>
-        <p className="caja-hint">
-          Es la sede con la que trabajan caja, cocina, kiosco y recogida en este equipo.
-        </p>
+        <p className="caja-hint">Es la sede con la que trabajan caja, cocina, kiosco y recogida en este equipo.</p>
         <select
           className="panel-selector-sede"
           value={sedeDispositivo}
@@ -297,6 +301,10 @@ export default function Panel() {
             </option>
           ))}
         </select>
+        {sedeGuardadaOk && (
+          <span className="tiempo-espera-ok">✔️ Guardado: este equipo es ahora {SEDES[sedeDispositivo]?.nombre}</span>
+        )}
+        {formPin("dispositivo")}
       </div>
     </div>
   );

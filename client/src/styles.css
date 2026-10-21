@@ -5125,3 +5125,19 @@ h4,
   margin: 0;
   width: 100%;
 }
+
+.panel-ver-ventas {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #52606d;
+}
+
+.panel-sede-dispositivo .panel-pin-principal {
+  margin: 0.8rem 0 0;
+}
+
+.panel-sede-dispositivo .tiempo-espera-ok {
+  margin-top: 0.6rem;
+}
