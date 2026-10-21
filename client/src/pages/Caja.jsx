@@ -792,7 +792,9 @@ export default function Caja() {
         </div>
       )}
 
-      {pedidosSinCobrar.length > 0 && (
+      {/* Siempre a la vista, con las cuatro secciones aunque estén vacías,
+          para saber de un vistazo qué hay pendiente de cobrar. */}
+      {(
         <div className="pedidos-sin-cobrar">
           <h3 className="pedidos-sin-cobrar-titulo">
             Pedidos sin cobrar ({pedidosSinCobrar.length})
@@ -807,12 +809,13 @@ export default function Caja() {
             ["Para llevar", pedidosSinCobrar.filter((p) => p.mesa === "Para llevar")],
             ["Otros", pedidosSinCobrar.filter((p) => !["Recoger en tienda", "A domicilio", "Comer aquí", "Para llevar"].includes(p.mesa))],
           ]
-            .filter(([, lista]) => lista.length > 0)
+            .filter(([titulo, lista]) => lista.length > 0 || titulo !== "Otros")
             .map(([titulo, lista]) => (
           <div key={titulo} className="pedidos-sin-cobrar-seccion">
           <h4 className="pedidos-sin-cobrar-subtitulo">
             {titulo} ({lista.length})
           </h4>
+          {lista.length === 0 && <p className="pedidos-sin-cobrar-vacio">Ninguno</p>}
           <div className="pedidos-sin-cobrar-lista">
             {lista.map((pedido) => (
               <div key={pedido.id} className="pedido-sin-cobrar-card">

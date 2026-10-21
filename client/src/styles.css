@@ -1330,6 +1330,13 @@ h4,
   margin-top: 14px;
 }
 
+.pedidos-sin-cobrar-vacio {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: #a08a7c;
+  font-style: italic;
+}
+
 .pedidos-sin-cobrar-subtitulo {
   margin: 0 0 8px;
   font-size: 14px;
