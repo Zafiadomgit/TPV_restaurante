@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../api.js";
-import { formatTicket } from "../format.js";
 import { getSede, guardarSede } from "../sede.js";
 import SelectorSede from "../components/SelectorSede.jsx";
 import { visibleEnCocina } from "../programado.js";
@@ -177,8 +176,7 @@ export default function Recogida() {
           <div className={`k-recogida-lista k-recogida-lista--d${densidadPreparando}`}>
             {preparando.map((o) => (
               <div key={o.id} className="k-recogida-fila">
-                <span className="k-recogida-num">{formatTicket(o.ticketNumero)}</span>
-                <span className="k-recogida-estado">EN COCINA</span>
+                <span className="k-recogida-num">{o.ticketNumero}</span>
               </div>
             ))}
           </div>
@@ -188,7 +186,7 @@ export default function Recogida() {
           <div className={`k-recogida-listos k-recogida-listos--d${densidadListos}`}>
             {listos.map((o) => (
               <div key={o.id} className="k-recogida-listo">
-                {formatTicket(o.ticketNumero)}
+                {o.ticketNumero}
               </div>
             ))}
           </div>
