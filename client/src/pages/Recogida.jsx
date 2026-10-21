@@ -132,8 +132,14 @@ export default function Recogida() {
   // Que siempre quepan todos en pantalla (a petición del cliente): cuantos
   // más pedidos, más columnas y números más pequeños, sin tener que hacer
   // scroll en un monitor que nadie toca.
-  const densidadListos = listos.length <= 4 ? 1 : listos.length <= 9 ? 2 : listos.length <= 16 ? 3 : 4;
-  const densidadPreparando = preparando.length <= 6 ? 1 : preparando.length <= 12 ? 2 : preparando.length <= 24 ? 3 : 4;
+  // Mismo tamaño en las dos columnas (a petición del cliente): manda la que
+  // más pedidos tiene.
+  const densidad = Math.max(
+    listos.length <= 6 ? 1 : listos.length <= 12 ? 2 : listos.length <= 24 ? 3 : 4,
+    preparando.length <= 6 ? 1 : preparando.length <= 12 ? 2 : preparando.length <= 24 ? 3 : 4
+  );
+  const densidadListos = densidad;
+  const densidadPreparando = densidad;
 
   const estiloFondo = fondoRecogidaUrl
     ? { backgroundImage: `url(${fondoRecogidaUrl})`, backgroundSize: "cover", backgroundPosition: "center" }

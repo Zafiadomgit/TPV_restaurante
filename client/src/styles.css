@@ -4297,7 +4297,7 @@ h4,
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 1fr 1.3fr;
+  grid-template-columns: 1fr 1fr;
 }
 
 .k-recogida-col {
@@ -4439,6 +4439,31 @@ h4,
 }
 @media (max-width: 900px) and (max-height: 760px) {
   .k-recogida-marca .k-recogida-titulo { display: none; }
+}
+
+/* "Listo" del mismo tamaño que "Preparando" (a petición del cliente): misma
+   rejilla, mismo recuadro y mismo tamaño de número; solo cambia el color. */
+.k-recogida-listos,
+.k-recogida-listos--d1 { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.k-recogida-listos--d2 { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.k-recogida-listos--d3 { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; }
+.k-recogida-listos--d4 { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; }
+.k-recogida-listos .k-recogida-listo {
+  height: auto;
+  padding: 10px 8px;
+  border-radius: 14px;
+  font-size: 48px;
+}
+.k-recogida-listos--d2 .k-recogida-listo { padding: 8px 6px; font-size: 38px; }
+.k-recogida-listos--d3 .k-recogida-listo,
+.k-recogida-listos--d4 .k-recogida-listo { padding: 6px 4px; border-radius: 12px; }
+.k-recogida-listos--d3 .k-recogida-listo { font-size: 30px; }
+.k-recogida-listos--d4 .k-recogida-listo { font-size: 24px; }
+@media (max-width: 900px) {
+  .k-recogida-listos,
+  .k-recogida-listos--d1 { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px; }
+  .k-recogida-listos[class*="--d"] { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
+  .k-recogida-listos[class*="--d"] .k-recogida-listo { height: auto; padding: 6px 4px; font-size: 21px; }
 }
 
 /* En pantalla completa, la pantalla de recogida ocupa todo: sin la barra
