@@ -1326,6 +1326,19 @@ h4,
   color: #b04d1f;
 }
 
+.pedidos-sin-cobrar-seccion + .pedidos-sin-cobrar-seccion {
+  margin-top: 14px;
+}
+
+.pedidos-sin-cobrar-subtitulo {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #b4521c;
+}
+
 .pedidos-sin-cobrar-lista {
   display: flex;
   flex-direction: column;

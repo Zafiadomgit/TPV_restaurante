@@ -794,8 +794,22 @@ export default function Caja() {
           <h3 className="pedidos-sin-cobrar-titulo">
             Pedidos sin cobrar ({pedidosSinCobrar.length})
           </h3>
+          {/* Por secciones (a petición del cliente): primero los encargos
+              para recoger, después los de domicilio y al final el resto
+              (kiosco...). Las secciones vacías no salen. */}
+          {[
+            ["Recoger en tienda", pedidosSinCobrar.filter((p) => p.mesa === "Recoger en tienda")],
+            ["A domicilio", pedidosSinCobrar.filter((p) => p.mesa === "A domicilio")],
+            ["Otros (kiosco, comer aquí, para llevar)", pedidosSinCobrar.filter((p) => !["Recoger en tienda", "A domicilio"].includes(p.mesa))],
+          ]
+            .filter(([, lista]) => lista.length > 0)
+            .map(([titulo, lista]) => (
+          <div key={titulo} className="pedidos-sin-cobrar-seccion">
+          <h4 className="pedidos-sin-cobrar-subtitulo">
+            {titulo} ({lista.length})
+          </h4>
           <div className="pedidos-sin-cobrar-lista">
-            {pedidosSinCobrar.map((pedido) => (
+            {lista.map((pedido) => (
               <div key={pedido.id} className="pedido-sin-cobrar-card">
                 <div className="pedido-sin-cobrar-info">
                   <span className="pedido-sin-cobrar-ticket">{formatTicket(pedido.ticketNumero)}</span>
@@ -803,6 +817,7 @@ export default function Caja() {
                     {pedido.mesa}
                     {pedido.clienteNombre ? ` · ${pedido.clienteNombre}` : ""}
                     {pedido.clienteTelefono ? ` · ${pedido.clienteTelefono}` : ""}
+                    {pedido.clienteDireccion ? ` · ${pedido.clienteDireccion}` : ""}
                     {pedido.programadoPara ? ` · ⏰ ${horaProgramada(pedido)}` : ""}
                   </span>
                   <p className="pedido-sin-cobrar-items">
@@ -829,6 +844,8 @@ export default function Caja() {
               </div>
             ))}
           </div>
+          </div>
+            ))}
         </div>
       )}
 
