@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../api.js";
 import { calcularTotales } from "../totales.js";
 import { formatTicket } from "../format.js";
-import { getSede, guardarSede, borrarSede, SEDES } from "../sede.js";
+import { getSede, guardarSede, SEDES } from "../sede.js";
 import ReciboImprimible, { imprimirRecibo } from "../components/ReciboImprimible.jsx";
 import { isoDesdeHora, horaProgramada, MINUTOS_ANTES_COCINA } from "../programado.js";
 import Personalizar from "../components/Personalizar.jsx";
@@ -699,16 +699,6 @@ export default function Caja() {
             disabled={abriendoCajon}
           >
             {abriendoCajon ? "Abriendo..." : "🗄️ Abrir cajón"}
-          </button>
-          <button
-            type="button"
-            className="caja-cambiar-sede"
-            onClick={() => {
-              borrarSede();
-              setSede(null);
-            }}
-          >
-            Cambiar sede
           </button>
         </div>
       </div>

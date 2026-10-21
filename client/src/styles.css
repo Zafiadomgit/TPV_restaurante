@@ -2708,16 +2708,6 @@ h4,
   margin: 0;
 }
 
-.caja-cambiar-sede {
-  border: none;
-  background: none;
-  color: rgba(31, 41, 51, 0.5);
-  font-size: 0.85rem;
-  text-decoration: underline;
-  cursor: pointer;
-  padding: 0;
-}
-
 .caja-titulo-acciones {
   display: flex;
   align-items: center;
@@ -5083,4 +5073,14 @@ h4,
 @keyframes nota-obligatoria {
   0%, 100% { box-shadow: 0 0 0 4px rgba(233, 112, 47, 0.25); }
   50% { box-shadow: 0 0 0 10px rgba(233, 112, 47, 0.08); }
+}
+
+/* Panel: sede del dispositivo (se quitó el botón "Cambiar sede" de caja) */
+.panel-sede-dispositivo {
+  margin-top: 1.5rem;
+  max-width: 420px;
+}
+
+.panel-sede-dispositivo .panel-selector-sede {
+  align-self: flex-start;
 }

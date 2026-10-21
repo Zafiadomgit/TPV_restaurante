@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api.js";
 import { formatDuracion } from "../informes.js";
-import { SEDES } from "../sede.js";
+import { SEDES, getSede, guardarSede } from "../sede.js";
 import { getSesion } from "../auth.js";
 
 const POLL_MS = 15000;
@@ -25,6 +25,12 @@ export default function Panel() {
   // no hay selector y siempre se pide esa (el servidor la impone igualmente).
   const sedeFija = getSesion()?.sede || null;
   const [sedeFiltro, setSedeFiltro] = useState(sedeFija || "");
+  // Sede de ESTE dispositivo (caja/cocina/kiosco/recogida). Antes se
+  // cambiaba con un botón en caja; a petición del dueño solo se cambia
+  // aquí, para que nadie más pueda moverla. El panel de Villarcayo solo
+  // puede fijar su propia sede.
+  const [sedeDispositivo, setSedeDispositivo] = useState(() => getSede() || "");
+  const sedesDispositivo = sedeFija ? [sedeFija] : Object.keys(SEDES);
 
   useEffect(() => {
     let activo = true;
@@ -204,6 +210,28 @@ export default function Panel() {
           </div>
         </>
       )}
+
+      <div className="panel-card panel-sede-dispositivo">
+        <span className="panel-card-titulo">Sede de este dispositivo</span>
+        <p className="caja-hint">
+          Es la sede con la que trabajan caja, cocina, kiosco y recogida en este equipo.
+        </p>
+        <select
+          className="panel-selector-sede"
+          value={sedeDispositivo}
+          onChange={(e) => {
+            guardarSede(e.target.value);
+            setSedeDispositivo(e.target.value);
+          }}
+        >
+          {!sedeDispositivo && <option value="">Sin elegir</option>}
+          {sedesDispositivo.map((id) => (
+            <option key={id} value={id}>
+              {SEDES[id]?.nombre || id}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   );
 }
