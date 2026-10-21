@@ -4384,7 +4384,7 @@ h4,
    demasiado espacio"), varios por fila tanto en Preparando como en Listo. */
 .k-recogida-lista {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
   gap: 10px;
 }
 .k-recogida-fila {
@@ -4392,14 +4392,14 @@ h4,
   padding: 10px 8px;
 }
 .k-recogida-listos {
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
 }
 
 /* Recogida: más pedidos -> más columnas y números más pequeños, para que
    se vean todos sin scroll (ver densidad en Recogida.jsx). */
-.k-recogida-lista--d2 { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
-.k-recogida-lista--d3 { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px; }
-.k-recogida-lista--d4 { grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; }
+.k-recogida-lista--d2 { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.k-recogida-lista--d3 { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; }
+.k-recogida-lista--d4 { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; }
 .k-recogida-lista--d2 .k-recogida-fila { padding: 8px 6px; }
 .k-recogida-lista--d3 .k-recogida-fila,
 .k-recogida-lista--d4 .k-recogida-fila { padding: 6px 4px; }
@@ -4407,14 +4407,14 @@ h4,
 .k-recogida-lista--d3 .k-recogida-num { font-size: 30px; }
 .k-recogida-lista--d4 .k-recogida-num { font-size: 24px; }
 
-.k-recogida-listos--d1 { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
-.k-recogida-lista--d1 { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
-.k-recogida-listos--d2 { grid-template-columns: repeat(auto-fill, minmax(125px, 1fr)); gap: 12px; }
-.k-recogida-listos--d3 { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
-.k-recogida-listos--d4 { grid-template-columns: repeat(auto-fill, minmax(82px, 1fr)); gap: 8px; }
-.k-recogida-listos--d2 .k-recogida-listo { height: 110px; font-size: clamp(36px, 3.6vw, 60px); }
-.k-recogida-listos--d3 .k-recogida-listo { height: 84px; font-size: clamp(28px, 2.8vw, 46px); border-radius: 14px; }
-.k-recogida-listos--d4 .k-recogida-listo { height: 64px; font-size: clamp(22px, 2.2vw, 34px); border-radius: 12px; }
+.k-recogida-listos--d1 { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+.k-recogida-lista--d1 { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.k-recogida-listos--d2 { grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 12px; }
+.k-recogida-listos--d3 { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+.k-recogida-listos--d4 { grid-template-columns: repeat(auto-fill, minmax(108px, 1fr)); gap: 8px; }
+.k-recogida-listos--d2 .k-recogida-listo { height: 110px; font-size: clamp(30px, 2.9vw, 52px); }
+.k-recogida-listos--d3 .k-recogida-listo { height: 80px; font-size: clamp(22px, 2.1vw, 36px); border-radius: 14px; }
+.k-recogida-listos--d4 .k-recogida-listo { height: 60px; font-size: clamp(18px, 1.7vw, 28px); border-radius: 12px; }
 
 /* Recogida en pantallas o ventanas estrechas (p. ej. un monitor vertical):
    todo más compacto para que quepan muchos más números. */
@@ -4427,13 +4427,15 @@ h4,
   .k-recogida-col { padding: 14px 12px; }
   .k-recogida-etiqueta { font-size: 17px; }
   .k-recogida-lista, .k-recogida-listos { margin-top: 12px; }
-  .k-recogida-lista { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; }
+  .k-recogida-lista { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px; }
   .k-recogida-fila { padding: 6px 4px; }
   .k-recogida-num { font-size: 30px; }
-  .k-recogida-listos { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; }
+  .k-recogida-listos { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
   .k-recogida-listo { height: 72px; font-size: 36px; border-radius: 12px; }
-  .k-recogida-lista[class*="--d"] .k-recogida-num { font-size: 24px; }
-  .k-recogida-listos[class*="--d"] .k-recogida-listo { height: 56px; font-size: 28px; }
+  .k-recogida-lista[class*="--d"] { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+  .k-recogida-lista[class*="--d"] .k-recogida-num { font-size: 21px; }
+  .k-recogida-listos[class*="--d"] { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; }
+  .k-recogida-listos[class*="--d"] .k-recogida-listo { height: 48px; font-size: 22px; }
 }
 @media (max-width: 900px) and (max-height: 760px) {
   .k-recogida-marca .k-recogida-titulo { display: none; }
