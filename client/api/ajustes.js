@@ -7,6 +7,8 @@ function mapRow(row) {
     tiempoEsperaMinutos: row.tiempo_espera_minutos,
     fondoRecogidaUrl: row.fondo_recogida_url,
     logoRecogidaUrl: row.logo_recogida_url,
+    // Conceptos guardados de "Varios" en caja: [{ nombre, precio }].
+    varios: Array.isArray(row.varios) ? row.varios : [],
   };
 }
 
@@ -36,7 +38,7 @@ export default async function handler(req, res) {
   if (req.method === "PATCH") {
     if (!exigirRol(req, res, ["caja"])) return;
 
-    const { tiempoEsperaMinutos, fondoRecogidaUrl, logoRecogidaUrl, local } = req.body || {};
+    const { tiempoEsperaMinutos, fondoRecogidaUrl, logoRecogidaUrl, varios, local } = req.body || {};
     if (!LOCALES_VALIDOS.includes(local)) {
       return res.status(400).json({ error: "Sede no válida" });
     }
@@ -54,6 +56,21 @@ export default async function handler(req, res) {
     }
     if (fondoRecogidaUrl !== undefined) cambios.fondo_recogida_url = fondoRecogidaUrl.trim() || null;
     if (logoRecogidaUrl !== undefined) cambios.logo_recogida_url = logoRecogidaUrl.trim() || null;
+    if (varios !== undefined) {
+      if (!Array.isArray(varios) || varios.length > 60) {
+        return res.status(400).json({ error: "Lista de varios no válida" });
+      }
+      const limpios = [];
+      for (const v of varios) {
+        const nombre = typeof v?.nombre === "string" ? v.nombre.trim().slice(0, 80) : "";
+        const precio = Number(v?.precio);
+        if (!nombre || !Number.isFinite(precio) || precio <= 0 || precio > 500) {
+          return res.status(400).json({ error: "Cada concepto necesita nombre y un precio entre 0,01 y 500 €" });
+        }
+        limpios.push({ nombre, precio: Number(precio.toFixed(2)) });
+      }
+      cambios.varios = limpios;
+    }
 
     if (Object.keys(cambios).length === 0) {
       return res.status(400).json({ error: "No hay cambios que guardar" });

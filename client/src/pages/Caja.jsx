@@ -29,6 +29,21 @@ const CON_CLIENTE = ["recoger", "domicilio"];
 // entregar o al terminar de comer). Programar hora, solo recoger/domicilio.
 const SIN_COBRAR = ["aqui", "llevar", "recoger", "domicilio"];
 
+// Pestaña "Varios" (a petición del cliente): conceptos escritos a mano con
+// su precio (ej. "Extra de arroz" 6 €). Los que se apuntan quedan guardados
+// como botones: en la base de datos (ajustes.varios, por sede) y, si esa
+// columna aún no existe, en este equipo.
+const CATEGORIA_VARIOS = "__varios";
+const CLAVE_VARIOS_LOCAL = "tpv_varios";
+function leerVariosLocal() {
+  try {
+    const v = JSON.parse(localStorage.getItem(CLAVE_VARIOS_LOCAL) || "[]");
+    return Array.isArray(v) ? v : [];
+  } catch {
+    return [];
+  }
+}
+
 // Datos del cliente que pide caja según el tipo de pedido, en el orden en
 // que salen en pantalla (a petición del cliente). En "Comer aquí" y "Para
 // llevar" son opcionales (para llamarle por su nombre).
@@ -109,6 +124,11 @@ export default function Caja() {
   const [imprimiendoRecibo, setImprimiendoRecibo] = useState(false);
 
   const [categoriaActiva, setCategoriaActiva] = useState("");
+  const [variosGuardados, setVariosGuardados] = useState(() => leerVariosLocal());
+  const [varioNombre, setVarioNombre] = useState("");
+  const [varioPrecio, setVarioPrecio] = useState("");
+  const [varioGuardar, setVarioGuardar] = useState(true);
+  const [errorVarios, setErrorVarios] = useState("");
   const [items, setItems] = useState([]);
   const [cobrando, setCobrando] = useState(false);
   const [dividirEntre, setDividirEntre] = useState("");
@@ -179,7 +199,10 @@ export default function Caja() {
     if (!sede) return;
     api
       .getAjustes(sede)
-      .then((data) => setTiempoEsperaInput(String(data.tiempoEsperaMinutos)))
+      .then((data) => {
+        setTiempoEsperaInput(String(data.tiempoEsperaMinutos));
+        if (Array.isArray(data.varios) && data.varios.length > 0) setVariosGuardados(data.varios);
+      })
       .catch(() => {});
   }, [sede]);
 
@@ -475,6 +498,51 @@ export default function Caja() {
     }
   };
 
+  // Guarda la lista de "Varios": en el servidor y, siempre, en este equipo.
+  const guardarVarios = async (lista) => {
+    setVariosGuardados(lista);
+    try {
+      localStorage.setItem(CLAVE_VARIOS_LOCAL, JSON.stringify(lista));
+    } catch {
+      // sin localStorage: queda solo en el servidor
+    }
+    try {
+      await api.actualizarAjustes({ varios: lista, local: sede });
+    } catch {
+      // sin la columna "varios" todavía: se queda guardado solo en este equipo
+    }
+  };
+
+  const addVario = (nombre, precio) => {
+    setUltimaVenta(null);
+    setItems((prev) => {
+      const existente = prev.find((i) => i.productId === "varios" && i.nombre === nombre && i.precio === precio);
+      if (existente) {
+        return prev.map((i) => (i.lineId === existente.lineId ? { ...i, cantidad: i.cantidad + 1 } : i));
+      }
+      return [
+        ...prev,
+        { lineId: nuevoLineId(), productId: "varios", nombre, precio, cantidad: 1, modificadores: null, modificadoresTexto: "" },
+      ];
+    });
+  };
+
+  const enviarVario = (e) => {
+    e.preventDefault();
+    setErrorVarios("");
+    const nombre = varioNombre.trim();
+    const precio = Number(String(varioPrecio).replace(",", "."));
+    if (!nombre) return setErrorVarios("Escribe el concepto");
+    if (!Number.isFinite(precio) || precio <= 0 || precio > 500) return setErrorVarios("Precio entre 0,01 y 500 €");
+    const redondeado = Number(precio.toFixed(2));
+    addVario(nombre, redondeado);
+    if (varioGuardar && !variosGuardados.some((v) => v.nombre === nombre && v.precio === redondeado)) {
+      guardarVarios([...variosGuardados, { nombre, precio: redondeado }].slice(-60));
+    }
+    setVarioNombre("");
+    setVarioPrecio("");
+  };
+
   const addItem = (producto) => {
     setUltimaVenta(null);
     if (producto.modificadores) {
@@ -550,6 +618,8 @@ export default function Caja() {
           cantidad: i.cantidad,
           notas: "",
           modificadores: i.modificadores,
+          // "Varios": el servidor necesita el concepto y el precio escritos.
+          ...(i.productId === "varios" ? { nombre: i.nombre, precio: i.precio } : {}),
         })),
       });
 
@@ -870,8 +940,64 @@ export default function Caja() {
                   {cat.categoria}
                 </button>
               ))}
+              <button
+                className={categoriaActiva === CATEGORIA_VARIOS ? "active" : ""}
+                onClick={() => setCategoriaActiva(CATEGORIA_VARIOS)}
+              >
+                Varios
+              </button>
             </div>
+            {categoriaActiva === CATEGORIA_VARIOS && (
+              <div className="caja-varios">
+                <form className="caja-varios-form" onSubmit={enviarVario}>
+                  <input
+                    type="text"
+                    placeholder="Concepto (ej. Extra de arroz)"
+                    maxLength={80}
+                    value={varioNombre}
+                    onChange={(e) => setVarioNombre(e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="Precio €"
+                    value={varioPrecio}
+                    onChange={(e) => setVarioPrecio(e.target.value)}
+                  />
+                  <button type="submit">Añadir al pedido</button>
+                  <label className="caja-varios-guardar">
+                    <input type="checkbox" checked={varioGuardar} onChange={(e) => setVarioGuardar(e.target.checked)} />
+                    Guardar en Varios
+                  </label>
+                </form>
+                {errorVarios && <p className="error">{errorVarios}</p>}
+                {variosGuardados.length === 0 && (
+                  <p className="empty">Aún no hay conceptos guardados: escribe uno arriba.</p>
+                )}
+              </div>
+            )}
             <div className="caja-botones-grid">
+              {categoriaActiva === CATEGORIA_VARIOS &&
+                variosGuardados.map((v) => (
+                  <div key={`${v.nombre}-${v.precio}`} className="caja-boton-producto caja-boton-vario">
+                    <button type="button" className="caja-vario-anadir" onClick={() => addVario(v.nombre, v.precio)}>
+                      <span>{v.nombre}</span>
+                      <strong>{Number(v.precio).toFixed(2)} €</strong>
+                    </button>
+                    <button
+                      type="button"
+                      className="caja-vario-borrar"
+                      title="Quitar de Varios"
+                      onClick={() => {
+                        if (window.confirm(`¿Quitar «${v.nombre}» de Varios?`)) {
+                          guardarVarios(variosGuardados.filter((x) => !(x.nombre === v.nombre && x.precio === v.precio)));
+                        }
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
               {menu
                 .find((cat) => cat.categoria === categoriaActiva)
                 ?.productos.map((producto) => (

@@ -101,15 +101,45 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Sede no válida" });
     }
 
+    // "Varios" (solo caja): conceptos escritos a mano con su precio, que no
+    // están en la carta. Como el precio lo pone el cajero, se exige sesión
+    // de caja: desde el kiosco nunca se puede mandar uno.
+    const esVario = (item) => item?.productId === "varios";
+    if (items.some(esVario)) {
+      const cabecera = req.headers.authorization || "";
+      const tokenCaja = cabecera.startsWith("Bearer ") ? cabecera.slice(7) : null;
+      if (!verificarToken(tokenCaja, ["caja"])) {
+        return res.status(401).json({ error: "Solo caja puede añadir conceptos varios" });
+      }
+    }
+
     let productosPorId;
     try {
-      productosPorId = await findProducts(items.map((item) => item.productId));
+      productosPorId = await findProducts(items.filter((item) => !esVario(item)).map((item) => item.productId));
     } catch (e) {
       return res.status(500).json({ error: e.message });
     }
 
     const itemsResueltos = [];
     for (const item of items) {
+      if (esVario(item)) {
+        const nombre = typeof item.nombre === "string" ? item.nombre.trim().slice(0, 80) : "";
+        const precio = Number(item.precio);
+        const cantidad = Math.round(Number(item.cantidad) || 1);
+        if (!nombre || !Number.isFinite(precio) || precio <= 0 || precio > 500 || cantidad <= 0 || cantidad > 99) {
+          return res.status(400).json({ error: "Concepto varios no válido (nombre y precio entre 0,01 y 500 €)" });
+        }
+        itemsResueltos.push({
+          productId: "varios",
+          nombre,
+          precio: Number(precio.toFixed(2)),
+          cantidad,
+          notas: "",
+          modificadoresTexto: "",
+          modificadoresGrupos: [],
+        });
+        continue;
+      }
       const producto = productosPorId.get(item.productId);
       if (!producto) {
         return res.status(400).json({ error: `Producto no encontrado: ${item.productId}` });
