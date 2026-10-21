@@ -74,7 +74,7 @@ export default function OrderTicket({ order, onAvanzar, onReimprimir, imprimiend
             onClick={() => onReimprimir(order)}
             disabled={imprimiendo}
           >
-            {imprimiendo ? "Imprimiendo..." : "🖨️ Reimprimir"}
+            {imprimiendo ? "..." : <>🖨️<span className="kds-btn-texto"> Reimprimir</span></>}
           </button>
         )}
         {siguiente && (

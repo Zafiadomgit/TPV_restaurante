@@ -977,6 +977,99 @@ h4,
   }
 }
 
+/* Cocina a pantalla completa: sin la barra del personal, y el KDS ocupa
+   toda la altura; cada columna hace scroll por su cuenta. */
+:fullscreen .app-cocina .topbar {
+  display: none;
+}
+.app-cocina .content:has(.kds-pantalla-completa) {
+  padding: 0;
+}
+.kds-pantalla-completa {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+.kds-pantalla-completa .kds-columnas {
+  flex: 1;
+  min-height: 0;
+}
+.kds-pantalla-completa .kds-columna-body {
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1;
+}
+
+/* Vista compacta (a petición del cliente, para mucho volumen): las
+   comandas se colocan en varias columnas dentro de cada estado, con menos
+   relleno, y la cabecera ocupa menos. */
+.kds-compacto {
+  padding: 0.6rem 0.8rem;
+}
+.kds-compacto .kds-header {
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+.kds-compacto .kds-titulo {
+  font-size: 1rem;
+}
+.kds-compacto .kds-columna-header {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.95rem;
+}
+.kds-compacto .kds-columna-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
+  align-content: start;
+  align-items: start;
+  gap: 0.4rem;
+  padding: 0.4rem;
+}
+.kds-compacto .kds-empty {
+  grid-column: 1 / -1;
+}
+.kds-compacto .kds-ticket {
+  padding: 0.5rem 0.6rem;
+  border-left-width: 4px;
+}
+.kds-compacto .kds-ticket-top {
+  margin-bottom: 0.15rem;
+}
+.kds-compacto .kds-ticket-id {
+  font-size: 1.2rem;
+}
+.kds-compacto .kds-ticket-origen {
+  margin-bottom: 0.25rem;
+}
+.kds-compacto .kds-ticket li {
+  padding: 0.1rem 0;
+}
+.kds-compacto .kds-item-nombre {
+  font-size: 1rem;
+}
+.kds-compacto .kds-nota {
+  font-size: 0.85rem;
+  padding: 0.1rem 0.4rem;
+}
+.kds-compacto .kds-cliente {
+  font-size: 12px;
+  padding: 4px 6px;
+  margin: 2px 0 4px;
+}
+.kds-compacto .kds-btn-avanzar,
+.kds-compacto .kds-btn-reimprimir {
+  padding: 0.4rem 0.5rem;
+  font-size: 0.85rem;
+}
+.kds-compacto .kds-btn-texto {
+  display: none;
+}
+.kds-compacto .kds-ticket-tiempo {
+  font-size: 0.8rem;
+}
+
 /* ---- Historial ---- */
 .badge-estado {
   display: inline-block;

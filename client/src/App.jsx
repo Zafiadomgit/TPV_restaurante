@@ -63,7 +63,7 @@ export default function App() {
   };
 
   return (
-    <div className={`app ${pantallaCliente ? "app-kiosco" : ""} ${pathname === "/recogida" ? "app-recogida" : ""}`}>
+    <div className={`app ${pantallaCliente ? "app-kiosco" : ""} ${pathname === "/recogida" ? "app-recogida" : ""} ${pathname === "/cocina" ? "app-cocina" : ""}`}>
       {mostrarTopbar && (
         <header className="topbar">
           <div className="brand">

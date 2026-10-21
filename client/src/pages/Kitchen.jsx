@@ -20,8 +20,39 @@ const COLUMNAS = [
   { estado: "listo", titulo: "LISTO", accentClass: "accent-verde" },
 ];
 
+const CLAVE_COMPACTO = "tpv_cocina_compacto";
+
 export default function Kitchen() {
   const [orders, setOrders] = useState([]);
+  // Pantalla completa (sin la barra del personal) y modo compacto (más
+  // comandas a la vista con mucho trabajo), a petición del cliente.
+  const [pantallaCompleta, setPantallaCompleta] = useState(() => Boolean(document.fullscreenElement));
+  const [compacto, setCompacto] = useState(() => {
+    try {
+      return localStorage.getItem(CLAVE_COMPACTO) !== "0";
+    } catch {
+      return true;
+    }
+  });
+  useEffect(() => {
+    const alCambiar = () => setPantallaCompleta(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", alCambiar);
+    return () => document.removeEventListener("fullscreenchange", alCambiar);
+  }, []);
+  const alternarPantallaCompleta = () => {
+    if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+    else document.documentElement.requestFullscreen?.().catch(() => {});
+  };
+  const alternarCompacto = () => {
+    setCompacto((prev) => {
+      try {
+        localStorage.setItem(CLAVE_COMPACTO, prev ? "0" : "1");
+      } catch {
+        // sin localStorage: solo mientras esté abierta
+      }
+      return !prev;
+    });
+  };
   const [sede, setSede] = useState(() => getSede());
   const enVuelo = useRef(false);
   // Ids de pedidos "pendiente" ya vistos, para saber cuáles son NUEVOS
@@ -162,10 +193,16 @@ export default function Kitchen() {
   const ordenadas = [...orders].sort((a, b) => new Date(a.creadoEn) - new Date(b.creadoEn));
 
   return (
-    <div className="kds-page">
+    <div className={`kds-page ${compacto ? "kds-compacto" : ""} ${pantallaCompleta ? "kds-pantalla-completa" : ""}`}>
       <div className="kds-header">
         <span className="kds-titulo">COCINA · CALIFORNIA · {SEDES[sede].nombre}</span>
         <div className="kds-header-acciones">
+          <button type="button" className="kds-btn-impresora" onClick={alternarCompacto}>
+            {compacto ? "▤ Vista normal" : "▦ Vista compacta"}
+          </button>
+          <button type="button" className="kds-btn-impresora" onClick={alternarPantallaCompleta}>
+            {pantallaCompleta ? "✕ Salir de pantalla completa" : "⛶ Pantalla completa"}
+          </button>
           <button type="button" className="kds-btn-impresora" onClick={clicConfigurarImpresora}>
             🖨️ {impresoraCocina ? impresoraCocina : "Configurar impresora"}
           </button>

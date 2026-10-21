@@ -335,17 +335,25 @@ export default async function handler(req, res) {
     }
     const hayCliente = Object.values(datosCliente).some(Boolean);
 
-    let { data, error } = await supabase
-      .from("orders")
-      .insert(hayCliente ? { ...fila, ...datosCliente } : fila)
-      .select()
-      .single();
-    // Si las columnas del cliente aún no existen (falta ejecutar
-    // supabase/orders_datos_cliente.sql), el pedido se guarda igual sin
-    // esos datos: nunca se pierde una venta por esto.
-    if (error && hayCliente && /cliente_|programado_|column|42703|PGRST204/i.test(`${error.code} ${error.message}`)) {
-      console.error("orders: sin columnas de cliente, se guarda sin ellas:", error.message);
-      ({ data, error } = await supabase.from("orders").insert(fila).select().single());
+    // Si falta alguna columna nueva en la base de datos (SQL sin ejecutar),
+    // se quita SOLO esa y se reintenta, para no perder la venta. Excepto la
+    // hora programada: sin ella el pedido iría a cocina al momento, así que
+    // se rechaza con un error claro para caja (y no se crea nada).
+    let extra = hayCliente ? { ...datosCliente } : {};
+    let data, error;
+    for (let intento = 0; intento < 5; intento += 1) {
+      ({ data, error } = await supabase.from("orders").insert({ ...fila, ...extra }).select().single());
+      if (!error) break;
+      const falta = /'([a-z_]+)' column/i.exec(error.message || "")?.[1];
+      if (!falta || !(falta in extra)) break;
+      console.error(`orders: falta la columna ${falta} en la base de datos:`, error.message);
+      if (falta === "programado_para") {
+        return res.status(409).json({
+          error:
+            "No se puede programar el pedido: falta ejecutar en Supabase el SQL supabase/orders_programado.sql. El pedido NO se ha enviado.",
+        });
+      }
+      delete extra[falta];
     }
 
     if (error) return res.status(500).json({ error: error.message });
