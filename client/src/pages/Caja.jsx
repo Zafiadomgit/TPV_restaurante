@@ -862,71 +862,6 @@ export default function Caja() {
         </div>
       )}
 
-      {/* Siempre a la vista, con las cuatro secciones aunque estén vacías,
-          para saber de un vistazo qué hay pendiente de cobrar. */}
-      {(
-        <div className="pedidos-sin-cobrar">
-          <h3 className="pedidos-sin-cobrar-titulo">
-            Pedidos sin cobrar ({pedidosSinCobrar.length})
-          </h3>
-          {/* Por secciones (a petición del cliente): primero los encargos
-              para recoger, después los de domicilio y al final el resto
-              (kiosco...). Las secciones vacías no salen. */}
-          {[
-            ["Recoger en tienda", pedidosSinCobrar.filter((p) => p.mesa === "Recoger en tienda")],
-            ["A domicilio", pedidosSinCobrar.filter((p) => p.mesa === "A domicilio")],
-            ["Comer aquí", pedidosSinCobrar.filter((p) => p.mesa === "Comer aquí")],
-            ["Para llevar", pedidosSinCobrar.filter((p) => p.mesa === "Para llevar")],
-            ["Otros", pedidosSinCobrar.filter((p) => !["Recoger en tienda", "A domicilio", "Comer aquí", "Para llevar"].includes(p.mesa))],
-          ]
-            .filter(([titulo, lista]) => lista.length > 0 || titulo !== "Otros")
-            .map(([titulo, lista]) => (
-          <div key={titulo} className="pedidos-sin-cobrar-seccion">
-          <h4 className="pedidos-sin-cobrar-subtitulo">
-            {titulo} ({lista.length})
-          </h4>
-          {lista.length === 0 && <p className="pedidos-sin-cobrar-vacio">Ninguno</p>}
-          <div className="pedidos-sin-cobrar-lista">
-            {lista.map((pedido) => (
-              <div key={pedido.id} className="pedido-sin-cobrar-card">
-                <div className="pedido-sin-cobrar-info">
-                  <span className="pedido-sin-cobrar-ticket">{formatTicket(pedido.ticketNumero)}</span>
-                  <span className="pedido-sin-cobrar-origen">
-                    {pedido.mesa}
-                    {pedido.clienteNombre ? ` · ${pedido.clienteNombre}` : ""}
-                    {pedido.clienteTelefono ? ` · ${pedido.clienteTelefono}` : ""}
-                    {pedido.clienteDireccion ? ` · ${pedido.clienteDireccion}` : ""}
-                    {pedido.programadoPara ? ` · ⏰ ${horaProgramada(pedido)}` : ""}
-                  </span>
-                  <p className="pedido-sin-cobrar-items">
-                    {pedido.items.map((i) => `${i.cantidad}x ${i.nombre}`).join(", ")}
-                  </p>
-                </div>
-                <div className="pedido-sin-cobrar-derecha">
-                  <strong className="pedido-sin-cobrar-total">{pedido.total.toFixed(2)} €</strong>
-                  <div className="pedido-sin-cobrar-botones">
-                    <button
-                      disabled={cobrandoPedidoId === pedido.id}
-                      onClick={() => cobrarPedidoKiosco(pedido, "efectivo")}
-                    >
-                      {cobrandoPedidoId === pedido.id ? "Cobrando..." : "Efectivo"}
-                    </button>
-                    <button
-                      disabled={cobrandoPedidoId === pedido.id}
-                      onClick={() => cobrarPedidoKiosco(pedido, "tarjeta")}
-                    >
-                      {cobrandoPedidoId === pedido.id ? "Cobrando..." : "Tarjeta"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          </div>
-            ))}
-        </div>
-      )}
-
       {turnoAbierto ? (
         <div className="caja-pos-layout">
           <div className="caja-productos">
@@ -1180,6 +1115,71 @@ export default function Caja() {
               {abriendo ? "Abriendo turno..." : "Abrir turno"}
             </button>
           </form>
+        </div>
+      )}
+
+      {/* Siempre a la vista, con las cuatro secciones aunque estén vacías,
+          para saber de un vistazo qué hay pendiente de cobrar. */}
+      {(
+        <div className="pedidos-sin-cobrar">
+          <h3 className="pedidos-sin-cobrar-titulo">
+            Pedidos sin cobrar ({pedidosSinCobrar.length})
+          </h3>
+          {/* Por secciones (a petición del cliente): primero los encargos
+              para recoger, después los de domicilio y al final el resto
+              (kiosco...). Las secciones vacías no salen. */}
+          {[
+            ["Recoger en tienda", pedidosSinCobrar.filter((p) => p.mesa === "Recoger en tienda")],
+            ["A domicilio", pedidosSinCobrar.filter((p) => p.mesa === "A domicilio")],
+            ["Comer aquí", pedidosSinCobrar.filter((p) => p.mesa === "Comer aquí")],
+            ["Para llevar", pedidosSinCobrar.filter((p) => p.mesa === "Para llevar")],
+            ["Otros", pedidosSinCobrar.filter((p) => !["Recoger en tienda", "A domicilio", "Comer aquí", "Para llevar"].includes(p.mesa))],
+          ]
+            .filter(([titulo, lista]) => lista.length > 0 || titulo !== "Otros")
+            .map(([titulo, lista]) => (
+          <div key={titulo} className="pedidos-sin-cobrar-seccion">
+          <h4 className="pedidos-sin-cobrar-subtitulo">
+            {titulo} ({lista.length})
+          </h4>
+          {lista.length === 0 && <p className="pedidos-sin-cobrar-vacio">Ninguno</p>}
+          <div className="pedidos-sin-cobrar-lista">
+            {lista.map((pedido) => (
+              <div key={pedido.id} className="pedido-sin-cobrar-card">
+                <div className="pedido-sin-cobrar-info">
+                  <span className="pedido-sin-cobrar-ticket">{formatTicket(pedido.ticketNumero)}</span>
+                  <span className="pedido-sin-cobrar-origen">
+                    {pedido.mesa}
+                    {pedido.clienteNombre ? ` · ${pedido.clienteNombre}` : ""}
+                    {pedido.clienteTelefono ? ` · ${pedido.clienteTelefono}` : ""}
+                    {pedido.clienteDireccion ? ` · ${pedido.clienteDireccion}` : ""}
+                    {pedido.programadoPara ? ` · ⏰ ${horaProgramada(pedido)}` : ""}
+                  </span>
+                  <p className="pedido-sin-cobrar-items">
+                    {pedido.items.map((i) => `${i.cantidad}x ${i.nombre}`).join(", ")}
+                  </p>
+                </div>
+                <div className="pedido-sin-cobrar-derecha">
+                  <strong className="pedido-sin-cobrar-total">{pedido.total.toFixed(2)} €</strong>
+                  <div className="pedido-sin-cobrar-botones">
+                    <button
+                      disabled={cobrandoPedidoId === pedido.id}
+                      onClick={() => cobrarPedidoKiosco(pedido, "efectivo")}
+                    >
+                      {cobrandoPedidoId === pedido.id ? "Cobrando..." : "Efectivo"}
+                    </button>
+                    <button
+                      disabled={cobrandoPedidoId === pedido.id}
+                      onClick={() => cobrarPedidoKiosco(pedido, "tarjeta")}
+                    >
+                      {cobrandoPedidoId === pedido.id ? "Cobrando..." : "Tarjeta"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          </div>
+            ))}
         </div>
       )}
 
