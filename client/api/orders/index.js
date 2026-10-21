@@ -24,16 +24,28 @@ export default async function handler(req, res) {
     const { local } = req.query;
 
     if (!rol) {
-      let queryPublica = supabase
-        .from("orders")
-        .select("id, ticket_numero, estado")
-        .in("estado", ["en_preparacion", "listo"])
-        .order("creado_en", { ascending: true });
-      if (local) queryPublica = queryPublica.eq("local", local);
-      const { data, error } = await queryPublica;
+      // programado_para va en la vista pública solo para que recogida no
+      // enseñe un pedido programado antes de que cocina lo vea; si la
+      // columna no existiera aún, se pide sin ella.
+      const pedir = (columnas) => {
+        let q = supabase
+          .from("orders")
+          .select(columnas)
+          .in("estado", ["pendiente", "en_preparacion", "listo"])
+          .order("creado_en", { ascending: true });
+        if (local) q = q.eq("local", local);
+        return q;
+      };
+      let { data, error } = await pedir("id, ticket_numero, estado, programado_para");
+      if (error) ({ data, error } = await pedir("id, ticket_numero, estado"));
       if (error) return res.status(500).json({ error: error.message });
       return res.status(200).json(
-        data.map((row) => ({ id: row.id, ticketNumero: row.ticket_numero, estado: row.estado }))
+        data.map((row) => ({
+          id: row.id,
+          ticketNumero: row.ticket_numero,
+          estado: row.estado,
+          programadoPara: row.programado_para || null,
+        }))
       );
     }
 

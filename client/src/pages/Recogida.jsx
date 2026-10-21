@@ -3,6 +3,7 @@ import { api } from "../api.js";
 import { formatTicket } from "../format.js";
 import { getSede, guardarSede } from "../sede.js";
 import SelectorSede from "../components/SelectorSede.jsx";
+import { visibleEnCocina } from "../programado.js";
 
 const POLL_MS = 3000;
 // El fondo/logo casi nunca cambia mientras el monitor está encendido —
@@ -76,7 +77,7 @@ export default function Recogida() {
       enVuelo.current = true;
       try {
         const data = await api.getOrders(undefined, sede);
-        setOrders(data.filter((o) => o.estado === "en_preparacion" || o.estado === "listo"));
+        setOrders(data.filter((o) => ["pendiente", "en_preparacion", "listo"].includes(o.estado) && visibleEnCocina(o)));
       } catch {
         // se reintenta en el siguiente ciclo
       } finally {
@@ -124,7 +125,9 @@ export default function Recogida() {
     );
   }
 
-  const preparando = orders.filter((o) => o.estado === "en_preparacion");
+  // Lo recién llegado a cocina ya cuenta como "Preparando" (no hay paso
+  // "Nuevo"). Los programados no salen hasta que cocina los ve.
+  const preparando = orders.filter((o) => o.estado === "pendiente" || o.estado === "en_preparacion");
   const listos = orders.filter((o) => o.estado === "listo");
   // Que siempre quepan todos en pantalla (a petición del cliente): cuantos
   // más pedidos, más columnas y números más pequeños, sin tener que hacer

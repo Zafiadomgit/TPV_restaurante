@@ -633,7 +633,9 @@ h4,
 
 .kds-columnas {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* Dos estados (sin "Nuevo"): "Preparando" es donde se acumula el
+     trabajo, así que se lleva más ancho. */
+  grid-template-columns: 1.7fr 1fr;
   gap: 1px;
   background: rgba(255, 255, 255, 0.1);
 }

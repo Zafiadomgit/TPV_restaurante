@@ -15,9 +15,10 @@ import {
 const POLL_MS = 3000;
 
 const COLUMNAS = [
-  { estado: "pendiente", titulo: "NUEVO", accentClass: "accent-rojo" },
-  { estado: "en_preparacion", titulo: "PREPARANDO", accentClass: "accent-naranja" },
-  { estado: "listo", titulo: "LISTO", accentClass: "accent-verde" },
+  // Sin columna "Nuevo" (a petición del cliente, para ganar espacio): lo que
+  // llega a cocina sale directamente en "Preparando".
+  { estado: "en_preparacion", estados: ["pendiente", "en_preparacion"], titulo: "PREPARANDO", accentClass: "accent-naranja" },
+  { estado: "listo", estados: ["listo"], titulo: "LISTO", accentClass: "accent-verde" },
 ];
 
 const CLAVE_COMPACTO = "tpv_cocina_compacto";
@@ -132,7 +133,7 @@ export default function Kitchen() {
         const data = await api.getOrders(undefined, sede);
         // Los programados no se ven hasta 15 min antes de su hora; entonces
         // cuentan como nuevos (aviso + comanda), ver programado.js.
-        const activos = data.filter((o) => COLUMNAS.some((c) => c.estado === o.estado) && visibleEnCocina(o));
+        const activos = data.filter((o) => COLUMNAS.some((c) => c.estados.includes(o.estado)) && visibleEnCocina(o));
         setOrders(activos);
 
         const pendientesAhora = activos.filter((o) => o.estado === "pendiente");
@@ -166,7 +167,7 @@ export default function Kitchen() {
 
   const avanzarEstado = async (id, estado) => {
     setOrders((prev) =>
-      COLUMNAS.some((c) => c.estado === estado)
+      COLUMNAS.some((c) => c.estados.includes(estado))
         ? prev.map((o) => (o.id === id ? { ...o, estado } : o))
         : prev.filter((o) => o.id !== id)
     );
@@ -236,7 +237,7 @@ export default function Kitchen() {
       )}
       <div className="kds-columnas">
         {COLUMNAS.map((col) => {
-          const pedidos = ordenadas.filter((o) => o.estado === col.estado);
+          const pedidos = ordenadas.filter((o) => col.estados.includes(o.estado));
           return (
             <div className="kds-columna" key={col.estado}>
               <div className={`kds-columna-header ${col.accentClass}`}>

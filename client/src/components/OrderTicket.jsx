@@ -1,14 +1,16 @@
 import { formatTicket } from "../format.js";
 import { nombreCocina, lineasCliente, lineasCambios } from "../seccionesTicket.js";
 
+// Sin paso "Empezar": un pedido recién llegado ya está en "Preparando" y
+// su botón lo marca directamente como listo.
 const SIGUIENTE_ESTADO = {
-  pendiente: "en_preparacion",
+  pendiente: "listo",
   en_preparacion: "listo",
   listo: "entregado",
 };
 
 const ACCION_LABEL = {
-  pendiente: "Empezar",
+  pendiente: "Marcar listo",
   en_preparacion: "Marcar listo",
   listo: "Entregado",
 };
