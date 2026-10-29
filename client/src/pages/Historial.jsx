@@ -3,7 +3,13 @@ import { api } from "../api.js";
 import { getSede } from "../sede.js";
 import HistorialTicket from "../components/HistorialTicket.jsx";
 import ReciboImprimible, { imprimirRecibo } from "../components/ReciboImprimible.jsx";
-import { getImpresoraGuardada, esImpresoraVirtual, imprimirReciboQz } from "../qzTray.js";
+import {
+  getImpresoraGuardada,
+  getImpresoraCocinaGuardada,
+  esImpresoraVirtual,
+  imprimirReciboQz,
+  imprimirTicketCocina,
+} from "../qzTray.js";
 
 const POLL_MS = 5000;
 
@@ -100,6 +106,29 @@ export default function Historial() {
     }
     setParaNavegador(order);
   };
+  // Volver a imprimir la comanda de cocina (a petición del cliente). Es
+  // texto ESC/POS para la impresora térmica, así que solo por QZ Tray: la
+  // de cocina de este equipo o, si no hay, la de caja (igual que en caja).
+  const [imprimiendoComanda, setImprimiendoComanda] = useState(null);
+  const imprimirComanda = async (order) => {
+    setError("");
+    setAviso("");
+    const impresora = getImpresoraCocinaGuardada() || getImpresoraGuardada();
+    if (!impresora || esImpresoraVirtual(impresora)) {
+      setError("No hay impresora de tickets elegida en este equipo para imprimir la comanda.");
+      return;
+    }
+    setImprimiendoComanda(order.id);
+    try {
+      await imprimirTicketCocina(impresora, order);
+      setAviso(`Comanda ${order.ticketNumero ? `#A-${order.ticketNumero}` : ""} enviada a «${impresora}».`);
+    } catch (e) {
+      setError(`No se pudo imprimir la comanda (${e.message}).`);
+    } finally {
+      setImprimiendoComanda(null);
+    }
+  };
+
   useEffect(() => {
     if (!paraNavegador) return undefined;
     const id = setTimeout(() => {
@@ -148,6 +177,8 @@ export default function Historial() {
               onRevertir={revertir}
               onAnular={anular}
               onReimprimir={reimprimir}
+              onImprimirComanda={imprimirComanda}
+              imprimiendoComanda={imprimiendoComanda === order.id}
               reimprimiendo={reimprimiendo === order.id}
             />
           ))}

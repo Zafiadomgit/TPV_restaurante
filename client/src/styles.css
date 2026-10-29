@@ -5141,3 +5141,13 @@ h4,
 .panel-sede-dispositivo .tiempo-espera-ok {
   margin-top: 0.6rem;
 }
+
+/* KDS: "P.C" = pedido pendiente de cobro */
+.kds-ticket-pc {
+  margin-left: 0.35rem;
+  padding: 0 0.3rem;
+  border-radius: 4px;
+  background: #d64545;
+  color: #fff;
+  font-size: 0.85rem;
+}

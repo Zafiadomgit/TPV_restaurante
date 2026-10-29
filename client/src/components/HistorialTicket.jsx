@@ -19,7 +19,15 @@ const REVERTIR_LABEL = {
   cancelado: "↺ Revertir a Pendiente",
 };
 
-export default function HistorialTicket({ order, onRevertir, onAnular, onReimprimir, reimprimiendo }) {
+export default function HistorialTicket({
+  order,
+  onRevertir,
+  onAnular,
+  onReimprimir,
+  reimprimiendo,
+  onImprimirComanda,
+  imprimiendoComanda,
+}) {
   const estadoAnterior = REVERTIR_A[order.estado];
 
   return (
@@ -72,6 +80,15 @@ export default function HistorialTicket({ order, onRevertir, onAnular, onReimpri
       {onReimprimir && (
         <button className="btn-avanzar btn-reimprimir-historial" onClick={() => onReimprimir(order)} disabled={reimprimiendo}>
           {reimprimiendo ? "Imprimiendo..." : "🖨️ Reimprimir ticket"}
+        </button>
+      )}
+      {onImprimirComanda && (
+        <button
+          className="btn-avanzar btn-reimprimir-historial"
+          onClick={() => onImprimirComanda(order)}
+          disabled={imprimiendoComanda}
+        >
+          {imprimiendoComanda ? "Imprimiendo..." : "🍳 Imprimir comanda"}
         </button>
       )}
       {order.pagado && !order.anulado && (

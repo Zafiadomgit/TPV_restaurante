@@ -369,7 +369,7 @@ export default function Caja() {
     if (metodoPago === "efectivo") await clicAbrirCajon();
     if (autoTicket) await clicImprimirRecibo(pedido);
     // Un programado no va a cocina ahora: su comanda sale en cocina cuando
-    // aparece, 15 min antes de la hora.
+    // aparece, MINUTOS_ANTES_COCINA antes de la hora.
     if (comanda && autoComanda && !pedido.programadoPara) await imprimirComandaDesdeCaja(pedido);
   };
 

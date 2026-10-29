@@ -1,8 +1,8 @@
 // Pedidos programados desde caja ("Recoger en tienda" / "A domicilio" con
 // hora): cocina no los ve hasta MINUTOS_ANTES_COCINA antes de esa hora (a
-// petición del cliente, "unos 15 minutos"). Al aparecer, cocina los trata
+// petición del cliente: primero "unos 15 minutos", desde el 28/10/2026 media hora). Al aparecer, cocina los trata
 // como un pedido nuevo: suena el aviso y se imprime la comanda.
-export const MINUTOS_ANTES_COCINA = 15;
+export const MINUTOS_ANTES_COCINA = 30;
 
 export function visibleEnCocina(order, ahora = Date.now()) {
   if (!order?.programadoPara) return true;
