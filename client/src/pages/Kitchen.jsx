@@ -162,7 +162,7 @@ export default function Kitchen() {
       if (enVuelo.current) return;
       enVuelo.current = true;
       try {
-        const data = await api.getOrders(undefined, sede);
+        const data = await api.getOrders(undefined, sede, ["pendiente", "en_preparacion", "listo"]);
         // Los programados no se ven hasta MINUTOS_ANTES_COCINA (30 min) antes de su hora; entonces
         // cuentan como nuevos (aviso + comanda), ver programado.js.
         const activos = data.filter((o) => COLUMNAS.some((c) => c.estados.includes(o.estado)) && visibleEnCocina(o));

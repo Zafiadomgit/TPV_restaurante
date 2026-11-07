@@ -76,7 +76,7 @@ export default function Recogida() {
       if (enVuelo.current) return;
       enVuelo.current = true;
       try {
-        const data = await api.getOrders(undefined, sede);
+        const data = await api.getOrders(undefined, sede, ["pendiente", "en_preparacion", "listo"]);
         setOrders(data.filter((o) => ["pendiente", "en_preparacion", "listo"].includes(o.estado) && visibleEnCocina(o)));
       } catch {
         // se reintenta en el siguiente ciclo

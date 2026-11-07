@@ -24,9 +24,12 @@ export const api = {
   getMenu: () => request("/menu"),
   // `local` filtra por sede (ver client/src/sede.js) — se omite el
   // parámetro cuando no aplica (ej. el panel viendo "todas las sedes").
-  getOrders: (estado, local) => {
+  // `estados` (array): filtra en el servidor por varios estados a la vez
+  // (cocina/recogida solo necesitan los pedidos activos, no el histórico).
+  getOrders: (estado, local, estados) => {
     const params = new URLSearchParams();
     if (estado) params.set("estado", estado);
+    if (estados?.length) params.set("estados", estados.join(","));
     if (local) params.set("local", local);
     const qs = params.toString();
     return request(`/orders${qs ? `?${qs}` : ""}`);
