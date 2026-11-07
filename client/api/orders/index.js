@@ -1,6 +1,6 @@
 import { supabase } from "../_lib/supabaseClient.js";
 import { findProducts } from "../_lib/menu.js";
-import { calcularTotales, mapRow, LOCALES_VALIDOS, normalizarTelefono } from "../_lib/orders.js";
+import { calcularTotales, mapRow, LOCALES_VALIDOS, ESTADOS_VALIDOS, normalizarTelefono } from "../_lib/orders.js";
 import { verificarToken } from "../_lib/auth.js";
 
 export default async function handler(req, res) {
@@ -69,9 +69,19 @@ export default async function handler(req, res) {
       );
     }
 
-    const { estado, pagado } = req.query;
-    let query = supabase.from("orders").select("*").order("creado_en", { ascending: true });
+    const { estado, estados, pagado } = req.query;
+    // Supabase (PostgREST) devuelve como mucho 1000 filas por consulta. Antes
+    // se pedía en orden ascendente sin filtro de estado, así que en cuanto una
+    // sede pasó de 1000 pedidos en total, cocina solo recibía los 1000 MÁS
+    // ANTIGUOS y los nuevos no llegaban nunca. Ahora se piden los más
+    // recientes primero (y se devuelven en orden ascendente, como siempre) y
+    // cocina/recogida filtran por estado en el servidor (?estados=...).
+    let query = supabase.from("orders").select("*").order("creado_en", { ascending: false }).limit(1000);
     if (estado) query = query.eq("estado", estado);
+    if (typeof estados === "string" && estados) {
+      const lista = estados.split(",").filter((e) => ESTADOS_VALIDOS.includes(e));
+      if (lista.length > 0) query = query.in("estado", lista);
+    }
     if (local) query = query.eq("local", local);
     // Usado por la cola de "pedidos del kiosco sin cobrar" en /caja —
     // pagado=false (los pedidos de venta rápida de caja nunca aparecen
@@ -81,7 +91,7 @@ export default async function handler(req, res) {
 
     const { data, error } = await query;
     if (error) return res.status(500).json({ error: error.message });
-    return res.status(200).json(data.map(mapRow));
+    return res.status(200).json(data.reverse().map(mapRow));
   }
 
   if (req.method === "POST") {
