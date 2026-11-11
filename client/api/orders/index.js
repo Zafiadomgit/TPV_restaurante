@@ -15,6 +15,14 @@ export default async function handler(req, res) {
     const header = req.headers.authorization || "";
     const token = header.startsWith("Bearer ") ? header.slice(7) : null;
     const rol = verificarToken(token, ["cocina", "caja"]);
+    // Con un token caducado o falso NO se sirve la vista pública: se
+    // responde 401 para que la pantalla cierre la sesión y pida el PIN.
+    // Si no, /cocina (que cree tener sesión) recibía pedidos sin `items`
+    // y se quedaba en blanco. La vista pública es solo para quien no
+    // manda token (o manda uno válido de otro rol, p. ej. panel).
+    if (token && !verificarToken(token)) {
+      return res.status(401).json({ error: "Sesión caducada" });
+    }
 
     // `local`: cada dispositivo (kiosco/recogida/cocina/caja) filtra por
     // su propia sede (ver client/src/sede.js) para que cocina/caja de un

@@ -63,7 +63,7 @@ export default function OrderTicket({ order, onAvanzar, onReimprimir, imprimiend
         </div>
       )}
       <ul>
-        {order.items.map((item) => (
+        {(order.items || []).map((item) => (
           <li key={item.productId}>
             <span className="kds-cantidad">{item.cantidad}x</span>
             <div className="kds-item-texto">
